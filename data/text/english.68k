@@ -1,0 +1,44 @@
+;****************************************************************************
+; Options menu text
+;****************************************************************************
+
+StrOptions:             dc.b "OPTIONS",0
+
+StrDifficulty:          dc.b "DIFFICULTY",0
+StrEasy:                dc.b "EASY  ",0
+StrNormal:              dc.b "NORMAL",0
+StrHard:                dc.b "HARD  ",0
+
+StrControls:            dc.b "CONTROLS",0
+StrMagic:               dc.b "MAGIC ",0
+StrAttack:              dc.b "ATTACK",0
+StrJump:                dc.b "JUMP  ",0
+
+StrSoundTest:           dc.b "SOUND TEST",0
+StrExit:                dc.b "EXIT",0
+
+;****************************************************************************
+; Debug menu text
+;****************************************************************************
+
+    if DEBUG_MENU
+StrDebugMenu:           dc.b "DEBUG MENU",0
+StrStartingStage:       dc.b "STARTING STAGE",0
+StrInvincibility:       dc.b "INVINCIBILITY",0
+StrInfiniteLives:       dc.b "INFINITE LIVES",0
+
+StrYes:                 dc.b "YES",0
+StrNo:                  dc.b "NO ",0
+    endc
+
+;****************************************************************************
+; Crash screen
+;****************************************************************************
+
+StrAddressError:        dc.b "ADDRESS ERROR",0
+StrBusError:            dc.b "BUS ERROR",0
+StrIllegalInstruction:  dc.b "ILLEGAL INSTRUCTION",0
+StrDivisionByZero:      dc.b "DIVISION BY ZERO",0
+StrUnusedInterrupt:     dc.b "UNUSED INTERRUPT",0
+StrUnusedTrap:          dc.b "UNUSED TRAP",0
+StrUnknownError:        dc.b "UNKNOWN ERROR",0

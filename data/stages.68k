@@ -1,0 +1,58 @@
+;****************************************************************************
+; COLL_*
+; Different collision types for a tile
+;****************************************************************************
+
+                rsreset
+COLL_EMPTY:     rs.b 1      ; [$00] empty tile
+COLL_SOLID:     rs.b 1      ; [$01] solid tile
+COLL_FLOOR:     rs.b 1      ; [$02] solid from top
+COLL_WATER:     rs.b 1      ; [$03] swimmable tile
+
+;****************************************************************************
+; StageData_*
+; Layout data for all the stages.
+;****************************************************************************
+
+StageData_Entrance1:        include "data/stages/entrance_1.68k"
+StageData_Entrance2:        include "data/stages/entrance_2.68k"
+StageData_Entrance3:        include "data/stages/entrance_3.68k"
+StageData_Entrance4:        include "data/stages/entrance_4.68k"
+
+StageData_Hall1:            include "data/stages/hall_1.68k"
+StageData_Hall2:            include "data/stages/hall_2.68k"
+
+StageData_Basement1:        include "data/stages/basement_1.68k"
+StageData_Basement2:        include "data/stages/basement_2.68k"
+StageData_Basement3:        include "data/stages/basement_3.68k"
+StageData_Basement4:        include "data/stages/basement_4.68k"
+
+StageData_FinalBoss:        include "data/stages/final_boss.68k"
+
+;****************************************************************************
+; StageList
+; Defines the stage list. Also defines all the STAGE_* constants.
+;****************************************************************************
+
+StageList:
+    rsreset
+    
+@Entry: macro name
+STAGE_\name: rs.b 1
+    dc.l    StageData_\name
+    endm
+    
+    @Entry      Entrance1
+    @Entry      Entrance2
+    @Entry      Entrance3
+    @Entry      Entrance4
+    
+    @Entry      Hall1
+    @Entry      Hall2
+    
+    @Entry      Basement1
+    @Entry      Basement2
+    @Entry      Basement3
+    @Entry      Basement4
+    
+    @Entry      FinalBoss

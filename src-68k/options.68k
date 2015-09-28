@@ -1,0 +1,203 @@
+;****************************************************************************
+; OptionsMenu
+; Shows up the options menu.
+;----------------------------------------------------------------------------
+; notes: doesn't return (use BRA/JMP instead of BSR/JSR)
+;****************************************************************************
+
+OptionsMenu:
+    lea     @Menu(pc), a0               ; Execute the menu
+    jsr     (DoMenu).w
+    
+    bra     TitleScreen                 ; Return to the title screen
+
+;----------------------------------------------------------------------------
+
+@Menu:
+    dc.l    StrOptions                  ; Title
+    
+    dc.l    DrawDifficulty              ; Difficulty
+    dc.l    IncDifficulty
+    dc.l    DecDifficulty
+    dc.l    0
+    
+    dc.l    DrawSoundTest               ; Sound test
+    dc.l    IncSoundTest
+    dc.l    DecSoundTest
+    dc.l    PlaySoundTest
+    
+    dc.l    DrawExitOptions             ; Exit
+    dc.l    0
+    dc.l    0
+    dc.l    ExitOptions
+    
+    dc.l    0                           ; End of menu
+
+;****************************************************************************
+; DrawDifficulty
+; Draws the current difficulty.
+;----------------------------------------------------------------------------
+; output a6.l ... Option label (string)
+; output a5.l ... Option value (string)
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4
+;****************************************************************************
+
+DrawDifficulty:
+    moveq   #0, d7                      ; Get setting
+    move.b  (Difficulty), d7
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     @Table(pc), a5
+    move.l  (a5,d7.w), a5
+    
+    lea     (StrDifficulty), a6         ; Get label
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Table:
+    dc.l    StrEasy
+    dc.l    StrNormal
+    dc.l    StrHard
+
+;****************************************************************************
+; IncDifficulty, DecDifficulty
+; Increase and decrease the difficulty, respectively.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+IncDifficulty:
+    move.b  (Difficulty), d7
+    addq.b  #1, d7
+    cmp.b   #2, d7
+    bls.s   @NoOverflow
+    moveq   #0, d7
+@NoOverflow:
+    move.b  d7, (Difficulty)
+    rts
+
+;----------------------------------------------------------------------------
+
+DecDifficulty:
+    move.b  (Difficulty), d7
+    subq.b  #1, d7
+    bge.s   @NoOverflow
+    moveq   #2, d7
+@NoOverflow:
+    move.b  d7, (Difficulty)
+    rts
+
+;****************************************************************************
+; DrawSoundTest
+; Draws the current sound test ID.
+;----------------------------------------------------------------------------
+; output a6.l ... Option label (string)
+; output a5.l ... Option value (string)
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4
+;****************************************************************************
+
+DrawSoundTest:
+    moveq   #0, d7                      ; Get current ID
+    move.b  (SoundTest), d7
+    
+    lea     (SoundTestBuf), a5          ; Where we'll draw the ID number
+    move.l  #$20202000, 2(a5)           ; Fill it with spaces first
+    addq.w  #3, a5
+    
+    divu.w  #10, d7                     ; Draw the units
+    swap    d7
+    add.b   #"0", d7
+    move.b  d7, -(a5)
+    
+    clr.w   d7                          ; Draw the tens
+    swap    d7
+    beq.s   @Done
+    divu.w  #10, d7
+    swap    d7
+    add.b   #"0", d7
+    move.b  d7, -(a5)
+    
+    clr.w   d7                          ; Draw the hundreds
+    swap    d7
+    beq.s   @Done
+    add.b   #"0", d7
+    move.b  d7, -(a5)
+    
+@Done:
+    lea     (StrSoundTest), a6          ; Get label
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; IncSoundTest, DecSoundTest
+; Increase and decrease the sound test ID, respectively.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+IncSoundTest:
+    move.b  (SoundTest), d7
+    addq.b  #1, d7
+    cmp.b   #SOUNDTEST_MAX-1, d7
+    bls.s   @NoOverflow
+    moveq   #0, d7
+@NoOverflow:
+    move.b  d7, (SoundTest)
+    rts
+
+;----------------------------------------------------------------------------
+
+DecSoundTest:
+    move.b  (SoundTest), d7
+    subq.b  #1, d7
+    bge.s   @NoOverflow
+    moveq   #SOUNDTEST_MAX-1, d7
+@NoOverflow:
+    move.b  d7, (SoundTest)
+    rts
+
+;****************************************************************************
+; PlaySoundTest
+; Plays whatever is selected in the sound test.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+PlaySoundTest:
+    move.b  (SoundTest), d7             ; Get selected ID
+    bne.s   @NoBlankID
+    rts
+@NoBlankID:
+    
+    clr.b   (CurrentSFX)                ; Play sound effect
+    jsr     (PlaySFX).w
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawExitOptions
+; Draws the Exit option.
+;----------------------------------------------------------------------------
+; output a6.l ... Option label (string)
+; output a5.l ... Option value (string)
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4
+;****************************************************************************
+
+DrawExitOptions:
+    lea     (StrExit), a6
+    move.l  #0, a5
+    rts
+
+;****************************************************************************
+; ExitOptions
+; Quits the Options menu.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+ExitOptions:
+    st.b    (QuitMenu)
+    rts

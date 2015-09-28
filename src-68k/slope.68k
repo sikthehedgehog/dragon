@@ -1,0 +1,84 @@
+;****************************************************************************
+; RunSlope
+; Lets a slope do its job.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunSlope:
+    move.w  OBJ_X(a0), d0
+    move.w  OBJ_Y(a0), d1
+    move.w  (PlayerX), d2
+    move.w  (PlayerY), d3
+    move.b  OBJ_FLAGS(a0), d4
+    move.b  (PlayerFlags), d5
+    
+    move.w  d2, d6                      ; Calculate where the player would
+    sub.w   d0, d6                        ; be placed if she was on the slope
+    btst.l  #PF_DIR, d4
+    beq.s   @NoFlip
+    neg.w   d6
+    add.w   #$20, d6
+@NoFlip:
+    add.w   d1, d6
+    sub.w   #$10, d6
+    
+    btst.l  #OF_ACTIVE, d4              ; If it was already active the last
+    beq.s   @NotActive                    ; time it may be a good idea to
+    btst.l  #PF_PLATFORM, d5              ; trigger it again, just in case
+    beq.s   @NotActive
+    bsr     @Activate
+@NotActive:
+    
+    cmp.w   d0, d2                      ; Is the player beyond the slope's
+    blt.s   @Deactivate                   ; horizontal range?
+    move.w  d0, d7
+    add.w   #$20, d7
+    cmp.w   d7, d2
+    bge.s   @Deactivate
+    
+    tst.w   (PlayerYSpeed)              ; Is the player falling within the
+    blt.s   @Deactivate                   ; snap range? (incidentally, this
+    move.w  d6, d7                        ; makes the slope from-top only)
+    subq.w  #4, d7
+    cmp.w   d7, d3
+    blt.s   @Deactivate
+    move.w  d6, d7
+    addq.w  #8, d7
+    cmp.w   d7, d3
+    bgt.s   @Deactivate
+    
+    bsr.s   @Activate                   ; Nope, slope is active!
+    
+    move.w  d3, (PlayerY)               ; Update what may have changed
+    move.b  d4, OBJ_FLAGS(a0)
+    move.b  d5, (PlayerFlags)
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Activate:
+    move.w  d6, d3
+    bset.l  #OF_ACTIVE, d4
+    bset.l  #PF_LANDED, d5
+    bset.l  #PF_PLATFORM, d5
+    clr.w   (PlayerYSpeed)
+    rts
+
+;----------------------------------------------------------------------------
+
+@Deactivate:
+    bclr.l  #OF_ACTIVE, d4
+    beq.s   @AlreadyInactive
+    bclr.l  #PF_PLATFORM, d5
+    move.w  d6, d3
+    addq.w  #8, d3
+    and.w   #$FFF0, d3
+@AlreadyInactive:
+    move.w  d3, (PlayerY)
+    move.b  d4, OBJ_FLAGS(a0)
+    move.b  d5, (PlayerFlags)
+    rts

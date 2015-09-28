@@ -1,0 +1,190 @@
+;****************************************************************************
+; InitSpider
+; Initializes a spider's status.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitSpider:
+    moveq   #0, d7                      ; Prepare for the fall
+    move.b  OBJ_FLAGS(a6), d7
+    add.w   d7, d7
+    add.w   d7, d7
+    add.w   OBJ_Y(a6), d7
+    move.w  d7, OBJ_TIMER(a6)
+    clr.b   OBJ_FLAGS(a6)
+    
+    move.w  #-$0C, OBJ_BOXX1(a6)        ; Set up collision box
+    move.w  #-$0C, OBJ_BOXY1(a6)
+    move.w  #$0B, OBJ_BOXX2(a6)
+    move.w  #$13, OBJ_BOXY2(a6)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunSpider
+; Executes the behavior for a spider.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunSpider:
+    tst.b   OBJ_HEALTH(a0)              ; Are we dead?
+    bne.s   @NotDying
+    
+    move.w  OBJ_YSPEED(a0), d7          ; Keep falling
+    add.w   #ACCEL_FALL, d7
+    move.w  d7, OBJ_YSPEED(a0)
+    cmp.w   #JUMP_FORCE, d7
+    bge     DestroySelf
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, OBJ_Y(a0)
+    
+    move.w  OBJ_XSPEED(a0), d7          ; Falling sideways
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, OBJ_X(a0)
+    
+    rts                                 ; End of subroutine
+@NotDying:
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Did we get killed?
+    bsr     CollidesAttack
+    tst.w   d7
+    beq.s   @NotKilled
+    
+    clr.b   OBJ_HEALTH(a0)
+    moveq   #SFX_HIT, d7
+    jsr     (PlaySFX).w
+    move.l  #SCORE_BROOM, d7
+    bsr     AddScore
+    
+    move.l  a0, a6
+    bsr     FacePlayer
+    
+    move.w  #MAX_SPEED, d6
+    btst.l  #OF_DIR, d7
+    bne.s   *+4
+    neg.w   d6
+    move.w  d6, OBJ_XSPEED(a0)
+    move.w  #-JUMP_FORCE/2, OBJ_YSPEED(a0)
+    rts
+@NotKilled:
+    
+    move.l  a0, a6                      ; Did we hurt the player?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @DidntAttack
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    bsr     HurtPlayer
+@DidntAttack:
+
+;----------------------------------------------------------------------------
+
+    tst.w   OBJ_TIMER(a0)               ; Check if we should fall on the
+    beq.s   @CantFall                     ; player
+    move.w  OBJ_X(a0), d7
+    sub.w   (PlayerX), d7
+    bpl.s   *+4
+    neg.w   d7
+    cmp.w   #$40, d7
+    bgt.s   @CantFall
+    bset.b  #OF_ACTIVE, OBJ_FLAGS(a0)
+@CantFall:
+    
+    btst.b  #OF_ACTIVE, OBJ_FLAGS(a0)   ; Falling?
+    beq.s   @NotFalling
+    ;addq.w  #4, OBJ_Y(a0)
+    
+    ;subq.w  #1, OBJ_TIMER(a0)           ; Check if we're done falling
+    ;bne.s   @StillFalling
+    ;bclr.b  #OF_ACTIVE, OBJ_FLAGS(a0)
+    ;move.w  #-JUMP_FORCE/2, OBJ_YSPEED(a0)
+    
+    move.w  OBJ_YSPEED(a0), d7
+    add.w   #ACCEL_FALL, d7
+    move.w  d7, OBJ_YSPEED(a0)
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   OBJ_Y(a0), d7
+    
+    cmp.w   OBJ_TIMER(a0), d7
+    blt.s   @NoRebounce
+    move.w  OBJ_TIMER(a0), d7
+    move.w  OBJ_YSPEED(a0), d6
+    neg.w   d6
+    asr.w   #1, d6
+    move.w  d6, OBJ_YSPEED(a0)
+@NoRebounce:
+    
+    move.w  d7, OBJ_Y(a0)
+@NotFalling:
+@StillFalling:
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawSpider
+; Draws a spider.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawSpider:
+    tst.b   OBJ_HEALTH(a0)              ; Are we fading?
+    bne.s   @NoFlicker
+    tst.b   (BlinkFlag)
+    beq.s   @NoFlicker
+    rts
+@NoFlicker:
+    
+    move.w  OBJ_X(a0), d0               ; Get sprite coordinates
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    lea     (SprSpider_2), a6           ; Determine spider pose
+    tst.b   OBJ_HEALTH(a0)
+    beq.s   @NotFallen
+    cmp.w   #$C0, OBJ_YSPEED(a0)
+    bge.s   @NotFallen
+    lea     (SprSpider_1), a6
+@NotFallen:
+    
+    move.w  #VramSpider, d2             ; Put sprite on screen
+    jsr     (AddMetasprite).w
+    
+    tst.b   OBJ_HEALTH(a0)              ; Don't draw the rope when dead
+    bne.s   @HasRope
+    rts
+@HasRope:
+    
+    move.w  d1, d4                      ; Determine where the rope ends
+    sub.w   #$10, d4
+    
+    move.w  OBJ_X(a0), d0               ; Determine where the rope starts
+    move.w  OBJ_YSPAWN(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    subq.w  #4, d0
+    sub.w   #$10, d1
+    
+    move.w  #VramSpiderRope, d2         ; Draw the rope
+    moveq   #%0011, d3
+@Rope:
+    jsr     (AddSprite).w
+    add.w   #$20, d1
+    cmp.w   d4, d1
+    blt.s   @Rope
+    
+    rts                                 ; End of subroutine

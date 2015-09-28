@@ -1,0 +1,10 @@
+;****************************************************************************
+; SFX for when Merlina hits something with her broom.
+;****************************************************************************
+
+    ESF_Lock        ESF_PCM
+    
+    ESF_NoteOn      ESF_PCM, $06
+    ESF_Delay       9
+    
+    ESF_Stop

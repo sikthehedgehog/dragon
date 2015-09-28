@@ -1,0 +1,94 @@
+;****************************************************************************
+; Build settings
+;****************************************************************************
+
+DEBUG_INIT:         equ 0       ; Simulate some real hardware conditions
+DEBUG_MENU:         equ 1       ; Enable the debug menu
+DEBUG_CONTROLS:     equ 1       ; Enable debug-only controls
+DEBUG_HUD:          equ 1       ; Show debug info in the HUD
+
+LANG_EN:            equ 1       ; Set this to make an English build
+LANG_ES:            equ 0       ; Set this to make a Spanish build
+
+;****************************************************************************
+; Game tweaks
+;****************************************************************************
+
+SCORE_BROOM:        equ $100        ; Killing an enemy with the broom
+SCORE_MAGIC:        equ $200        ; Killing an enemy with magic
+SCORE_FREEZE:       equ $25         ; Bella freezes an enemy
+SCORE_ITEM:         equ $200        ; Getting an item
+
+;****************************************************************************
+; Program source code
+;****************************************************************************
+
+    include "src-68k/macros.68k"        ; Some useful macros
+    include "src-68k/header.68k"        ; ROM header
+    
+    include "src-68k/main.68k"          ; Entry point, etc.
+    include "src-68k/joypad.68k"        ; Joypad reading
+    include "src-68k/video.68k"         ; Video hardware code
+    include "src-68k/hblank.68k"        ; Raster effect routines
+    include "src-68k/sound.68k"         ; Sound hardware code
+    include "src-68k/decompress.68k"    ; Decompression subroutines
+    
+    include "src-68k/text.68k"          ; String manipulation
+    include "src-68k/menu.68k"          ; Handler for all menus
+    
+    if *<=$8000
+    inform 0, "Kernel size: %d bytes (%d.%d%s)", *, (*)*100/$8000, (*)*1000/$8000%10, "%"
+    else
+    inform 3, "Kernel is too large! (%d bytes)", *
+    endc
+    
+    include "src-68k/echo.68k"          ; Echo sound engine
+    include "src-68k/esf.68k"           ; Echo stream macros
+    
+    include "src-68k/error.68k"         ; Crash screen
+    include "src-68k/title.68k"         ; Title screen
+    include "src-68k/options.68k"       ; Options menu
+    include "src-68k/debug_menu.68k"    ; Debug menu
+    
+    include "src-68k/ingame.68k"        ; In-game main loop
+    include "src-68k/hud.68k"           ; Drawing the HUD
+    include "src-68k/stage.68k"         ; Handles stage data
+    include "src-68k/player.68k"        ; Player behavior
+    include "src-68k/objects.68k"       ; Object manager
+    include "src-68k/slope.68k"         ; Slope platforms
+    include "src-68k/door.68k"          ; Door behavior
+    include "src-68k/spikeball.68k"     ; Spikeball behavior
+    include "src-68k/ghost.68k"         ; Ghost behavior
+    include "src-68k/spider.68k"        ; Spider behavior
+    
+    include "src-68k/variables.68k"     ; Variable declarations
+
+;****************************************************************************
+; Game graphics
+;****************************************************************************
+
+    include "data/palettes.68k"         ; Palettes
+    
+    include "data/merlina.68k"          ; Merlina's sprites
+    include "data/enemies.68k"          ; Enemy sprites
+    include "data/tileset.68k"          ; Level tileset
+    include "data/ingame.68k"           ; Common graphics in-game
+    
+    include "data/menu.68k"             ; Menu graphics
+    include "data/error.68k"            ; Crash screen font
+
+;****************************************************************************
+; Other game data
+;****************************************************************************
+
+    include "data/stages.68k"           ; All stage layouts
+    include "data/text.68k"             ; Data needed to display text
+    
+    include "data/sound.68k"            ; Sound data
+
+;****************************************************************************
+; Random stats
+;****************************************************************************
+
+    inform 0, "ROM size: %d bytes (%d.%dKB)", *, (*)/1024, (*)*10/1024%10
+    inform 0, "VRAM usage in-game: %d tiles (%d.%d%s)", VusageIngame, VusageIngame*100/1536, VusageIngame*1000/1536%10, "%"

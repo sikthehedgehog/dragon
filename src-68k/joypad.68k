@@ -1,0 +1,50 @@
+;****************************************************************************
+; InitJoypad
+; Initializes the joypad.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+InitJoypad:
+    move.b  #$40, ($A10009)             ; Initialize ports
+    move.b  #$40, ($A10003)
+    
+    clr.b   (JoyHold)                   ; Clear cached status
+    clr.b   (JoyPress)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; ReadJoypad
+; Updates the joypad status.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+ReadJoypad:
+    lea     ($A10003), a6               ; Joypad port
+    lea     (JoyHold), a5               ; Joypad status
+    
+    move.b  #$40, (a6)                  ; Read joypad buttons
+    nop
+    nop
+    move.b  (a6), d7
+    move.b  #$00, (a6)
+    nop
+    nop
+    move.b  (a6), d6
+    
+    and.b   #$3F, d7                    ; Put all bits together and such
+    and.b   #$30, d6
+    add.b   d6, d6
+    add.b   d6, d6
+    or.b    d6, d7
+    not.b   d7
+    
+    move.b  (a5), d6                    ; Store new joypad status
+    move.b  d7, (a5)+
+    not.b   d6
+    and.b   d7, d6
+    move.b  d6, (a5)+
+    
+    rts                                 ; End of subroutine

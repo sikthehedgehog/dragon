@@ -1,0 +1,578 @@
+;****************************************************************************
+; InitStage
+; Initializes the stage. It preprocesses the tilemap, loads anything the
+; current stage may need and parses its object list.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+InitStage:
+    bsr     ClearObjects                ; Remove all objects
+    
+    moveq   #0, d7                      ; Get address of stage data
+    move.b  (Stage), d7
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     (StageList), a0
+    move.l  (a0,d7.w), a0
+    
+    moveq   #0, d0                      ; Get stage dimensions
+    moveq   #0, d1
+    move.b  (a0)+, d0
+    move.b  (a0)+, d1
+    move.b  d0, (MapWidth)
+    move.b  d1, (MapHeight)
+    
+    moveq   #0, d7                      ; Determine the default camera limits
+    moveq   #0, d6
+    move.b  d0, d7
+    move.b  d1, d6
+    asl.w   #5, d7
+    asl.w   #5, d6
+    sub.w   #320, d7
+    sub.w   #224, d6
+    clr.w   (CameraLeft)
+    clr.w   (CameraTop)
+    move.w  d7, (CameraRight)
+    move.w  d6, (CameraBottom)
+    
+    moveq   #0, d7                      ; Compute row offset look-up table
+    move.w  d1, d6                        ; (so we don't have to resort to
+    subq.w  #1, d6                        ; multiplication later on)
+    lea     (MapOffsets), a6
+@InitOffsets:
+    move.w  d7, (a6)+
+    add.w   d0, d7
+    dbf     d6, @InitOffsets
+    
+    move.l  a0, (TileAddr)              ; Store the pointers to the two maps
+    lea     (a0,d7.w), a0                 ; (and skip over them)
+    move.l  a0, (CollAddr)
+    lea     (a0,d7.w), a0
+    
+    move.w  (a0)+, (PlayerX)            ; Get spawn position
+    move.w  (a0)+, (PlayerY)
+    
+    move.l  a0, a6                      ; Load the palettes for this stage
+    move.l  (a6)+, a0
+    move.l  (a6)+, a1
+    move.l  (a6)+, a2
+    move.l  (a6)+, a3
+    move.l  a6, -(sp)
+    jsr     (SetAllPalettes).w
+    move.l  (sp)+, a0
+    
+    move.w  (a0)+, (WaterHeight)        ; Store the water's height
+    
+    lea     (HBlankSAT), a6             ; Set up raster effect for water
+    jsr     (LoadHBlank).w
+    
+@ObjLoop:                               ; Add all objects in this stage
+    move.w  (a0)+, d5
+    beq.s   @ObjDone
+    move.w  (a0)+, d7
+    move.w  (a0)+, d6
+    bsr     AddObject
+    bra.s   @ObjLoop
+@ObjDone:
+    
+    bsr     UpdateCamera                ; Adjust the camera to its initial
+                                          ; position for the initial drawing
+    
+    ; Fall through to RedrawStage...
+
+;****************************************************************************
+; RedrawStage
+; Redraws the entire plane A with the stage data. Normally just used when
+; starting a new stage (since that stage was never drawn yet). Ideally called
+; with display off, since it forces DMAs to execute.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+RedrawStage:
+    move.w  #$8F80, ($C00004)           ; We need to draw vertically
+    
+    move.l  (TileAddr), a0              ; Retrieve pointer to first tile
+    move.w  (CameraX), d7
+    move.w  (CameraY), d6
+    asr.w   #5, d7
+    asr.w   #5, d6
+    add.w   d6, d6
+    lea     (MapOffsets), a6
+    add.w   (a6,d6.w), d7
+    lea     (a0,d7.w), a0
+    
+    lea     (TilesetMappings), a1       ; Data for the tileset mappings
+    lea     (ColBuffer), a2             ; Where the data will be drawn
+    
+    move.w  (CameraY), d2               ; Initial offsets
+    lsr.w   #2, d2
+    move.w  (CameraX), d3
+    and.w   #$0F<<5, d3
+    lsr.w   #2, d3
+    
+    moveq   #11-1, d1                   ; Go through all columns
+@XLoop:
+    
+    moveq   #8-1, d0                    ; Go through all tiles in this column
+@YLoop:
+    moveq   #0, d7                      ; Get mapping for this tile
+    move.b  (a0), d7
+    move.w  (MapOffsets+2), d6
+    lea     (a0,d6.w), a0
+    lsl.w   #5, d7
+    lea     (a1,d7.w), a6
+    
+    and.w   #$07<<3, d2                 ; Determine address to draw within
+    lea     (a2,d2.w), a5                 ; the buffer
+    add.w   #1<<3, d2
+    
+    rept    4                           ; Copy mapping into the buffer
+    move.w  (a6)+, (a5)+
+    move.w  (a6)+, $3E(a5)
+    move.w  (a6)+, $7E(a5)
+    move.w  (a6)+, $BE(a5)
+    endr
+    
+    dbf     d0, @YLoop                  ; Go for next tile
+    
+    move.w  #$C000, d7                  ; Determine base address for this
+    add.w   d3, d7                        ; column
+    addq.w  #8, d3
+    and.w   #$7F, d3
+    
+    move.w  d7, d6                      ; Calculate addresses for remaining
+    move.w  d7, d5                        ; tiles in the column
+    move.w  d7, d4
+    addq.w  #2, d6
+    addq.w  #4, d5
+    addq.w  #6, d4
+    
+    move.l  (DMABufEnd), a6             ; Flush the column
+    DMA2VRAM_D ColBuffer+0*$40, d7, $40, a6
+    DMA2VRAM_D ColBuffer+1*$40, d6, $40, a6
+    DMA2VRAM_D ColBuffer+2*$40, d5, $40, a6
+    DMA2VRAM_D ColBuffer+3*$40, d4, $40, a6
+    move.l  a6, (DMABufEnd)
+    jsr     (FlushDMABuffer).w
+    
+    move.w  (MapOffsets+2), d7          ; Go for next column
+    lsl.w   #3, d7
+    neg.w   d7
+    lea     1(a0,d7.w), a0
+    dbf     d1, @XLoop
+    
+    move.w  #$8F02, ($C00004)           ; Restore autoincrement
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; ScrollStage
+; Scrolls the stage around and updates tiles as needed.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+ScrollStage:
+    move.w  (CameraX), d0               ; Old position of the camera, for
+    move.w  (CameraY), d1                 ; reference later
+    bsr     UpdateCamera                ; Update position of the camera
+    
+    move.w  d0, d6                      ; Check if we scrolled far enough
+    move.w  (CameraX), d7                 ; horizontally
+    and.w   #$FFE0, d7
+    and.w   #$FFE0, d6
+    cmp.w   d6, d7
+    beq.s   @NoHorMove
+    blt.s   @MovedLeft
+    
+@MovedRight:                            ; Redraw column at the right?
+    move.w  (CameraX), d7
+    move.w  (CameraY), d6
+    asr.w   #5, d7
+    asr.w   #5, d6
+    add.w   #10, d7
+    bsr     RedrawCol
+    bra.s   @NoHorMove
+    
+@MovedLeft:                             ; Redraw column at the left?
+    move.w  (CameraX), d7
+    move.w  (CameraY), d6
+    asr.w   #5, d7
+    asr.w   #5, d6
+    bsr     RedrawCol
+    
+@NoHorMove:
+    move.w  d1, d6                      ; Check if we scrolled far enough
+    move.w  (CameraY), d7                 ; vertically
+    and.w   #$FFE0, d7
+    and.w   #$FFE0, d6
+    cmp.w   d6, d7
+    beq.s   @NoVerMove
+    blt.s   @MovedUp
+    
+@MovedDown:                             ; Redraw row at the bottom?
+    move.w  (CameraX), d7
+    move.w  (CameraY), d6
+    asr.w   #5, d7
+    asr.w   #5, d6
+    addq.w  #7, d6
+    bsr     RedrawRow
+    bra.s   @NoVerMove
+    
+@MovedUp:                               ; Redraw row at the top?
+    move.w  (CameraX), d7
+    move.w  (CameraY), d6
+    asr.w   #5, d7
+    asr.w   #5, d6
+    bsr     RedrawRow
+    
+@NoVerMove:
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RedrawCol
+; Redraws a column in the stage.
+;----------------------------------------------------------------------------
+; input d7.w ... X coordinate of first tile
+; input d6.w ... Y coordinate of first tile
+;----------------------------------------------------------------------------
+; breaks: all but d0-d1
+;****************************************************************************
+
+RedrawCol:
+    move.w  d7, d4                      ; We'll use this later
+    
+    move.w  d6, d5                      ; Determine where the data with the
+    add.w   d5, d5                        ; tiles is located
+    lea     (MapOffsets), a6
+    move.w  (a6,d5.w), d5
+    add.w   d7, d5
+    move.l  (TileAddr), a6
+    lea     (a6,d5.w), a6
+    
+    exg.l   d6, d7                      ; Scan all tiles to redraw
+    moveq   #8-1, d6
+    lsl.w   #3, d7
+@Loop:
+    and.w   #$07<<3, d7                 ; Get address within the buffer to
+    lea     (ColBuffer), a5               ; draw the next tile
+    lea     (a5,d7.w), a5
+    
+    moveq   #0, d5                      ; Get mappings for this tile
+    move.b  (a6), d5
+    adda.w  (MapOffsets+2), a6
+    lsl.w   #5, d5
+    lea     (TilesetMappings), a4
+    lea     (a4,d5.w), a4
+    
+    rept    4                           ; Copy tile into the buffer
+    move.w  (a4)+, (a5)+
+    move.w  (a4)+, $3E(a5)
+    move.w  (a4)+, $7E(a5)
+    move.w  (a4)+, $BE(a5)
+    endr
+    
+    addq.w  #8, d7                      ; Go for next tile
+    dbf     d6, @Loop
+    
+    and.w   #$0F, d4                    ; Calculate address where the column
+    lsl.w   #3, d4                        ; shall be drawn onto
+    add.w   #$C000, d4
+    
+    move.w  d4, d5                      ; Calculate addresses for the
+    move.w  d4, d6                        ; remaining column rows
+    move.w  d4, d7
+    addq.w  #2, d5
+    addq.w  #4, d6
+    addq.w  #6, d7
+    
+    move.l  (DMABufEnd), a6             ; Issue DMA
+    move.w  #$8F80, (a6)+
+    DMA2VRAM_D ColBuffer+0*$40, d4, $40, a6
+    DMA2VRAM_D ColBuffer+1*$40, d5, $40, a6
+    DMA2VRAM_D ColBuffer+2*$40, d6, $40, a6
+    DMA2VRAM_D ColBuffer+3*$40, d7, $40, a6
+    move.w  #$8F02, (a6)+
+    move.l  a6, (DMABufEnd)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RedrawRow
+; Redraws a row in the stage.
+;----------------------------------------------------------------------------
+; input d7.w ... X coordinate of first tile
+; input d6.w ... Y coordinate of first tile
+;----------------------------------------------------------------------------
+; breaks: all but d0-d1
+;****************************************************************************
+
+RedrawRow:
+    move.w  d6, d4                      ; We'll use this later
+    
+    move.w  d6, d5                      ; Determine where the data with the
+    add.w   d5, d5                        ; tiles is located
+    lea     (MapOffsets), a6
+    move.w  (a6,d5.w), d5
+    add.w   d7, d5
+    move.l  (TileAddr), a6
+    lea     (a6,d5.w), a6
+    
+    moveq   #11-1, d6                   ; Scan all tiles to redraw
+    lsl.w   #3, d7
+@Loop:
+    and.w   #$0F<<3, d7                 ; Get address within the buffer to
+    lea     (RowBuffer), a5               ; draw the next tile
+    lea     (a5,d7.w), a5
+    
+    moveq   #0, d5                      ; Get mappings for this tile
+    move.b  (a6)+, d5
+    lsl.w   #5, d5
+    lea     (TilesetMappings), a4
+    lea     (a4,d5.w), a4
+    
+    move.l  (a4)+, (a5)+                ; Copy tile into the buffer
+    move.l  (a4)+, (a5)+
+    lea     $80-8(a5), a5
+    move.l  (a4)+, (a5)+
+    move.l  (a4)+, (a5)+
+    lea     $80-8(a5), a5
+    move.l  (a4)+, (a5)+
+    move.l  (a4)+, (a5)+
+    lea     $80-8(a5), a5
+    move.l  (a4)+, (a5)+
+    move.l  (a4)+, (a5)+
+    
+    addq.w  #8, d7                      ; Go for next tile
+    dbf     d6, @Loop
+    
+    and.w   #$07, d4                    ; Calculate address where the row
+    lsl.w   #8, d4                        ; shall be drawn onto
+    add.w   d4, d4
+    add.w   #$C000, d4
+    
+    move.w  d4, d5                      ; Calculate addresses for the
+    move.w  d4, d6                        ; remaining cell rows
+    move.w  d4, d7
+    add.w   #$80, d5
+    add.w   #$100, d6
+    add.w   #$180, d7
+    
+    move.l  (DMABufEnd), a6             ; Issue the DMA
+    DMA2VRAM_D RowBuffer+0*$80, d4, $80, a6
+    DMA2VRAM_D RowBuffer+1*$80, d5, $80, a6
+    DMA2VRAM_D RowBuffer+2*$80, d6, $80, a6
+    DMA2VRAM_D RowBuffer+3*$80, d7, $80, a6
+    move.l  a6, (DMABufEnd)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; UpdateCamera
+; Updates the position of the camera to follow the player.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+UpdateCamera:
+    move.w  (PlayerX), d7               ; Calculate ideal position for the
+    move.w  (PlayerY), d6                 ; camera
+    sub.w   #160, d7
+    sub.w   #112, d6
+    
+    move.w  (CameraRight), d5           ; Too far to the right?
+    cmp.w   d5, d7
+    ble.s   *+4
+    move.w  d5, d7
+    
+    move.w  (CameraLeft), d5            ; Too far to the left?
+    cmp.w   d5, d7
+    bge.s   *+4
+    move.w  d5, d7
+    
+    move.w  (CameraBottom), d5          ; Too far to the bottom?
+    cmp.w   d5, d6
+    ble.s   *+4
+    move.w  d5, d6
+    
+    move.w  (CameraTop), d5             ; Too far to the top?
+    cmp.w   d5, d6
+    bge.s   *+4
+    move.w  d5, d6
+    
+    move.w  d7, (CameraX)               ; Store new position
+    move.w  d6, (CameraY)
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; TileAt
+; Retrieves the information for the tile at the specified coordinates.
+; input d7.w .... X coordinate (in pixels)
+; input d6.w .... Y coordinate (in pixels)
+;----------------------------------------------------------------------------
+; output d7.b ... Graphic type
+; output d6.b ... Collision type
+;----------------------------------------------------------------------------
+; breaks: d5, a4-a6
+;****************************************************************************
+
+TileAt:
+    asr.w   #5, d7                      ; Convert pixel coordinates to tile
+    asr.w   #5, d6                        ; coordinates first
+    
+    tst.w   d6                          ; Going too high can happen, so treat
+    bge.s   @NotTooHigh                   ; it like an extension of the map
+    moveq   #0, d6
+@NotTooHigh:
+    
+    cmp.b   (MapHeight), d6             ; Also going too low, in which case
+    blt.s   @NotTooLow                    ; we should throw things into
+    moveq   #0, d7                        ; emptiness (to allow pits to work)
+    moveq   #0, d6
+    rts
+@NotTooLow:
+    
+    add.w   d6, d6                      ; Determine offset within the maps
+    lea     (MapOffsets), a6              ; for this tile
+    add.w   (a6,d6.w), d7
+    
+    move.l  (CollAddr), a6              ; Now fetch the tile data
+    move.b  (a6,d7.w), d6
+    move.l  (TileAddr), a6
+    move.b  (a6,d7.w), d7
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; UpdateStageAnim
+; Updates all tileset animations.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+UpdateStageAnim:
+    move.l  (DMABufEnd), a6             ; Start with the DMA queuing
+    
+    moveq   #0, d7                      ; Candle animation
+    move.w  (Anim), d7
+    and.w   #$03<<2, d7
+    lsl.w   #7-2, d7
+    add.l   #GfxCandle, d7
+    DMA2VRAM_S d7, VramCandle*$20, 4*$20, a6
+    
+    moveq   #0, d7                      ; Chains
+    move.w  (Anim), d7
+    and.w   #$1F, d7
+    add.w   d7, d7
+    add.w   d7, d7
+    move.l  d7, d5
+    eor.w   #$1F<<2, d5
+    add.l   #GfxChain, d7
+    add.l   #GfxChain, d5
+    move.l  d7, d6
+    move.l  d5, d4
+    add.l   #8*$20, d6
+    add.l   #8*$20, d4
+    DMA2VRAM_S d7, (VramChain+8)*$20, 4*$20, a6
+    DMA2VRAM_S d6, (VramChain+12)*$20, 4*$20, a6
+    DMA2VRAM_S d5, (VramChain)*$20, 4*$20, a6
+    DMA2VRAM_S d4, (VramChain+4)*$20, 4*$20, a6
+    
+    move.l  a6, (DMABufEnd)             ; Done with the DMAs
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; SwitchStage
+; Switches to the specified stage.
+;----------------------------------------------------------------------------
+; input d7.b ... Stage number
+;----------------------------------------------------------------------------
+; notes: doesn't return
+;****************************************************************************
+
+SwitchStage:
+    move.b  d7, (Stage)                 ; Store new stage ID
+    
+    move.w  #$8AFF, ($C00004)           ; Undo raster effect damage
+    move.w  #$8578, ($C00004)
+    
+    jsr     (FadeOut).w                 ; Turn off the screen
+    move.l  (0).w, sp                   ; Load the new stage
+    bra     InGame
+
+;****************************************************************************
+; SplitWater
+; Generates the alternate sprite table used to make sprites look underwater.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+SplitWater:
+    lea     (SpriteBuf), a6             ; Original sprite table
+    lea     (AltSpriteBuf), a5          ; Underwater sprite table
+    
+    moveq   #0, d7                      ; Get number of sprites (total and
+    moveq   #0, d6                        ; in-world)
+    move.b  (NumSprites), d7
+    move.b  (GameSprites), d6
+    
+    subq.w  #1, d6                      ; First copy the HUD as-is
+@HUDLoop:
+    move.w  (a6)+, (a5)+
+    move.w  (a6)+, (a5)+
+    move.w  (a6)+, (a5)+
+    move.w  (a6)+, (a5)+
+    subq.w  #1, d7
+    dbf     d6, @HUDLoop
+    
+    subq.w  #1, d7
+    blt.s   @NoSprites
+@WorldLoop:                             ; Now copy the objects but ensuring
+    move.w  (a6)+, (a5)+                  ; they're using their underwater
+    move.w  (a6)+, (a5)+                  ; palettes (unless they're high
+    move.w  (a6)+, d6                     ; priority, in which case we assume
+    bmi.s   @NotInside                    ; they don't get submerged)
+    or.w    #$4000, d6
+@NotInside:
+    move.w  d6, (a5)+
+    move.w  (a6)+, (a5)+
+    dbf     d7, @WorldLoop
+@NoSprites:
+    
+    move.l  (DMABufEnd), a6             ; Tell VDP to upload the alt table
+    DMA2VRAM AltSpriteBuf, $F400, 4*$80*2, (a6)+
+    move.l  a6, (DMABufEnd)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; SetupWater
+; Sets up the water raster effect each vblank.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+SetupWater:
+    move.w  #$8578, ($C00004)           ; Undo raster effect damage
+    
+    move.w  (WaterHeight), d7           ; Determine height of the water on
+    sub.w   (CameraY), d7                 ; screen
+    subq.w  #1, d7
+    
+    bgt.s   @NotTooHigh                 ; Too high to bother?
+    move.w  #$857A, ($C00004)
+    move.w  #$8AFF, ($C00004)
+    rts
+@NotTooHigh:
+    
+    cmp.w   #224, d7                    ; Too low to draw it?
+    blt.s   @NotTooLow
+    move.w  #$8AFF, ($C00004)
+    rts
+@NotTooLow: 
+    
+    or.w    #$8A00, d7                  ; Set up the raster effect for the
+    move.w  d7, ($C00004)                 ; sprites to happen there
+    
+    rts                                 ; End of subroutine

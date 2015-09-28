@@ -1,0 +1,218 @@
+;****************************************************************************
+; Some tweakable parameters to the object manager
+;****************************************************************************
+
+MAX_OBJ:        equ $40     ; How many objects we'll allow in a room
+
+;****************************************************************************
+; OBJ_*
+; Fields making up an object
+;****************************************************************************
+
+                rsreset
+OBJ_TYPE:       rs.b 1      ; Object type
+OBJ_FLAGS:      rs.b 1      ; Status flags
+
+OBJ_X:          rs.w 1      ; Horizontal position
+OBJ_Y:          rs.w 1      ; Vertical position
+OBJ_XSPEED:     rs.w 1      ; Horizontal speed
+OBJ_YSPEED:     rs.w 1      ; Vertical speed
+OBJ_XSPAWN:     rs.w 1      ; Horizontal position of spawn point
+OBJ_YSPAWN:     rs.w 1      ; Vertical position of spawn point
+
+OBJ_BOXX1:      rs.w 1      ; Hitbox left side (relative)
+OBJ_BOXY1:      rs.w 1      ; Hitbox top side (relative)
+OBJ_BOXX2:      rs.w 1      ; Hitbox right side (relative)
+OBJ_BOXY2:      rs.w 1      ; Hitbox bottom side (relative)
+
+OBJ_TIMER:      rs.w 1      ; Generic timer
+OBJ_HEALTH:     rs.b 1      ; Health points left
+                rs.b 1
+
+OBJ_SIZE:       rs.b 0      ; Size of an object entry
+
+;****************************************************************************
+; OF_*
+; Status flags for an object
+;****************************************************************************
+
+                rsreset
+OF_DIR:         rs.b 1      ; Which direction it's looking at
+OF_ACTIVE:      rs.b 1      ; This object is in active mode
+
+;****************************************************************************
+; OBJTYPE_*
+; Possible object types
+;****************************************************************************
+
+                    rsreset
+                    rs.b 1      ; No object
+OBJTYPE_SLOPE:      rs.b 1      ; Slope
+OBJTYPE_DOOR:       rs.b 1      ; Door
+OBJTYPE_SPIKEBALL:  rs.b 1      ; Spikeball
+OBJTYPE_GHOST:      rs.b 1      ; Ghost
+OBJTYPE_SPIDER:     rs.b 1      ; Spider
+
+;****************************************************************************
+; ClearObjects
+; Clears the object list (wipes all objects from it).
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+ClearObjects:
+    lea     (ObjList), a6               ; Remove all entries
+    move.w  #MAX_OBJ-1, d7
+@Loop:
+    clr.b   (a6)
+    lea     OBJ_SIZE(a6), a6
+    dbf     d7, @Loop
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; AddObject
+; Adds a new object.
+;----------------------------------------------------------------------------
+; input d7.w .... X coordinate
+; input d6.w .... Y coordinate
+; input d5.w .... Object type (low byte), object flags (high byte)
+;----------------------------------------------------------------------------
+; output a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a5
+;****************************************************************************
+
+AddObject:
+    lea     (ObjList), a6               ; Look for an empty slot
+@Loop:
+    tst.b   (a6)
+    beq.s   @Found
+    lea     OBJ_SIZE(a6), a6
+    bra.s   @Loop
+@Found:
+    
+    rol.w   #8, d5                      ; Initialize status of this object
+    move.w  d5, OBJ_TYPE(a6)
+    move.w  d7, OBJ_X(a6)
+    move.w  d6, OBJ_Y(a6)
+    clr.w   OBJ_XSPEED(a6)
+    clr.w   OBJ_YSPEED(a6)
+    move.w  d7, OBJ_XSPAWN(a6)
+    move.w  d6, OBJ_YSPAWN(a6)
+    clr.w   OBJ_BOXX1(a6)
+    clr.w   OBJ_BOXY1(a6)
+    clr.w   OBJ_BOXX2(a6)
+    clr.w   OBJ_BOXY2(a6)
+    clr.w   OBJ_TIMER(a6)
+    move.b  #1, OBJ_HEALTH(a6)
+    
+    lsr.w   #8, d5                      ; Call the initialization subroutine
+    add.w   d5, d5                        ; (for type-specific init)
+    add.w   d5, d5
+    lea     @Func(pc), a5
+    move.l  (a5,d5.w), a5
+    jsr     (a5)
+    
+@Null:
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Func:
+    dc.l    @Null
+    dc.l    @Null                       ; OBJTYPE_SLOPE
+    dc.l    InitDoor                    ; OBJTYPE_DOOR
+    dc.l    InitSpikeball               ; OBJTYPE_SPIKEBALL
+    dc.l    InitGhost                   ; OBJTYPE_GHOST
+    dc.l    InitSpider                  ; OBJTYPE_SPIDER
+
+;****************************************************************************
+; DestroySelf
+; Destroys the currently running object, removing its slot from the list.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; notes: you should use BRA/JMP into this.
+;****************************************************************************
+
+DestroySelf:
+    clr.b   OBJ_TYPE(a0)                ; Clear the slot
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunAllObjects
+; Executes the logic for all objects in the room.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+RunAllObjects:
+    lea     @Table(pc), a6
+    bsr     LoopAllObjects
+@Null:
+    rts
+
+;----------------------------------------------------------------------------
+
+@Table:
+    dc.l    @Null
+    dc.l    RunSlope                    ; OBJTYPE_SLOPE
+    dc.l    RunDoor                     ; OBJTYPE_DOOR
+    dc.l    RunSpikeball                ; OBJTYPE_SPIKEBALL
+    dc.l    RunGhost                    ; OBJTYPE_GHOST
+    dc.l    RunSpider                   ; OBJTYPE_SPIDER
+
+;****************************************************************************
+; DrawAllObjects
+; Draws all the objects in the room.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+DrawAllObjects:
+    lea     @Table(pc), a6
+    bsr     LoopAllObjects
+@Null:
+    rts
+
+;----------------------------------------------------------------------------
+
+@Table:
+    dc.l    @Null
+    dc.l    @Null                       ; OBJTYPE_SLOPE
+    dc.l    DrawDoor                    ; OBJTYPE_DOOR
+    dc.l    DrawSpikeball               ; OBJTYPE_SPIKEBALL
+    dc.l    DrawGhost                   ; OBJTYPE_GHOST
+    dc.l    DrawSpider                  ; OBJTYPE_SPIDER
+
+;****************************************************************************
+; LoopAllObjects
+; Actual loop for RunAllObjects and DrawAllObjects
+;----------------------------------------------------------------------------
+; input a6.l ... Function list
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+LoopAllObjects:
+    lea     (ObjList), a0               ; Go through all objects
+    move.w  #MAX_OBJ-1, d7
+@Loop:
+    move.w  d7, -(sp)
+    move.l  a6, -(sp)
+    
+    moveq   #0, d6                      ; Determine handler for this object
+    move.b  OBJ_TYPE(a0), d6
+    add.w   d6, d6
+    add.w   d6, d6
+    move.l  (a6,d6.w), a6
+    
+    jsr     (a6)                        ; Run the handler
+    
+    move.l  (sp)+, a6                   ; Go for next object
+    move.w  (sp)+, d7
+    lea     OBJ_SIZE(a0), a0
+    dbf     d7, @Loop
+    
+    rts                                 ; End of subroutine

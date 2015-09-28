@@ -1,0 +1,90 @@
+;****************************************************************************
+; InitSound
+; Initializes the sound engine.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+InitSound:
+    lea     (InstrumentList), a0        ; Initialize sound engine
+    bsr     Echo_Init
+    
+    clr.b   (BGMToPlay)                 ; Reset playback status
+    clr.b   (SFXToPlay)
+    clr.b   (CurrentSFX)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; UpdateSound
+; Plays all sounds that have to be played and such.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+UpdateSound:
+    movem.l d0-d1/a0-a1, -(sp)          ; Blame Echo for this...
+    
+    bsr     Echo_GetStatus              ; Check if a SFX is still playing
+    btst.l  #0, d0                        ; (if not we can let lower priority
+    bne.s   @SFXPlaying                   ; SFXs to play now)
+    clr.b   (CurrentSFX)
+@SFXPlaying:
+    
+    moveq   #0, d7                      ; Play a BGM?
+    move.b  (BGMToPlay), d7
+    beq.s   @NoBGM
+    clr.b   (BGMToPlay)
+    
+    subq.w  #1, d7                      ; Tell Echo to play it then
+    add.w   d7, d7                        ; Sorry, SFXs will be delayed by
+    add.w   d7, d7                        ; one frame! (nobody will notice)
+    lea     (BgmList), a6
+    move.l  (a6,d7.w), a0
+    bsr     Echo_PlayBGM
+    bra.s   @End
+@NoBGM:
+    
+    moveq   #0, d7                      ; Play a SFX?
+    move.b  (SFXToPlay), d7
+    beq.s   @NoSFX
+    clr.b   (SFXToPlay)
+    
+    subq.w  #1, d7                      ; Tell Echo to play it then
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     (SfxList), a6
+    move.l  (a6,d7.w), a0
+    bsr     Echo_PlaySFX
+@NoSFX:
+    
+@End:
+    movem.l (sp)+, d0-d1/a0-a1          ; Restore clobbered registers
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; PlayBGM
+; Plays the specified BGM.
+;----------------------------------------------------------------------------
+; input d7.b ... BGM ID
+;****************************************************************************
+
+PlayBGM:
+    move.b  d7, (BGMToPlay)             ; Just play it
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; PlaySFX
+; Plays the specified SFX.
+;----------------------------------------------------------------------------
+; input d7.b ... BGM ID
+;****************************************************************************
+
+PlaySFX:
+    cmp.b   (CurrentSFX), d7            ; Only play SFX if there isn't one
+    bls.s   @Skip                         ; with higher priority playing
+    move.b  d7, (CurrentSFX)              ; (priority is based on ID)
+    move.b  d7, (SFXToPlay)
+    
+@Skip:
+    rts                                 ; End of subroutine

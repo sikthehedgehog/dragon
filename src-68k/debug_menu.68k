@@ -1,0 +1,171 @@
+    if DEBUG_MENU
+
+;****************************************************************************
+; DebugMenu
+; Shows up a menu with debugging functionality (such as the starting level).
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+DebugMenu:
+    lea     @Menu(pc), a0               ; Execute menu
+    jsr     (DoMenu).w
+    rts
+
+;----------------------------------------------------------------------------
+
+@Menu:
+    dc.l    StrDebugMenu                ; Title
+    
+    dc.l    DrawStartStage              ; Starting stage
+    dc.l    IncStartStage
+    dc.l    DecStartStage
+    dc.l    0
+    
+    dc.l    DrawMuteki                  ; Invincibility
+    dc.l    ToggleMuteki
+    dc.l    ToggleMuteki
+    dc.l    0
+    
+    dc.l    DrawInfiniteLives           ; Infinite lives
+    dc.l    ToggleInfiniteLives
+    dc.l    ToggleInfiniteLives
+    dc.l    0
+    
+    dc.l    DrawSoundTest               ; Sound test (why not?)
+    dc.l    IncSoundTest
+    dc.l    DecSoundTest
+    dc.l    PlaySoundTest
+    
+    dc.l    DrawExitOptions             ; Exit (yeah, same code works)
+    dc.l    0
+    dc.l    0
+    dc.l    ExitOptions
+    
+    dc.l    0                           ; End of menu
+
+;****************************************************************************
+; DrawStartStage
+; Draws the starting stage.
+;----------------------------------------------------------------------------
+; output a6.l ... Option label (string)
+; output a5.l ... Option value (string)
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4
+;****************************************************************************
+
+DrawStartStage:
+    move.b  (SoundTest), -(sp)          ; That's some UGLY hack to reuse code
+    move.b  (Stage), (SoundTest)
+    bsr     DrawSoundTest
+    move.b  (sp)+, (SoundTest)
+    
+    lea     (StrStartingStage), a6      ; Get label
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; IncStartStage, DecStartStage
+; Increment and decrement the starting stage, respectively.
+;****************************************************************************
+
+IncStartStage:
+    btst.b  #6, (JoyHold)
+    bne.s   @AddTen
+    addq.b  #1, (Stage)
+    rts
+@AddTen:
+    add.b   #10, (Stage)
+    rts
+
+DecStartStage:
+    btst.b  #6, (JoyHold)
+    bne.s   @SubTen
+    subq.b  #1, (Stage)
+    rts
+@SubTen:
+    sub.b   #10, (Stage)
+    rts
+
+;****************************************************************************
+; DrawMuteki
+; Draws the invincibility setting.
+;----------------------------------------------------------------------------
+; output a6.l ... Option label (string)
+; output a5.l ... Option value (string)
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4
+;****************************************************************************
+
+DrawMuteki:
+    btst.b  #CH_MUTEKI, (Cheats)        ; Get setting
+    sne.b   d7
+    ext.w   d7
+    neg.w   d7
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     @Table(pc), a5
+    move.l  (a5,d7.w), a5
+    
+    lea     (StrInvincibility), a6      ; Get label
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Table:
+    dc.l    StrNo
+    dc.l    StrYes
+
+;****************************************************************************
+; ToggleMuteki
+; Toggles the invincibility cheat.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+ToggleMuteki:
+    bchg.b  #CH_MUTEKI, (Cheats)
+    rts
+
+;****************************************************************************
+; DrawInfiniteLives
+; Draws the infinite lives setting.
+;----------------------------------------------------------------------------
+; output a6.l ... Option label (string)
+; output a5.l ... Option value (string)
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4
+;****************************************************************************
+
+DrawInfiniteLives:
+    btst.b  #CH_LIVES, (Cheats)         ; Get setting
+    sne.b   d7
+    ext.w   d7
+    neg.w   d7
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     @Table(pc), a5
+    move.l  (a5,d7.w), a5
+    
+    lea     (StrInfiniteLives), a6      ; Get label
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Table:
+    dc.l    StrNo
+    dc.l    StrYes
+
+;****************************************************************************
+; ToggleInfiniteLives
+; Toggles the infinite lives cheat.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+ToggleInfiniteLives:
+    bchg.b  #CH_LIVES, (Cheats)
+    rts
+
+;****************************************************************************
+
+    endc

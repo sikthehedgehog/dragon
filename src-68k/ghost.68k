@@ -1,0 +1,243 @@
+;****************************************************************************
+; Some parameters for tweaking the ghosts
+;****************************************************************************
+
+GHOST_ACCEL:        equ $10             ; Acceleration speed
+GHOST_SPEED:        equ $200            ; Maximum speed
+GHOST_FADE:         equ $20             ; How long it takes to fade in
+GHOST_DIST:         equ $60             ; Distance at which it appears
+GHOST_DEATH:        equ 30              ; Time it takes for a ghost to die
+
+;****************************************************************************
+; InitGhost
+; Initializes a ghost's collision box.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitGhost:
+    move.w  #-$0C, OBJ_BOXX1(a6)
+    move.w  #-$0C, OBJ_BOXY1(a6)
+    move.w  #$0B, OBJ_BOXX2(a6)
+    move.w  #$0B, OBJ_BOXY2(a6)
+    rts
+
+;****************************************************************************
+; RunGhost
+; Executes the behavior for a ghost.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunGhost:
+    tst.b   OBJ_HEALTH(a0)              ; Check what we're doing
+    beq     @Dead
+    move.w  OBJ_TIMER(a0), d7
+    beq     @Waiting
+    cmp.w   #GHOST_FADE, d7
+    bhs     @Chasing
+    
+    addq.w  #1, d7                      ; Still fading in, keep waiting
+    move.w  d7, OBJ_TIMER(a0)
+    rts
+
+;----------------------------------------------------------------------------
+
+@Dead:
+    move.w  OBJ_TIMER(a0), d0           ; Update animation
+    subq.b  #1, d0
+    beq     DestroySelf
+    move.w  d0, OBJ_TIMER(a0)
+    
+    cmp.w   #GHOST_DEATH/2, d0          ; Still recoiling?
+    blo.s   @NoRecoil
+    move.w  OBJ_XSPEED(a0), d7
+    move.w  OBJ_YSPEED(a0), d6
+    add.w   (Subpixel), d7
+    add.w   (Subpixel), d6
+    asr.w   #8, d7
+    asr.w   #8, d6
+    add.w   d7, OBJ_X(a0)
+    add.w   d6, OBJ_Y(a0)
+    
+@NoRecoil:
+    rts                                 ; Still dying
+
+;----------------------------------------------------------------------------
+
+@Waiting:
+    move.w  OBJ_X(a0), d0               ; Close enough horizontally?
+    sub.w   (PlayerX), d0
+    bpl.s   *+4
+    neg.w   d0
+    cmp.w   #GHOST_DIST, d0
+    bgt.s   @TooFarYet
+    
+    move.w  OBJ_Y(a0), d0               ; Close enough vertically?
+    sub.w   (PlayerY), d0
+    bpl.s   *+4
+    neg.w   d0
+    cmp.w   #GHOST_DIST, d0
+    bgt.s   @TooFarYet
+    
+    move.w  #1, OBJ_TIMER(a0)           ; Start fading in
+    
+@TooFarYet:
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Chasing:
+    move.w  OBJ_X(a0), d0               ; Get current status
+    move.w  OBJ_Y(a0), d1
+    move.w  OBJ_XSPEED(a0), d2
+    move.w  OBJ_YSPEED(a0), d3
+    move.b  OBJ_FLAGS(a0), d4
+    
+    move.w  #GHOST_ACCEL, d7            ; Where to go horizontally?
+    cmp.w   (PlayerX), d0
+    ble.s   *+4
+    neg.w   d7
+    add.w   d7, d2
+    
+    move.w  #GHOST_ACCEL, d7            ; Where to go vertically?
+    cmp.w   (PlayerY), d1
+    ble.s   *+4
+    neg.w   d7
+    add.w   d7, d3
+    
+    cmp.w   #GHOST_SPEED, d2            ; Place in a speed cap
+    ble.s   *+6
+    move.w  #GHOST_SPEED, d2
+    cmp.w   #-GHOST_SPEED, d2
+    bge.s   *+6
+    move.w  #-GHOST_SPEED, d2
+    cmp.w   #GHOST_SPEED, d3
+    ble.s   *+6
+    move.w  #GHOST_SPEED, d3
+    cmp.w   #-GHOST_SPEED, d3
+    bge.s   *+6
+    move.w  #-GHOST_SPEED, d3
+    
+    move.w  d2, d7                      ; Apply momentum
+    move.w  d3, d6
+    add.w   (Subpixel), d7
+    add.w   (Subpixel), d6
+    asr.w   #8, d7
+    asr.w   #8, d6
+    add.w   d7, d0
+    add.w   d6, d1
+    
+    bclr.l  #OF_DIR, d4                 ; Which direction are we facing?
+    tst.w   d2
+    bge.s   *+6
+    bset.l  #OF_DIR, d4
+    
+    move.w  d0, OBJ_X(a0)               ; Store new status
+    move.w  d1, OBJ_Y(a0)
+    move.w  d2, OBJ_XSPEED(a0)
+    move.w  d3, OBJ_YSPEED(a0)
+    move.b  d4, OBJ_FLAGS(a0)
+    
+    move.l  a0, a6                      ; Did we get hit by the player?
+    bsr     CollidesAttack
+    tst.w   d7
+    beq.s   @NotHurt
+    
+    clr.b   OBJ_HEALTH(a0)
+    moveq   #SFX_HIT, d7
+    jsr     (PlaySFX).w
+    move.l  #SCORE_BROOM, d7
+    bsr     AddScore
+    
+    move.l  a0, a6
+    bsr     FacePlayer
+    move.b  d7, d4
+    move.w  #$300, d7
+    btst.l  #OF_DIR, d4
+    bne.s   *+4
+    neg.w   d7
+    move.w  d7, OBJ_XSPEED(a0)
+    move.w  #-$300, OBJ_YSPEED(a0)
+    
+    move.w  #GHOST_DEATH, OBJ_TIMER(a0)
+    rts
+@NotHurt:
+    
+    move.l  a0, a6                      ; Did we hit the player?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NoAttack
+    move.w  d0, d7
+    move.w  d1, d6
+    bsr     HurtPlayer
+@NoAttack:
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawGhost
+; Draws a ghost.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawGhost:
+    move.w  OBJ_X(a0), d0               ; Get sprite position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    tst.b   OBJ_HEALTH(a0)              ; Dying yet?
+    bne.s   @StillAlive
+    cmp.w   #GHOST_DEATH/2, OBJ_TIMER(a0)
+    bhs.s   @Dying
+    tst.b   (BlinkFlag)
+    beq.s   @Hidden
+    
+@Dying:
+    move.w  #$A01C+VramGhost, d2        ; Show the ghost recoiling
+    lea     (SprGhost_1), a6
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)
+    beq.s   *+6
+    or.w    #$0800, d2
+    jsr     (AddMetasprite).w
+    rts
+    
+@StillAlive:
+    move.w  OBJ_TIMER(a0), d7           ; Check if we're fading or waiting
+    beq.s   @Hidden
+    cmp.w   #GHOST_FADE, d7
+    bhs.s   @Chasing
+    
+    tst.b   (BlinkFlag)                 ; Blink while fading
+    beq.s   @Hidden
+    
+@Chasing:
+    move.w  #$A000+VramGhost, d2        ; Determine base tile ID
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)
+    beq.s   *+6
+    or.w    #$0800, d2
+    
+    move.w  (Anim), d7                  ; Get mapping to use
+    and.w   #$01<<3, d7
+    lsr.w   #1, d7
+    lea     @Mappings(pc), a6
+    move.l  (a6,d7.w), a6
+    
+    jsr     (AddMetasprite).w           ; Draw sprite
+    
+@Hidden:
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Mappings:
+    dc.l    SprGhost_1
+    dc.l    SprGhost_2

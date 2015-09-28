@@ -1,0 +1,186 @@
+;****************************************************************************
+; GfxMerlina_*
+; Sprite graphics for each Merlina frame.
+;****************************************************************************
+
+    incgfx  GfxMerlina_Idle1, "data/merlina/idle_1.4bpp"
+    incgfx  GfxMerlina_Idle2, "data/merlina/idle_2.4bpp"
+    incgfx  GfxMerlina_Run1, "data/merlina/run_1.4bpp"
+    incgfx  GfxMerlina_Run2, "data/merlina/run_2.4bpp"
+    incgfx  GfxMerlina_Run3, "data/merlina/run_3.4bpp"
+    incgfx  GfxMerlina_Run4, "data/merlina/run_4.4bpp"
+    incgfx  GfxMerlina_Run5, "data/merlina/run_5.4bpp"
+    incgfx  GfxMerlina_Run6, "data/merlina/run_6.4bpp"
+    incgfx  GfxMerlina_Crouch, "data/merlina/crouch.4bpp"
+    incgfx  GfxMerlina_Attack1, "data/merlina/attack_1.4bpp"
+    incgfx  GfxMerlina_Attack2, "data/merlina/attack_2.4bpp"
+    incgfx  GfxMerlina_Attack3, "data/merlina/attack_3.4bpp"
+    incgfx  GfxMerlina_Hurt, "data/merlina/hurt.4bpp"
+    incgfx  GfxMerlina_Swim1, "data/merlina/swim_1.4bpp"
+    incgfx  GfxMerlina_Swim2, "data/merlina/swim_2.4bpp"
+    incgfx  GfxMerlina_Swim3, "data/merlina/swim_3.4bpp"
+
+;****************************************************************************
+; SprMerlina_*
+; Sprite mappings for each Merlina frame. If you see any particular mapping
+; have multiple labels, that means that by pure chance those frames happened
+; to end up having the same mappings. Don't make any assumptions that those
+; labels point to the same place!
+;****************************************************************************
+
+SprMerlina_Idle1:
+SprMerlina_Idle2:
+SprMerlina_Run1:
+SprMerlina_Run4:
+    dc.w    -$18+4, -$20, 0, %1000
+    dc.w    -$20+4, -$18, 3, %1110
+    dc.w    -$18+4, $00, 15, %1001
+    dc.w    $00+4, -$20, 21, %0101
+    dc.w    $00+4, -$10, 25, %0000
+    dc.w    $00+4, -$08, 26, %0110
+    dc.w    $8000
+
+SprMerlina_Run2:
+SprMerlina_Run5:
+    dc.w    -$18+4, -$20-1, 0, %1111
+    dc.w    -$18+4, $00-1, 16, %1101
+    dc.w    -$20+4, -$18-1, 24, %0010
+    dc.w    $08+4, -$20-1, 27, %0001
+    dc.w    $08+4, -$08-1, 29, %0010
+    dc.w    $8000
+
+SprMerlina_Run3:
+SprMerlina_Run6:
+    dc.w    -$18+4, -$20, 0, %1000
+    dc.w    -$20+4, -$18, 3, %1111
+    dc.w    -$18+4, $08, 19, %1100
+    dc.w    $00+4, -$20, 23, %0101
+    dc.w    $00+4, -$10, 27, %0000
+    dc.w    $00+4, -$08, 28, %0101
+    dc.w    $8000
+
+SprMerlina_Crouch:
+    dc.w    -$18+4, -$18, 0, %1111
+    dc.w    -$18+4, $08, 16, %1100
+    dc.w    -$20+4, -$08, 20, %0001
+    dc.w    $08+4, -$18, 22, %0001
+    dc.w    $08+4, $00, 24, %0001
+    dc.w    $8000
+
+SprMerlina_Attack1:
+    dc.w    -$18+4, -$30, 0, %1111
+    dc.w    -$18+4, -$10, 16, %1111
+    dc.w    -$20+4, -$30, 32, %0000
+    dc.w    -$28+4, -$28, 33, %0100
+    dc.w    -$30+4, -$20, 35, %1010
+    dc.w    -$30+4, -$08, 44, %0000
+    dc.w    -$20+4, -$08, 45, %0000
+    dc.w    $08+4, -$20, 46, %0001
+    dc.w    $08+4, $08, 48, %0000
+    dc.w    $8000
+
+SprMerlina_Attack2:
+    dc.w    -$10+4, -$30, 0, %1100
+    dc.w    -$08+4, -$28, 4, %1100
+    dc.w    -$18+4, -$20, 8, %1001
+    dc.w    $00+4, -$20, 14, %1101
+    dc.w    -$20+4, -$10, 22, %1110
+    dc.w    $00+4, -$10, 34, %1110
+    dc.w    -$10+4, $08, 46, %1100
+    dc.w    $8000
+
+SprMerlina_Attack3:
+    dc.w    -$18+4, -$20, 0, %1111
+    dc.w    -$18+4, $00, 16, %1101
+    dc.w    -$20+4, -$10, 24, %0001
+    dc.w    $08+4, -$20, 26, %0001
+    dc.w    $08+4, -$08, 28, %1001
+    dc.w    $08+4, $08, 34, %0000
+    dc.w    $8000
+
+SprMerlina_Hurt:
+    dc.w    -$18+4, -$20, 0, %1001
+    dc.w    -$20+4, -$10, 6, %1110
+    dc.w    -$10+4, $08, 18, %0000
+    dc.w    $00+4, -$20, 19, %0101
+    dc.w    $00+4, -$10, 23, %0000
+    dc.w    $00+4, -$08, 24, %0110
+    dc.w    $8000
+
+SprMerlina_Swim1:
+SprMerlina_Swim3:
+    dc.w    -$18+4, -$20, 0, %1111
+    dc.w    -$18+4, $00, 16, %1101
+    dc.w    -$20+4, -$10, 24, %0010
+    dc.w    $08+4, -$20, 27, %0001
+    dc.w    $08+4, -$08, 29, %0001
+    dc.w    -$18+4, $10, 31, %1000
+    dc.w    $8000
+
+SprMerlina_Swim2:
+    dc.w    -$18+4, -$20, 0, %1111
+    dc.w    -$18+4, $00, 16, %1101
+    dc.w    -$20+4, -$18, 24, %0011
+    dc.w    $08+4, -$20, 28, %0001
+    dc.w    $08+4, -$08, 30, %0001
+    dc.w    -$18+4, $10, 32, %1000
+    dc.w    $8000
+
+;****************************************************************************
+; AnimMerlina_*
+; Animation data for Merlina.
+;****************************************************************************
+
+Frame: macro name, size, duration, next
+    dc.l    SprMerlina_\name
+    dc.l    GfxMerlina_\name
+    dc.w    (\size)*$20
+    dc.w    \duration
+    if      narg=4
+    dc.l    \next
+    else
+    dc.l    *+4
+    endc
+    endm
+
+AnimMerlina_Idle:
+    Frame   Idle1, 32, 16
+    Frame   Idle2, 32, 16, AnimMerlina_Idle
+
+AnimMerlina_Run:
+    Frame   Run1, 32, 5
+    Frame   Run2, 32, 5
+    Frame   Run3, 32, 5
+    Frame   Run4, 32, 5
+    Frame   Run5, 32, 5
+    Frame   Run6, 32, 5, AnimMerlina_Run
+
+AnimMerlina_RunSlow:
+    Frame   Run1, 32, 6
+    Frame   Run2, 32, 10
+    Frame   Run3, 32, 8
+    Frame   Run4, 32, 6
+    Frame   Run5, 32, 10
+    Frame   Run6, 32, 8, AnimMerlina_RunSlow
+
+AnimMerlina_Jump:
+    Frame   Run1, 32, 5
+    Frame   Run2, 32, -1, AnimMerlina_Jump
+
+AnimMerlina_Crouch:
+    Frame   Crouch, 26, -1, AnimMerlina_Crouch
+
+AnimMerlina_Attack:
+    Frame   Attack1, 49, 4
+    Frame   Attack2, 50, 4
+    Frame   Attack3, 35, 4, AnimMerlina_Attack+$20
+
+AnimMerlina_Hurt:
+    Frame   Hurt, 30, AnimMerlina_Hurt
+
+AnimMerlina_Swim:
+    Frame   Swim2, 35, 12
+    Frame   Swim1, 34, 12
+    Frame   Swim2, 35, 12
+    Frame   Swim3, 34, 12, AnimMerlina_Swim
+

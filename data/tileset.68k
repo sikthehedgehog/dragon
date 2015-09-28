@@ -1,0 +1,163 @@
+;****************************************************************************
+; GfxTileset
+; Tileset graphics.
+;****************************************************************************
+
+GfxTileset:
+    incbin  "data/tileset/tileset.slz"
+    even
+
+;****************************************************************************
+; Graphics for the various animations
+;****************************************************************************
+
+    incgfx  GfxCandle, "data/tileset/candle.4bpp"
+    incgfx  GfxChain, "data/tileset/chain.4bpp"
+
+;****************************************************************************
+; TilesetMappings
+; Mappings for the level tileset. Each tile consists of 16 words (one word
+; for each cell in the tile, for a total of 4×4 cells). The local labels
+; here are to make the code shorter and more readable.
+;****************************************************************************
+
+TilesetMappings:
+@T: equ VramTileset
+@C: equ VramCandle
+@H: equ VramChain
+
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D      ; Tile $00
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C      ; Empty (indoors)
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C
+    
+    dc.w    @T+$A000, @T+$A001, @T+$A002, @T+$A003      ; Tile $01
+    dc.w    @T+$A004, @T+$A005, @T+$A006, @T+$A007      ; Wall (no sides)
+    dc.w    @T+$A002, @T+$A003, @T+$A000, @T+$A001
+    dc.w    @T+$A006, @T+$A007, @T+$A004, @T+$A005
+    
+    dc.w    @T+$A000, @T+$A001, @T+$A002, @T+$A003      ; Tile $02
+    dc.w    @T+$A004, @T+$A005, @T+$A006, @T+$A007      ; Wall (left side)
+    dc.w    @T+$A008, @T+$A009, @T+$A000, @T+$A001
+    dc.w    @T+$A00A, @T+$A00B, @T+$A004, @T+$A005
+    
+    dc.w    @T+$A000, @T+$A001, @T+$A002, @T+$A003      ; Tile $03
+    dc.w    @T+$A004, @T+$A005, @T+$A006, @T+$A007      ; Wall (right side)
+    dc.w    @T+$A002, @T+$A003, @T+$A008, @T+$A009
+    dc.w    @T+$A006, @T+$A007, @T+$A00A, @T+$A00B
+    
+    dc.w    @T+$A000, @T+$A001, @T+$A002, @T+$A003      ; Tile $04
+    dc.w    @T+$A004, @T+$A005, @T+$A006, @T+$A007      ; Wall (both sides)
+    dc.w    @T+$A008, @T+$A009, @T+$A008, @T+$A009
+    dc.w    @T+$A00A, @T+$A00B, @T+$A00A, @T+$A00B
+    
+    dc.w    @T+$200E, @T+$200F, @T+$200E, @T+$200F      ; Tile $05
+    dc.w    @T+$2010, @T+$2011, @T+$2811, @T+$2010      ; Wooden platform
+    dc.w    @T+$200C, @T+$2012, @T+$2812, @T+$200D
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C
+    
+    dc.w    @T+$2013, @T+$200D, @T+$200C, @T+$200D      ; Tile $06
+    dc.w    @T+$2014, @T+$2013, @T+$200D, @T+$200C      ; Light (slope over)
+    dc.w    @T+$2015, @T+$2014, @T+$2013, @T+$200D
+    dc.w    @T+$2015, @T+$2015, @T+$2014, @T+$2013
+    
+    dc.w    @T+$2015, @T+$2015, @T+$2015, @T+$2014      ; Tile $07
+    dc.w    @T+$2015, @T+$2015, @T+$2015, @T+$2015      ; Light (slope under)
+    dc.w    @T+$2015, @T+$2015, @T+$2015, @T+$2015
+    dc.w    @T+$2015, @T+$2015, @T+$2015, @T+$2015
+    
+    dc.w    @T+$2015, @T+$2015, @T+$2015, @T+$2015      ; Tile $08
+    dc.w    @T+$2015, @T+$2015, @T+$2015, @T+$2015      ; Light (deep inside)
+    dc.w    @T+$2015, @T+$2015, @T+$2015, @T+$2015
+    dc.w    @T+$2015, @T+$2015, @T+$2015, @T+$2015
+    
+    dc.w    @T+$200C, @C+$0000, @C+$0001, @T+$200D      ; Tile $09
+    dc.w    @T+$200D, @C+$0002, @C+$0003, @T+$200C      ; Candle
+    dc.w    @T+$200C, @T+$2016, @T+$2017, @T+$200D
+    dc.w    @T+$200D, @T+$2018, @T+$2818, @T+$200C
+    
+    dc.w    @T+$2019, @T+$200D, @T+$200C, @T+$200D      ; Tile $0A
+    dc.w    @T+$2819, @T+$2019, @T+$200D, @T+$200C      ; NWSE stairs
+    dc.w    @T+$200C, @T+$2819, @T+$2019, @T+$200D      ; (top side)
+    dc.w    @T+$200D, @T+$200C, @T+$2819, @T+$2019
+    
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$2819      ; Tile $0B
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C      ; NWSE stairs
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D      ; (bottom side)
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C
+    
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$2819      ; Tile $0C
+    dc.w    @T+$200D, @T+$200C, @T+$2819, @T+$2019      ; NESW stairs
+    dc.w    @T+$200C, @T+$2819, @T+$2019, @T+$200D      ; (top side)
+    dc.w    @T+$2819, @T+$2019, @T+$200D, @T+$200C
+    
+    dc.w    @T+$2019, @T+$200D, @T+$200C, @T+$200D      ; Tile $0D
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C      ; NESW stairs
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D      ; (bottom side)
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C
+    
+    dc.w       $0000,    $0000,    $0000,    $0000      ; Tile $0E
+    dc.w       $0000,    $0000,    $0000,    $0000      ; Empty (outdoors)
+    dc.w       $0000,    $0000,    $0000,    $0000
+    dc.w       $0000,    $0000,    $0000,    $0000
+    
+    dc.w    @T+$201B,    $0000,    $0000, @T+$201A      ; Tile $0F
+    dc.w    @T+$201D,    $0000,    $0000, @T+$201C      ; Tower barrier
+    dc.w    @T+$201E, @T+$201F, @T+$2020, @T+$2021
+    dc.w    @T+$2022, @T+$2023, @T+$2024, @T+$2025
+    
+    dc.w    @T+$600C, @T+$600D, @T+$600C, @T+$600D      ; Tile $10
+    dc.w    @T+$600D, @T+$600C, @T+$600D, @T+$600C      ; Empty (underwater)
+    dc.w    @T+$600C, @T+$600D, @T+$600C, @T+$600D
+    dc.w    @T+$600D, @T+$600C, @T+$600D, @T+$600C
+    
+    dc.w    @T+$2026, @T+$2027, @T+$2827, @T+$2826      ; Tile $11
+    dc.w    @T+$2028, @T+$2029, @T+$2829, @T+$2828      ; Upright barrel
+    dc.w    @T+$3028, @T+$3029, @T+$3829, @T+$3828
+    dc.w    @T+$3026, @T+$3027, @T+$3827, @T+$3826
+    
+    dc.w    @T+$202A, @T+$202B, @T+$282B, @T+$282A      ; Tile $12
+    dc.w    @T+$202C, @T+$202D, @T+$282D, @T+$282C      ; Sideways barrel
+    dc.w    @T+$202E, @T+$202F, @T+$282F, @T+$282E      ; (full)
+    dc.w    @T+$2030, @T+$2031, @T+$2831, @T+$2830
+    
+    dc.w    @T+$200C, @T+$200D, @T+$202A, @T+$202B      ; Tile $13
+    dc.w    @T+$200D, @T+$200C, @T+$202C, @T+$202D      ; Sideways barrel
+    dc.w    @T+$200C, @T+$200D, @T+$202E, @T+$202F      ; (left half)
+    dc.w    @T+$200D, @T+$200C, @T+$2030, @T+$2031
+    
+    dc.w    @T+$282B, @T+$282A, @T+$202A, @T+$202B      ; Tile $14
+    dc.w    @T+$282D, @T+$282C, @T+$202C, @T+$202D      ; Sideways barrels
+    dc.w    @T+$282F, @T+$282E, @T+$202E, @T+$202F      ; (both sides)
+    dc.w    @T+$2831, @T+$2830, @T+$2030, @T+$2031
+    
+    dc.w    @T+$282B, @T+$282A, @T+$200C, @T+$200D      ; Tile $15
+    dc.w    @T+$282D, @T+$282C, @T+$200D, @T+$200C      ; Sideways barrel
+    dc.w    @T+$282F, @T+$282E, @T+$200C, @T+$200D      ; (right half)
+    dc.w    @T+$2831, @T+$2830, @T+$200D, @T+$200C
+    
+    dc.w    @T+$2032, @T+$2033, @T+$2833, @T+$2832      ; Tile $16
+    dc.w    @T+$2034, @T+$2035, @T+$2835, @T+$2834      ; Column (top)
+    dc.w    @T+$2036, @T+$2037, @T+$2837, @T+$2836
+    dc.w    @T+$2036, @T+$2037, @T+$2837, @T+$2836
+    
+    dc.w    @T+$2036, @T+$2037, @T+$2837, @T+$2836      ; Tile $17
+    dc.w    @T+$2036, @T+$2037, @T+$2837, @T+$2836      ; Column (bottom)
+    dc.w    @T+$3034, @T+$3035, @T+$3835, @T+$3834
+    dc.w    @T+$2032, @T+$2033, @T+$2833, @T+$2832
+    
+    dc.w    @T+$200C, @T+$2038, @T+$2838, @T+$200D      ; Tile $18
+    dc.w    @T+$2039, @T+$203A, @T+$283A, @T+$2839      ; Knight head
+    dc.w    @T+$203B, @T+$203C, @T+$283C, @T+$283B
+    dc.w    @T+$203D, @T+$203E, @T+$283E, @T+$283D
+    
+    dc.w    @T+$200C, @H+$2000, @H+$2004, @T+$200D      ; Tile $19
+    dc.w    @T+$200D, @H+$2001, @H+$2005, @T+$200C      ; Chain (downwards)
+    dc.w    @T+$200C, @H+$2002, @H+$2006, @T+$200D
+    dc.w    @T+$200D, @H+$2003, @H+$2007, @T+$200C
+    
+    dc.w    @T+$200C, @H+$2008, @H+$200C, @T+$200D      ; Tile $1A
+    dc.w    @T+$200D, @H+$2009, @H+$200D, @T+$200C      ; Chain (downwards)
+    dc.w    @T+$200C, @H+$200A, @H+$200E, @T+$200D
+    dc.w    @T+$200D, @H+$200B, @H+$200F, @T+$200C
+

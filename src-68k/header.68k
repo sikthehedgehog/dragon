@@ -1,0 +1,43 @@
+;****************************************************************************
+; 68000 vectors
+;****************************************************************************
+
+    dc.l    $1000000, EntryPoint, ErrorBus, ErrorAdd
+    dc.l    ErrorIll, ErrorDiv, ErrorUnk, ErrorUnk
+    dc.l    ErrorUnk, ErrorUnk, ErrorIll, ErrorIll
+    dc.l    ErrorUnk, ErrorUnk, ErrorUnk, ErrorUnk
+
+    dc.l    ErrorUnk, ErrorUnk, ErrorUnk, ErrorUnk
+    dc.l    ErrorUnk, ErrorUnk, ErrorUnk, ErrorUnk
+    dc.l    ErrorInt, ErrorInt, ErrorInt, ErrorInt
+    dc.l    HBlank, ErrorInt, VBlank, ErrorInt
+
+    dc.l    ErrorTrp, ErrorTrp, ErrorTrp, ErrorTrp
+    dc.l    ErrorTrp, ErrorTrp, ErrorTrp, ErrorTrp
+    dc.l    ErrorTrp, ErrorTrp, ErrorTrp, ErrorTrp
+    dc.l    ErrorTrp, ErrorTrp, ErrorTrp, ErrorTrp
+
+    dc.l    ErrorUnk, ErrorUnk, ErrorUnk, ErrorUnk
+    dc.l    ErrorUnk, ErrorUnk, ErrorUnk, ErrorUnk
+    dc.l    ErrorUnk, ErrorUnk, ErrorUnk, ErrorUnk
+    dc.l    ErrorUnk, ErrorUnk, ErrorUnk, ErrorUnk
+
+;****************************************************************************
+; Mega Drive header
+;****************************************************************************
+
+    dc.b    "SEGA MEGA DRIVE "
+    dc.b    "(C) SIK 20XX.XXX"
+    dc.b    "DRAGON'S CASTLE (PROTOTYPE)"
+    dcb.b   $150-*, $20
+    dc.b    "DRAGON'S CASTLE (PROTOTYPE)"
+    dcb.b   $180-*, $20
+    dc.b    "GM EXA-0001-00"
+    dc.w    $0000
+    dc.b    "J"
+    dcb.b   $1A0-*, $20
+    dc.l    $000000, $3FFFFF
+    dc.l    $FF0000, $FFFFFF
+    dcb.b   $1F0-*, $20
+    dc.b    "JUE"
+    dcb.b   $200-*, $20

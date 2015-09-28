@@ -1,0 +1,184 @@
+;****************************************************************************
+; DrawHUD
+; Draws the HUD on screen.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+DrawHUD:
+    btst.b  #GS_PAUSED, (GameState)     ; Draw "PAUSE" text
+    beq.s   @NotPaused
+    
+    move.w  #160, d0
+    move.w  #112, d1
+    move.w  #$8000+VramHUDPause, d2
+    lea     (SprPause), a6
+    jsr     (AddMetasprite).w
+@NotPaused:
+
+;----------------------------------------------------------------------------
+
+    moveq   #0, d7                      ; Determine heart pattern to use
+    move.b  (PlayerHealth), d7            ; 3 health points: ***
+    eor.b   #3, d7                        ; 2 health points: **.
+    add.w   d7, d7                        ; 1 health point:  *..
+    lea     @HealthTable(pc), a0          ; 0 health points: ...
+    lea     (a0,d7.w), a0
+    
+    move.w  #16, d0                     ; Draw all three hearts
+    move.w  #200, d1
+    moveq   #%0101, d3
+    move.w  (a0)+, d2
+    jsr     (AddSprite).w
+    add.w   #$10, d0
+    move.w  (a0)+, d2
+    jsr     (AddSprite).w
+    add.w   #$10, d0
+    move.w  (a0)+, d2
+    jsr     (AddSprite).w
+    
+;----------------------------------------------------------------------------
+    
+    add.w   #$10, d0                    ; Draw lives counter cross
+    addq.w  #8, d1
+    move.w  #$8000+VramHUDCross, d2
+    moveq   #%0000, d3
+    jsr     (AddSprite).w
+    
+    moveq   #0, d4                      ; Get lives left
+    move.b  (Lives), d4
+    
+    addq.w  #8, d0                      ; Draw tens of lives
+    subq.w  #8, d1
+    moveq   #%0001, d3
+    move.w  d4, d2
+    lsr.w   #4, d2
+    add.w   d2, d2
+    beq.s   @NoLifeTens
+    add.w   #$8000+VramHUDNumber, d2
+    jsr     (AddSprite).w
+    
+    addq.w  #8, d0                      ; Draw units of lives
+@NoLifeTens:
+    move.w  d4, d2
+    and.w   #$0F, d2
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    jsr     (AddSprite).w
+
+;----------------------------------------------------------------------------
+
+    moveq   #0, d4                      ; Check how much magic has been
+    move.b  (MagicMeter), d4              ; recharged so far
+    lsr.w   #6-3, d4
+    
+    add.w   d4, d4                      ; Determine which sprites the bar
+    add.w   d4, d4                        ; will use (based on the timer)
+    lea     @MagicTable(pc), a0
+    lea     (a0,d4.w), a0
+    
+    move.w  #228, d0                    ; Draw left side of magic bar
+    move.w  #200, d1
+    move.w  #$8010+VramHUDBar, d2
+    moveq   #%0001, d3
+    jsr     (AddSprite).w
+    
+    addq.w  #8, d0                      ; Draw the inside of the bar
+    move.w  (a0)+, d2
+    moveq   #%1101, d3
+    jsr     (AddSprite).w
+    add.w   #$20, d0
+    move.w  (a0)+, d2
+    jsr     (AddSprite).w
+    
+    add.w   #$20, d0                    ; Draw right side of magic bar
+    move.w  #$8012+VramHUDBar, d2
+    moveq   #%0001, d3
+    jsr     (AddSprite).w
+
+;----------------------------------------------------------------------------
+
+    moveq   #$10, d0                    ; Where score will be drawn
+    moveq   #$08, d1
+    moveq   #%0001, d3
+    
+    move.l  (Score), d4                 ; Get current score
+    
+    moveq   #7-1, d5                    ; Skip leading zeroes
+@ScoreZeroes:
+    rol.l   #4, d4
+    move.w  d4, d2
+    and.w   #$0F, d2
+    bne.s   @ScoreNoZeroes
+    dbf     d5, @ScoreZeroes
+@ScoreNoZeroes:
+    
+    addq.w  #1, d5                      ; Draw score digits
+@DrawScore:
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    jsr     (AddSprite).w
+    rol.l   #4, d4
+    move.w  d4, d2
+    and.w   #$0F, d2
+    addq.w  #8, d0
+    dbf     d5, @DrawScore
+
+;----------------------------------------------------------------------------
+
+    if      DEBUG_HUD
+    btst.b  #GS_PAUSED, (GameState)     ; Only show stage ID while paused
+    beq.s   @NoStage
+    
+    moveq   #0, d4                      ; Get current stage ID
+    move.b  (Stage), d4
+    
+    divu.w  #100, d4                    ; Draw hundreds of stage ID
+    move.w  d4, d2
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    move.w  #280, d0
+    moveq   #8, d1
+    moveq   #%0001, d3
+    jsr     (AddSprite).w
+    
+    clr.w   d4                          ; Draw tens of stage ID
+    swap    d4
+    divu.w  #10, d4
+    move.w  d4, d2
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    addq.w  #8, d0
+    jsr     (AddSprite).w
+    
+    swap    d4                          ; Draw units of stage ID
+    move.w  d4, d2
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    addq.w  #8, d0
+    jsr     (AddSprite).w
+@NoStage:
+    endc
+    
+    move.b  (NumSprites), (GameSprites) ; Let raster effects know where the
+                                          ; ingame sprites start so they can
+                                          ; safely affect only those
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@HealthTable:
+    dcb.w   3, $8004+VramHUDHealth
+    dcb.w   3, $8000+VramHUDHealth
+
+@MagicTable:
+    dc.w    $8008+VramHUDBar, $8008+VramHUDBar
+    dc.w    $8006+VramHUDBar, $8008+VramHUDBar
+    dc.w    $8004+VramHUDBar, $8008+VramHUDBar
+    dc.w    $8002+VramHUDBar, $8008+VramHUDBar
+    dc.w    $8000+VramHUDBar, $8008+VramHUDBar
+    dc.w    $8000+VramHUDBar, $8006+VramHUDBar
+    dc.w    $8000+VramHUDBar, $8004+VramHUDBar
+    dc.w    $8000+VramHUDBar, $8002+VramHUDBar
+    dc.w    $8000+VramHUDBar, $8000+VramHUDBar

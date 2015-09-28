@@ -1,0 +1,85 @@
+;****************************************************************************
+; InitSpikeball
+; Initializes a spikeball's collision box.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitSpikeball:
+    move.w  #-$0C, OBJ_BOXX1(a6)        ; Set up collision box
+    move.w  #-$0C, OBJ_BOXY1(a6)
+    move.w  #$0B, OBJ_BOXX2(a6)
+    move.w  #$0B, OBJ_BOXY2(a6)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunSpikeball
+; Executes the behavior for a spikeball.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunSpikeball:
+    move.l  a0, a6                      ; Did we hit the player?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NoAttack
+    
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    bsr     HurtPlayer
+    
+@NoAttack:
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawSpikeball
+; Draws a spikeball.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawSpikeball:
+    move.w  OBJ_X(a0), d0               ; Calculate sprite coordinates
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    sub.w   #$10, d0
+    sub.w   #$10, d1
+    
+    move.w  OBJ_X(a0), d7               ; Spikeballs float in water
+    move.w  OBJ_Y(a0), d6
+    bsr     TileAt
+    cmp.b   #COLL_WATER, d6
+    bne.s   @NotFloating
+    
+    move.w  OBJ_X(a0), d6
+    move.w  (Anim), d7
+    add.w   d7, d7
+    add.w   d7, d7
+    add.w   d6, d7
+    add.w   d6, d7
+    add.w   d6, d7
+    lsr.w   #5-2, d7
+    and.w   #$07<<1, d7
+    lea     @FloatTable(pc), a6
+    add.w   (a6,d7.w), d1
+@NotFloating:
+    
+    move.w  #VramSpikeball, d2          ; Draw sprite
+    moveq   #%1111, d3
+    jsr     (AddSprite).w
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@FloatTable:
+    dc.w    0, 1, 1, 1, 0, -1, -1, -1

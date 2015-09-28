@@ -1,0 +1,22 @@
+;****************************************************************************
+; GetStrLen
+; Gets the length of a string.
+;----------------------------------------------------------------------------
+; input a6.l .... Pointer to string
+;----------------------------------------------------------------------------
+; output d7.w ... String length
+;****************************************************************************
+
+GetStrLen:
+    move.l  a6, -(sp)                   ; Chances are we want it again
+    moveq   #0, d7                      ; Reset character count
+    
+@Loop:                                  ; Keep counting characters until we
+    tst.b   (a6)+                         ; hit nul (end of string)
+    beq.s   @Done
+    addq.w  #1, d7
+    bra.s   @Loop
+    
+@Done:
+    move.l  (sp)+, a6                   ; Restore this pointer
+    rts                                 ; End of subroutine

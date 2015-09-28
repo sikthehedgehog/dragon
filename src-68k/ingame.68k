@@ -1,0 +1,173 @@
+;****************************************************************************
+; GS_*
+; Possible states the game may have (see GameState)
+;****************************************************************************
+
+                    rsreset
+GS_PAUSE:           rs.b 0              ; Game is paused
+GS_PAUSED:          rs.b 1              ; In case of typos...
+
+;****************************************************************************
+; StartGame
+; Sets up the game before starting.
+;----------------------------------------------------------------------------
+; notes: doesn't return (use BRA/JMP instead of BSR/JSR)
+;****************************************************************************
+
+StartGame:
+    move.b  #$03, (Lives)               ; Initial amount of lives
+    clr.l   (Score)                     ; Initial score
+    clr.b   (Stage)                     ; Initial stage
+    
+    move.b  #5, (JumpButton)            ; Hardcoded for now
+    move.b  #4, (AttackButton)
+    move.b  #6, (MagicButton)
+    
+    if      DEBUG_MENU                  ; Invoke the debug menu if enabled
+    bsr     DebugMenu
+    endc
+    
+    btst.b  #CH_LIVES, (Cheats)         ; Infinite lives enabled?
+    beq.s   @NoInfiniteLives
+    move.b  #$99, (Lives)
+@NoInfiniteLives:
+    
+    moveq   #BGM_INGAME, d7             ; Start playing the main theme :)
+    ;jsr     (PlayBGM).w
+    
+    ; Fall through to InGame...
+
+;****************************************************************************
+; InGame
+; Main loop for the in-game mode.
+;----------------------------------------------------------------------------
+; notes: doesn't return (use BRA/JMP instead of BSR/JSR)
+;****************************************************************************
+
+InGame:
+    jsr     (ResetVideo).w              ; Reset video status
+    st.b    (WantsFade)                 ; We want fading in
+    
+    lea     (GfxTileset), a6            ; Load tileset graphics
+    lea     (LocalRAM), a5
+    jsr     (DecompressSlz).w
+    DMA2VRAM LocalRAM, VramTileset*$20, 63*$20, ($C00004)
+    
+    lea     (GfxIngame), a6             ; Load common graphics
+    lea     (LocalRAM), a5
+    jsr     (DecompressSlz).w
+    DMA2VRAM LocalRAM, VramHUDHealth*$20, 115*$20, ($C00004)
+    
+    lea     (GfxEnemies), a6            ; Load enemy graphics
+    lea     (LocalRAM), a5
+    jsr     (DecompressSlz).w
+    DMA2VRAM LocalRAM, VramSpikeball*$20, 100*$20, ($C00004)
+    
+    move.b  #%0, (GameState)            ; Initialize game state
+    bsr     InitStage                   ; Set up current stage
+    bsr     InitPlayer                  ; Initialize player
+
+;----------------------------------------------------------------------------
+
+@MainLoop:
+    move.w  (CameraX), d7
+    move.w  (CameraY), d6
+    SetVRAMAddr $F800, ($C00004)
+    neg.w   d7
+    move.w  d7, ($C00000)
+    SetVSRAMAddr 0, ($C00004)
+    move.w  d6, ($C00000)
+    
+    btst.b  #7, (JoyPress)              ; Press Start to toggle pause
+    beq.s   @NoPauseToggle
+    bchg.b  #GS_PAUSED, (GameState)
+@NoPauseToggle:
+    
+    btst.b  #GS_PAUSED, (GameState)     ; Execute game logic
+    bne.s   @Paused
+    lea     (@Logic), a0
+    jsr     (DoLogic).w
+    bra.s   @NotPaused
+    
+@Paused:
+    move.b  (JoyHold), d7               ; Reset game by pressing A+B+C while
+    and.b   #$70, d7                      ; the game is paused
+    cmp.b   #$70, d7
+    bne.s   @NotResetting
+    jsr     (FadeOut).w
+    bra     TitleScreen
+@NotResetting:
+    
+    if      DEBUG_CONTROLS
+    btst.b  #0, (JoyPress)              ; Press Up and Down to select a stage
+    beq.s   @NoDebugNext                  ; (when the stage is restarted)
+    addq.b  #1, (Stage)
+@NoDebugNext:
+    btst.b  #1, (JoyPress)
+    beq.s   @NoDebugPrev
+    subq.b  #1, (Stage)
+@NoDebugPrev
+    
+    btst.b  #6, (JoyPress)              ; Press A to restart the stage
+    beq.s   @NoDebugSkip                  ; Pressing Up and Down will change
+    move.b  (Stage), d7                   ; the current stage, a restart is
+    bra     SwitchStage                   ; needed for it to take effect
+@NoDebugSkip:
+    
+    btst.b  #4, (JoyPress)              ; Press B to toggle free move
+    beq.s   @NoFreeMove
+    bchg.b  #CH_FREEMOVE, (Cheats)
+@NoFreeMove:
+    endc
+    
+@NotPaused:
+    jsr     (ClearSprites).w            ; Draw everything
+    bsr     ScrollStage
+    bsr     DrawHUD
+    bsr     DrawPlayer
+    bsr     DrawAllObjects
+    bsr     UpdateStageAnim
+    bsr     SplitWater
+    
+    jsr     (NextFrame).w               ; Wait for next frame
+    bsr     SetupWater
+    bra     @MainLoop
+
+;----------------------------------------------------------------------------
+
+@Logic:
+    bsr     RunPlayer                   ; Update player
+    bsr     RunAllObjects               ; Update all objects
+    rts                                 ; Return back to loop...
+
+;****************************************************************************
+; AddScore
+; Adds score to the player.
+;----------------------------------------------------------------------------
+; input d7.l ... Amount to award (BCD)
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+AddScore:
+    move.l  (Score), d6                 ; Get current score
+    
+    and.b   #$00, ccr                   ; Add the score (gotta hate how BCD
+    abcd.b  d7, d6                        ; only comes in byte flavor)
+    ror.l   #8, d7
+    ror.l   #8, d6
+    abcd.b  d7, d6
+    ror.l   #8, d7
+    ror.l   #8, d6
+    abcd.b  d7, d6
+    ror.l   #8, d7
+    ror.l   #8, d6
+    abcd.b  d7, d6
+    
+    bcc.s   @NoOverflow                 ; Make sure to check for overflow
+    move.l  #$99999999, d6
+@NoOverflow:
+    
+    ror.l   #8, d6                      ; Put digits back into place
+    move.l  d6, (Score)                 ; Store updated score
+    rts                                 ; End of subroutine

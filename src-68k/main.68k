@@ -1,0 +1,98 @@
+;****************************************************************************
+; EntryPoint
+; Where the program starts.
+;----------------------------------------------------------------------------
+; notes: doesn't return
+;****************************************************************************
+
+EntryPoint:
+    move.w  #$2700, sr                  ; Disable IRQs for now
+    
+    move.b  ($A10001), d7               ; Disable TMSS if needed
+    and.b   #$0F, d7
+    beq.s   @NoTMSS
+    move.l  ($100).w, ($A14000)
+@NoTMSS:
+    
+    jsr     (InitJoypad).w              ; Initialize system
+    jsr     (InitSound).w
+    jsr     (InitVideo).w
+    
+    move.b  #1, (Difficulty)            ; Default settings
+    move.b  #3, (StartLives)
+    clr.b   (ControlSet)
+    clr.b   (SoundTest)
+    
+    clr.b   (Cheats)                    ; Disable all cheats
+    
+    bra     TitleScreen                 ; Start the game
+    ;bra     OptionsMenu
+
+;****************************************************************************
+; NextFrame
+; Prepares everything for the next frame.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+NextFrame:
+    tst.b   (WantsFade)                 ; Need to fade in? (doing this here
+    beq.s   @NoFadeIn                     ; since we need to ensure that the
+    clr.b   (WantsFade)                   ; first frame got drawn)
+    jsr     (FadeIn).w
+@NoFadeIn:
+    
+    jsr     (UpdateSprites).w           ; Ensure sprites get updated
+    jsr     (UpdatePalette).w           ; Same deal with the palette
+    
+    jsr     (VSync).w                   ; Wait until next frame starts
+    jsr     (FlushDMABuffer).w          ; Execute all pending DMAs
+    jsr     (EnableDisplay).w           ; Ensure display is on
+    jsr     (UpdateSound).w             ; Update sound playback
+    jsr     (ReadJoypad).w              ; Update the joypad status
+    
+    bchg.b  #1, (BlinkFlag)             ; Update 60/50Hz blinking
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DoLogic
+; Executes game logic that needs speed correction under PAL (in NTSC, it just
+; always runs a single frame). This ensures that the game logic always
+; updates at 60FPS regardless of refresh rate. It also updates the global
+; animation and subpixel faking.
+;----------------------------------------------------------------------------
+; input a0.l ... Subroutine with game logic
+;----------------------------------------------------------------------------
+; breaks: all
+;----------------------------------------------------------------------------
+; notes: do *not* rely on the value of JoyPress here because it will be
+; cleared after this subroutine returns. If you need it to be handled, either
+; do it here or before calling this.
+;****************************************************************************
+
+DoLogic:
+    jsr     (a0)                        ; Execute speed corrected game logic
+    
+    move.w  (Anim), d7                  ; Update global animation
+    addq.w  #1, d7
+    move.w  d7, (Anim)
+    
+    moveq   #0, d6                      ; Calculate new offset for faking
+    rept    8                             ; subpixel precision
+    add.b   d7, d7
+    roxr.b  #1, d6
+    endr
+    move.w  d6, (Subpixel)
+    
+    clr.b   (JoyPress)                  ; This gets in the way otherwise
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; CH_*
+; Which cheats can be enabled in the game.
+;****************************************************************************
+
+                    rsreset
+CH_MUTEKI:          rs.b 1          ; Invincibility
+CH_LIVES:           rs.b 1          ; Infinite lives
+CH_FREEMOVE:        rs.b 1          ; Free movement

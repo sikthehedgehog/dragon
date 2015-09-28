@@ -1,0 +1,93 @@
+;****************************************************************************
+; InstrumentList
+; Instrument list used by Echo.
+;****************************************************************************
+
+InstrumentList:
+    Echo_ListEntry  InstrKickDrum       ; $00 [PCM] Snare drum
+    Echo_ListEntry  InstrSnareDrum      ; $01 [PCM] Kick drum
+    Echo_ListEntry  InstrFlatPSG        ; $02 [PSG] Flat PSG envelope
+    Echo_ListEntry  InstrSineWave       ; $03 [FM] Sine wave
+    Echo_ListEntry  InstrSawtoothWave   ; $04 [FM] Sawtooth wave
+    Echo_ListEntry  InstrSquareWave     ; $05 [FM] Square wave
+    Echo_ListEntry  InstrPunch          ; $06 [PCM] Punch
+    Echo_ListEntry  InstrChurchOrgan    ; $07 [FM] Church organ
+    Echo_ListEnd
+
+;****************************************************************************
+; Instr*
+; Data for each instrument.
+;****************************************************************************
+
+InstrSineWave:      incbin  "data/sound/sine.eif"
+InstrSawtoothWave:  incbin  "data/sound/sawtooth.eif"
+InstrSquareWave:    incbin  "data/sound/square.eif"
+InstrChurchOrgan:   incbin  "data/sound/church.eif"
+
+InstrFlatPSG:       hex FE00FF
+
+InstrKickDrum:      incbin  "data/sound/kick.ewf"
+InstrSnareDrum:     incbin  "data/sound/snare.ewf"
+InstrPunch:         incbin  "data/sound/punch.ewf"
+
+    even
+
+;****************************************************************************
+; BgmList
+; List of every BGM in the game.
+;****************************************************************************
+
+BgmList:
+    rsset 1
+@Entry: macro name
+BGM_\name: rs.b 1
+    dc.l    BgmData_\name
+    endm
+    
+;    @Entry  Ingame
+
+NUM_BGM:    rs.b 0
+
+;****************************************************************************
+; SfxList
+; List of every SFX in the game.
+;****************************************************************************
+
+SfxList:
+    rsset 1
+@Entry: macro name
+SFX_\name: rs.b 1
+    dc.l    SfxData_\name
+    endm
+    
+    @Entry  Jump
+    @Entry  Swim
+    @Entry  Attack
+    @Entry  Hit
+
+NUM_SFX:    rs.b 0
+
+;****************************************************************************
+; SOUNDTEST_*
+; Sound test boundaries
+;****************************************************************************
+
+                    rsreset
+                    rs.b 1              ; Empty ID
+;SOUNDTEST_BGM:      rs.b NUM_BGM-1      ; Where BGM IDs start
+SOUNDTEST_SFX:      rs.b NUM_SFX-1      ; Where SFX IDs start
+SOUNDTEST_MAX:      rs.b 0              ; No more sounds here
+
+;****************************************************************************
+; BgmData_*, Sfx_Data*
+; Data for all the music and sound effects.
+;****************************************************************************
+
+;BgmData_Ingame:     incbin  "data/music/ingame.esf"
+
+SfxData_Jump:       include "data/sfx/jump.68k"
+SfxData_Swim:       include "data/sfx/swim.68k"
+SfxData_Attack:     include "data/sfx/attack.68k"
+SfxData_Hit:        include "data/sfx/hit.68k"
+
+    even

@@ -1,0 +1,38 @@
+;****************************************************************************
+; LoadHBlank
+; Copies a raster effect routine into the hblank handler.
+;----------------------------------------------------------------------------
+; input a6.l ... Routine to use
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+LoadHBlank:
+    lea     (HBlank), a5                ; Copy the subroutine into the
+    move.w  #$80/8-1, d7                  ; interrupt handler. We don't care
+@Loop:                                    ; if we copy too much, at worst the
+    move.l  (a6)+, (a5)+                  ; extra bytes will go ignored.
+    move.l  (a6)+, (a5)+
+    move.l  (a6)+, (a5)+
+    move.l  (a6)+, (a5)+
+    dbf     d7, @Loop
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; HBlankNull
+; A dummy raster effect that does nothing.
+;****************************************************************************
+
+HBlankNull:
+    rte
+
+;****************************************************************************
+; HBlankSAT
+; This raster effect swaps the sprite table to $F400 when triggered.
+;****************************************************************************
+
+HBlankSAT:
+    move.w  #$8AFF, ($C00004)
+    move.w  #$857A, ($C00004)
+    rte

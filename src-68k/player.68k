@@ -1,0 +1,773 @@
+;****************************************************************************
+; Some tweakable parameters
+;****************************************************************************
+
+MAX_SPEED:          equ $280        ; Maximum running speed
+ACCEL_SPEED:        equ $40         ; Acceleration rate when running
+ACCEL_FALL:         equ $40         ; Acceleration rate when falling
+JUMP_FORCE:         equ $40*26      ; Strength of a jump
+ATTACK_TIME:        equ 12          ; How long an attack lasts
+RECOIL_SPEED:       equ $180        ; Horizontal speed of a recoil
+RECOIL_FORCE:       equ $40*14      ; Vertical speed of a recoil
+
+;****************************************************************************
+; PF_*
+; Flags that go in PlayerFlags.
+;****************************************************************************
+
+                    rsreset
+PF_DIR:             rs.b 1          ; Direction Merlina is facing
+PF_LANDED:          rs.b 1          ; Merlina is on the floor (not in air)
+PF_CROUCH:          rs.b 1          ; Merlina is crouching
+PF_HURT:            rs.b 1          ; Merlina is recoiling
+PF_SWIM:            rs.b 1          ; Merlina is swimming
+PF_PLATFORM:        rs.b 1          ; Merlina is on a platform
+
+;****************************************************************************
+; PA_*
+; IDs for each animation Merlina can have.
+;****************************************************************************
+
+                    rsreset
+PA_IDLE:            rs.b 1          ; Merlina is idle
+PA_RUN:             rs.b 1          ; Merlina is running (normal speed)
+PA_RUNSLOW:         rs.b 1          ; Merlina is running (half speed)
+PA_JUMP:            rs.b 1          ; Merlina is in the air
+PA_CROUCH:          rs.b 1          ; Merlina is crouching
+PA_ATTACK:          rs.b 1          ; Merlina is attacking
+PA_HURT:            rs.b 1          ; Merlina is recoiling
+PA_SWIM:            rs.b 1          ; Merlina is swimming
+
+;****************************************************************************
+; InitPlayer
+; Initializes the player status.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+InitPlayer:
+    clr.w   (PlayerXSpeed)              ; Not moving
+    clr.w   (PlayerYSpeed)
+    
+    clr.b   (PlayerFlags)               ; Default state
+    move.b  #3, (PlayerHealth)          ; Start with full health
+    clr.b   (PlayerAttack)              ; Not attacking yet
+    clr.b   (PlayerFlash)               ; Not invulnerable yet
+    clr.b   (MagicMeter)                ; Magic has been depleted
+    
+    move.b  #-1, (PlayerPose)           ; Force an animation change
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunPlayer
+; Executes the player behavior.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+RunPlayer:
+    if      DEBUG_CONTROLS              ; During free move?
+    btst.b  #CH_FREEMOVE, (Cheats)
+    bne     FreeMovePlayer
+    endc
+    
+    cmp.b   #$40, (MagicMeter)          ; Recharging magic?
+    bhs.s   @NotRecharging
+    addq.b  #1, (MagicMeter)
+@NotRecharging:
+    
+    move.w  (PlayerX), d0               ; Retrieve current status
+    move.w  (PlayerY), d1
+    move.w  (PlayerXSpeed), d2
+    move.w  (PlayerYSpeed), d3
+    move.b  (PlayerFlags), d4
+    
+    btst.l  #PF_HURT, d4                ; Recoiling still?
+    beq.s   @NotRecoiling
+    and.b   #$80, (JoyPress)
+    btst.l  #PF_LANDED, d4
+    beq     @Recoiled
+    bclr.l  #PF_HURT, d4
+    bra     @Recoiled
+@NotRecoiling:
+    
+    tst.b   (PlayerFlash)               ; Still flashing?
+    beq.s   @NotFlashing
+    subq.b  #1, (PlayerFlash)
+@NotFlashing:
+
+;----------------------------------------------------------------------------
+
+    move.b  (JoyHold), d5               ; Get joypad input
+    
+    tst.b   (PlayerAttack)              ; Can't do anything while attacking
+    beq.s   @NotAttacking
+    and.b   #$70, d5
+@NotAttacking:
+    
+    bclr.l  #PF_CROUCH, d4              ; Crouching?
+    btst.l  #1, d5
+    beq.s   @NotCrouching
+    btst.l  #PF_LANDED, d4
+    beq.s   @NotCrouching
+    bset.l  #PF_CROUCH, d4
+@NotCrouching:
+    
+    btst.l  #PF_CROUCH, d4              ; When crouching we can't run
+    beq.s   @NoCrouchStop
+    and.b   #%11110011, d5
+@NoCrouchStop:
+    
+    move.w  #ACCEL_SPEED, d6            ; Acceleration speed
+    btst.l  #PF_LANDED, d4                ; Note that we accelerate slower
+    bne.s   @FullFriction                 ; if we're in the air (technically
+    asr.w   #1, d6                        ; we shouldn't at all, but eh)
+@FullFriction:
+    
+    btst.l  #3, d5                      ; Run right?
+    beq.s   @NoRight
+    btst.l  #2, d5
+    bne.s   @NoRight
+    bclr.l  #PF_DIR, d4
+    cmp.w   #MAX_SPEED, d2
+    bge.s   @NoRight
+    add.w   d6, d2
+    cmp.w   #MAX_SPEED, d2
+    ble.s   @NoStop
+    move.w  #MAX_SPEED, d2
+    bra.s   @NoStop
+@NoRight:
+    
+    btst.l  #2, d5                      ; Run left?
+    beq.s   @NoLeft
+    btst.l  #3, d5
+    bne.s   @NoLeft
+    bset.l  #PF_DIR, d4
+    cmp.w   #-MAX_SPEED, d2
+    beq.s   @NoLeft
+    sub.w   d6, d2
+    cmp.w   #-MAX_SPEED, d2
+    bge.s   @NoStop
+    move.w  #-MAX_SPEED, d2
+    bra.s   @NoStop
+@NoLeft:
+    
+    tst.w   d2                          ; Stop running?
+    beq.s   @NoStop
+    blt.s   @StopLeft
+    sub.w   d6, d2
+    bge.s   @NoStop
+    moveq   #0, d2
+    bra.s   @NoStop
+@StopLeft:
+    add.w   d6, d2
+    ble.s   @NoStop
+    moveq   #0, d2
+@NoStop:
+
+;----------------------------------------------------------------------------
+
+@Recoiled:
+    move.w  d0, d7                      ; Check if we're swimming
+    move.w  d1, d6
+    bsr     TileAt
+    cmp.b   #COLL_WATER, d6
+    seq.b   d6
+    and.w   #1<<PF_SWIM, d6
+    bclr.l  #PF_SWIM, d4
+    or.w    d6, d4
+    
+    btst.l  #PF_LANDED, d4              ; Variable jump
+    bne.s   @NoFastFall
+    btst.l  #PF_HURT, d4
+    bne.s   @NoFastFall
+    tst.w   d3
+    bge.s   @NoFastFall
+    move.b  (JumpButton), d7
+    btst.l  d7, d5
+    bne.s   @NoFastFall
+    add.w   #ACCEL_FALL/2, d3
+@NoFastFall:
+    
+    btst.l  #PF_SWIM, d4                ; Swim?
+    bne.s   @CanSwim
+    btst.l  #PF_LANDED, d4              ; Jump?
+    beq.s   @CantJump
+@CanSwim:
+    move.b  (JumpButton), d7
+    btst.b  d7, (JoyPress)
+    beq.s   @CantJump
+    
+    btst.l  #PF_CROUCH, d4              ; Down+jump can be used to drop off
+    beq.s   @NormalJump                   ; "one"-way platforms (instead of
+    move.w  d0, d7                        ; jumping as usual)
+    move.w  d1, d6
+    add.w   #$10, d6
+    bsr     TileAt
+    cmp.b   #COLL_FLOOR, d6
+    bne.s   @NormalJump
+    addq.w  #1, d1
+    bclr.l  #PF_LANDED, d4
+    bclr.l  #PF_PLATFORM, d4
+    
+    btst.l  #PF_SWIM, d4
+    seq.b   d7
+    add.b   #SFX_JUMP+1, d7
+    jsr     (PlaySFX).w
+    bra.s   @CantJump
+@NormalJump:
+    
+    move.w  #-JUMP_FORCE, d3
+    bclr.l  #PF_LANDED, d4
+    bclr.l  #PF_PLATFORM, d4
+    
+    btst.l  #PF_SWIM, d4
+    seq.b   d7
+    add.b   #SFX_JUMP+1, d7
+    jsr     (PlaySFX).w
+@CantJump:
+
+;----------------------------------------------------------------------------
+
+    move.b  (PlayerAttack), d5          ; Busy attacking?
+    beq.s   @TestAttack
+    subq.b  #1, d5
+    move.b  d5, (PlayerAttack)
+    bra.s   @DoneAttacking
+    
+@TestAttack:
+    move.b  (AttackButton), d7          ; Attack with the broom?
+    btst.b  d7, (JoyPress)
+    beq.s   @DoneAttacking
+    move.b  #ATTACK_TIME, (PlayerAttack)
+    
+    moveq   #SFX_ATTACK, d7
+    jsr     (PlaySFX).w
+    
+@DoneAttacking:
+
+;----------------------------------------------------------------------------
+
+    tst.w   d2                          ; Check which direction we're moving
+    beq.s   @NoHorMove
+    blt.s   @MovingLeft
+
+; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+@MovingRight:
+    move.w  d2, d7                      ; Apply momentum to the right
+    btst.l  #PF_SWIM, d4
+    beq.s   *+4
+    asr.w   #1, d7
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, d0
+    
+    move.w  d0, d7                      ; Did we hit a wall?
+    move.w  d1, d6
+    addq.w  #7, d7
+    bsr     TileAt
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @NoHorMove
+    
+    addq.w  #7, d0                      ; Stop moving then
+    and.w   #$FFE0, d0
+    subq.w  #7, d0
+    moveq   #ACCEL_SPEED, d2
+    bra.s   @NoHorMove
+
+; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+@MovingLeft:
+    move.w  d2, d7                      ; Apply momentum to the left
+    btst.l  #PF_SWIM, d4
+    beq.s   *+4
+    asr.w   #1, d7
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, d0
+    
+    move.w  d0, d7                      ; Did we hit a wall?
+    move.w  d1, d6
+    subq.w  #8, d7
+    bsr     TileAt
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @NoHorMove
+    
+    and.w   #$FFE0, d0                  ; Stop moving then
+    addq.w  #8, d0
+    moveq   #-ACCEL_SPEED, d2
+
+; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+@NoHorMove:
+    move.w  (CameraX), d7               ; Went too far to the left?
+    add.w   #$10, d7
+    cmp.w   d7, d0
+    bge.s   @NotTooLeft
+    move.w  d7, d0
+    move.w  #-ACCEL_SPEED, d2
+@NotTooLeft:
+    
+    add.w   #320-$10*2, d7              ; Went too far to the right?
+    cmp.w   d7, d0
+    ble.s   @NotTooRight
+    move.w  d7, d0
+    move.w  #ACCEL_SPEED, d2
+@NotTooRight:
+
+; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    btst.l  #PF_PLATFORM, d4            ; If a platform is active, let it
+    bne     @NoVerMove                    ; do its job instead
+    
+    add.w   #ACCEL_FALL, d3             ; Apply gravity
+    
+    tst.w   d3                          ; Falling or going upwards?
+    blt     @Rising
+    
+    move.w  d3, d7                      ; Apply downwards momentum
+    btst.l  #PF_SWIM, d4
+    beq.s   *+4
+    asr.w   #2, d7
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    move.w  d1, d5
+    add.w   d7, d1
+    
+    move.w  d0, d7                      ; Did we hit the floor?
+    move.w  d1, d6
+    add.w   #$10, d6
+    bsr     TileAt
+    bclr.l  #PF_LANDED, d4
+    cmp.b   #COLL_FLOOR, d6
+    beq.s   @OneWayFloor
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @NoVerMove
+    
+    add.w   #$10, d1                    ; Don't go through the floor
+    and.w   #$FFE0, d1
+    sub.w   #$10, d1
+    moveq   #0, d3
+    bset.l  #PF_LANDED, d4
+    bra.s   @NoVerMove
+
+; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+@OneWayFloor:
+    move.w  d1, d6                      ; Did she go through the floor? (as
+    add.w   #$10, d6                      ; opposed of just going under it)
+    add.w   #$0F, d5                      ; (I have no idea how I got this to
+    and.w   #$1F, d6                      ; work but it works reliably?)
+    and.w   #$1F, d5
+    cmp.w   d6, d5
+    blt.s   @NoVerMove
+    
+    add.w   #$10, d1                    ; Put her back on the floor then
+    and.w   #$FFE0, d1
+    sub.w   #$10, d1
+    moveq   #0, d3
+    bset.l  #PF_LANDED, d4
+    bra.s   @NoVerMove
+
+; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+@Rising:
+    bclr.l  #PF_LANDED, d4              ; Definitely didn't land yet
+    
+    move.w  d3, d7                      ; Apply momentum
+    btst.l  #PF_SWIM, d4
+    beq.s   *+4
+    asr.w   #2, d7
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, d1
+    
+    move.w  d0, d7                      ; Did we hit a ceiling?
+    move.w  d1, d6
+    sub.w   #$14, d6
+    bsr     TileAt
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @NoVerMove
+    sub.w   #$14, d1
+    and.w   #$FFE0, d1
+    add.w   #$34, d1
+    moveq   #0, d3
+
+;----------------------------------------------------------------------------
+
+@NoVerMove:
+    move.w  (CameraBottom), d7          ; Did we fall into a pit?
+    add.w   #224+32, d7
+    cmp.w   d7, d1
+    ble.s   @NoPit
+    bsr     KillPlayer
+@NoPit:
+    
+    move.w  d0, (PlayerX)               ; Save new status
+    move.w  d1, (PlayerY)
+    move.w  d2, (PlayerXSpeed)
+    move.w  d3, (PlayerYSpeed)
+    move.b  d4, (PlayerFlags)
+
+;----------------------------------------------------------------------------
+
+    moveq   #PA_IDLE, d7                ; Figure out which animation to use
+    btst.l  #PF_CROUCH, d4
+    beq.s   @NoCrouchAnim
+    moveq   #PA_CROUCH, d7
+@NoCrouchAnim:
+    tst.w   d2
+    bpl.s   *+4
+    neg.w   d2
+    cmp.w   #ACCEL_SPEED*2, d2
+    ble.s   @NoRunAnim
+    moveq   #PA_RUN, d7
+    btst.l  #PF_SWIM, d4
+    beq.s   @NoRunAnim
+    moveq   #PA_RUNSLOW, d7
+@NoRunAnim:
+    btst.l  #PF_LANDED, d4
+    bne.s   @NoJumpAnim
+    moveq   #PA_JUMP, d7
+    btst.l  #PF_SWIM, d4
+    beq.s   @NoJumpAnim
+    moveq   #PA_SWIM, d7
+@NoJumpAnim:
+    tst.b   (PlayerAttack)
+    beq.s   @NoAttackAnim
+    moveq   #PA_ATTACK, d7
+@NoAttackAnim:
+    btst.l  #PF_HURT, d4
+    beq.s   @NoHurtAnim
+    moveq   #PA_HURT, d7
+@NoHurtAnim:
+    
+    cmp.b   (PlayerPose), d7            ; Did the animation change? (we need
+    beq.s   @SamePose                     ; to start the new one if so)
+    move.b  d7, (PlayerPose)
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     @Poses(pc), a6
+    move.l  (a6,d7.w), (PlayerAnimNext)
+    move.w  #1, (PlayerAnimLen)
+@SamePose:
+    
+    subq.w  #1, (PlayerAnimLen)         ; Update the animation if needed
+    bne.s   @NoAnimUpdate
+    move.l  (PlayerAnimNext), a6
+    move.l  (a6)+, (PlayerMapping)
+    move.l  (a6)+, (PlayerGfxAddr)
+    move.w  (a6)+, (PlayerGfxSize)
+    move.w  (a6)+, (PlayerAnimLen)
+    move.l  (a6)+, (PlayerAnimNext)
+@NoAnimUpdate:
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Poses:
+    dc.l    AnimMerlina_Idle            ; PA_IDLE
+    dc.l    AnimMerlina_Run             ; PA_RUN
+    dc.l    AnimMerlina_RunSlow         ; PA_RUNSLOW
+    dc.l    AnimMerlina_Jump            ; PA_JUMP
+    dc.l    AnimMerlina_Crouch          ; PA_CROUCH
+    dc.l    AnimMerlina_Attack          ; PA_ATTACK
+    dc.l    AnimMerlina_Hurt            ; PA_HURT
+    dc.l    AnimMerlina_Swim            ; PA_SWIM
+
+;****************************************************************************
+; FreeMovePlayer
+; Lets you move around during free move.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+    if      DEBUG_CONTROLS
+    
+FreeMovePlayer:
+    move.w  (PlayerX), d0               ; Current position and buttons
+    move.w  (PlayerY), d1
+    move.b  (JoyHold), d2
+    
+    btst.l  #3, d2                      ; Move right?
+    beq.s   *+4
+    addq.w  #4, d0
+    
+    btst.l  #2, d2                      ; Move left?
+    beq.s   *+4
+    subq.w  #4, d0
+    
+    btst.l  #1, d2                      ; Move down?
+    beq.s   *+4
+    addq.w  #4, d1
+    
+    btst.l  #0, d2                      ; Move up?
+    beq.s   *+4
+    subq.w  #4, d1
+    
+    move.w  d0, (PlayerX)               ; Store new position
+    move.w  d1, (PlayerY)
+    rts                                 ; End of subroutine
+    
+    endc
+
+;****************************************************************************
+; DrawPlayer
+; Draws the player on screen.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+DrawPlayer:
+    if      DEBUG_CONTROLS              ; Always show up during free move
+    btst.b  #CH_FREEMOVE, (Cheats)
+    bne.s   @NoFlash
+    endc
+    
+    tst.b   (PlayerFlash)               ; Flashing?
+    beq.s   @NoFlash
+    btst.b  #PF_HURT, (PlayerFlags)
+    bne.s   @NoFlash
+    tst.b   (BlinkFlag)
+    beq.s   @NoFlash
+    rts
+@NoFlash:
+    
+    move.l  (PlayerGfxAddr), d7         ; Load new graphics if needed
+    move.w  (PlayerGfxSize), d6
+    beq.s   @SpriteLoaded
+    move.l  (DMABufEnd), a6
+    DMA2VRAM_SL d7, VramPlayer*$20, d6, a6
+    move.l  a6, (DMABufEnd)
+    clr.w   (PlayerGfxSize)
+@SpriteLoaded:
+    
+    move.w  #VramPlayer, d2             ; Check which way Merlina is facing
+    btst.b  #PF_DIR, (PlayerFlags)
+    beq.s   @NotFlipped
+    or.w    #$0800, d2
+@NotFlipped:
+    
+    if      DEBUG_CONTROLS              ; Mess with the palette during free
+    btst.b  #CH_FREEMOVE, (Cheats)        ; move to show that the mode is
+    beq.s   @NoFreeMove                   ; active
+    tst.b   (BlinkFlag)
+    beq.s   @NoFreeMove
+    or.w    #$A000, d2
+@NoFreeMove:
+    endc
+    
+    move.w  (PlayerX), d0               ; Draw Merlina's sprite
+    move.w  (PlayerY), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    move.l  (PlayerMapping), a6
+    jsr     (AddMetasprite).w
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; HurtPlayer
+; Hurts the player (when possible).
+;----------------------------------------------------------------------------
+; input d7.w ... X coordinate of attack
+; input d6.w ... Y coordinate of attack
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+HurtPlayer:
+    btst.b  #PF_HURT, (PlayerFlags)     ; Check if we can hurt Merlina first
+    bne.s   @CantHurt
+    tst.b   (PlayerFlash)
+    bne.s   @CantHurt
+    btst.b  #CH_MUTEKI, (Cheats)
+    bne.s   @CantHurt
+    
+    bset.b  #PF_HURT, (PlayerFlags)     ; Cause recoil
+    bclr.b  #PF_LANDED, (PlayerFlags)
+    move.w  #RECOIL_SPEED, d5
+    cmp.w   (PlayerX), d7
+    blt.s   *+4
+    neg.w   d5
+    move.w  d5, (PlayerXSpeed)
+    move.w  #-RECOIL_FORCE, (PlayerYSpeed)
+    
+    move.b  (PlayerFlags), d6           ; Make the player face the attacker
+    bclr.l  #PF_DIR, d6
+    cmp.w   (PlayerX), d7
+    bge.s   *+6
+    bset.l  #PF_DIR, d6
+    move.b  d6, (PlayerFlags)
+    
+    move.b  #60, (PlayerFlash)          ; Give mercy invulnerability
+    clr.b   (PlayerAttack)              ; Player can't attack when hurt
+    
+    subq.b  #1, (PlayerHealth)          ; Reduce health
+    beq     KillPlayer                  ; All health gone?
+    
+@CantHurt:
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; KillPlayer
+; Kills the player immediately.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+KillPlayer:
+    clr.b   (PlayerHealth)              ; Remove all health
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; CollidesPlayer
+; Checks if an object collides with the player.
+;----------------------------------------------------------------------------
+; input a6.l .... Pointer to object
+;----------------------------------------------------------------------------
+; output d7.w ... Non-zero if collision, zero if not
+;----------------------------------------------------------------------------
+; breaks: d4-d6, a4-a6
+;****************************************************************************
+
+CollidesPlayer:
+    move.w  OBJ_X(a6), d7               ; Calculate the hitbox's world
+    move.w  OBJ_Y(a6), d6                 ; coordinates
+    move.w  d7, d5
+    move.w  d6, d4
+    add.w   OBJ_BOXX1(a6), d7
+    add.w   OBJ_BOXY1(a6), d6
+    add.w   OBJ_BOXX2(a6), d5
+    add.w   OBJ_BOXY2(a6), d4
+    
+    sub.w   (PlayerX), d7               ; Make coordinates relative to player
+    sub.w   (PlayerY), d6
+    sub.w   (PlayerX), d5
+    sub.w   (PlayerY), d4
+    
+    cmp.w   #$08, d7                    ; Check the boundaries
+    bgt.s   @Nope
+    cmp.w   #-$07, d5
+    blt.s   @Nope
+    cmp.w   #$10, d6
+    bgt.s   @Nope
+    cmp.w   #-$18, d4
+    blt.s   @Nope
+    
+@Yep:
+    moveq   #1, d7                      ; Collision found
+    rts                                 ; End of subroutine
+    
+@Nope:
+    moveq   #0, d7                      ; No collision
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; CollidesAttack
+; Checks if an object collides with a player attack.
+;----------------------------------------------------------------------------
+; input a6.l .... Pointer to object
+;----------------------------------------------------------------------------
+; output d7.w ... Non-zero if collision, zero if not
+;----------------------------------------------------------------------------
+; breaks: d4-d6, a4-a6
+;****************************************************************************
+
+CollidesAttack:
+    tst.b   (PlayerAttack)              ; Is the player even attacking?
+    beq     @Nope
+    
+    move.w  OBJ_X(a6), d7               ; Calculate the hitbox's world
+    move.w  OBJ_Y(a6), d6                 ; coordinates
+    move.w  d7, d5
+    move.w  d6, d4
+    add.w   OBJ_BOXX1(a6), d7
+    add.w   OBJ_BOXY1(a6), d6
+    add.w   OBJ_BOXX2(a6), d5
+    add.w   OBJ_BOXY2(a6), d4
+    
+    sub.w   (PlayerX), d7               ; Make coordinates relative to player
+    sub.w   (PlayerY), d6
+    sub.w   (PlayerX), d5
+    sub.w   (PlayerY), d4
+    move.w  d5, a5
+    move.w  d4, a4
+    
+    moveq   #0, d5                      ; Determine hitbox to use
+    move.b  (PlayerAttack), d5
+    subq.w  #1, d5
+    lsr.w   #2, d5
+    lsl.w   #4, d5
+    lea     @Hitboxes(pc), a6
+    lea     (a6,d5.w), a6
+    
+    btst.b  #PF_DIR, (PlayerFlags)      ; Make coordinates relative to the
+    bne.s   @FacingLeft                   ; attack's hitbox now
+@FacingRight:                             ; Note how we adjust the hitbox to
+    sub.w   (a6), d7                      ; account for the player facing
+    sub.w   2(a6), d6                     ; either direction
+    sub.w   (a6)+, a5
+    sub.w   (a6)+, a4
+    bra.s   @CoordAdjusted
+@FacingLeft:
+    add.w   (a6), d7
+    sub.w   2(a6), d6
+    add.w   (a6)+, a5
+    sub.w   (a6)+, a4
+@CoordAdjusted:
+    
+    move.w  (a6)+, d5                   ; Get hitbox dimensions
+    move.w  (a6)+, d4
+    
+    cmp.w   d5, d7                      ; Check the boundaries now
+    bgt.s   @Nope
+    cmp.w   d4, d6
+    bgt.s   @Nope
+    neg.w   d5
+    neg.w   d4
+    cmp.w   d5, a5
+    blt.s   @Nope
+    cmp.w   d4, a4
+    blt.s   @Nope
+    
+@Yep:
+    moveq   #1, d7                      ; Collision found
+    rts                                 ; End of subroutine
+    
+@Nope:
+    moveq   #0, d7                      ; No collision
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Hitboxes:
+    dc.w    $20, 0, $10, $20            ; Attack from front
+    dc.w    $10, -$10, $18, $18         ; Attack in diagonal
+    dc.w    0, -$20, $20, $10           ; Attack from above
+    dc.w    0, -$20, $20, $10           ; (redundancy)
+
+;****************************************************************************
+; FacePlayer
+; Makes an object face the player.
+;----------------------------------------------------------------------------
+; input a6.l .... Pointer to object
+;----------------------------------------------------------------------------
+; output d7.b ... New flags (if you need them)
+;----------------------------------------------------------------------------
+; breaks: d5-d6, a4-a6
+;****************************************************************************
+
+FacePlayer:
+    move.w  OBJ_X(a6), d6               ; Current position
+    move.b  OBJ_FLAGS(a6), d7           ; Current status
+    
+    bclr.l  #OF_DIR, d7                 ; Compare position against the
+    sub.w   (PlayerX), d6                 ; player's and change the direction
+    blt.s   *+6                           ; accordingly
+    bset.l  #OF_DIR, d7
+    
+    move.b  d7, OBJ_FLAGS(a6)           ; Store updated flags
+    rts                                 ; End of subroutine

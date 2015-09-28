@@ -1,0 +1,308 @@
+;****************************************************************************
+; ErrorHandler
+; Actual subroutine responsible for the BSOD when the game crashes.
+;----------------------------------------------------------------------------
+; notes: doesn't return
+;****************************************************************************
+
+ErrorHandler:
+    move.l  sp, -(sp)                   ; Push all registers onto the stack
+    move.l  a6, -(sp)                     ; so we can keep their values. I
+    move.l  a5, -(sp)                     ; think this is how MOVEM works,
+    move.l  a4, -(sp)                     ; but I'm not gonna take any risks
+    move.l  a3, -(sp)                     ; (especially regarding the value
+    move.l  a2, -(sp)                     ; of SP)
+    move.l  a1, -(sp)
+    move.l  a0, -(sp)
+    move.l  d7, -(sp)
+    move.l  d6, -(sp)
+    move.l  d5, -(sp)
+    move.l  d4, -(sp)
+    move.l  d3, -(sp)
+    move.l  d2, -(sp)
+    move.l  d1, -(sp)
+    move.l  d0, -(sp)
+    
+    move.w  #$8004, ($C00004)           ; Put VDP into a known state
+    move.w  #$8114, ($C00004)
+    move.w  #$8700, ($C00004)
+    move.w  #$8AFF, ($C00004)
+    move.w  #$8F02, ($C00004)
+    jsr     (ResetVideo).w
+    
+    SetCRAMAddr $00, ($C00004)          ; Set the palette for the text
+    move.l  #$0A000EEE, ($C00000)         ; Palette 0 = white
+    move.l  #$00000EEE, ($C00000)         ; Palette 1 = yellow
+    SetCRAMAddr $20, ($C00004)
+    move.l  #$0A0000CE, ($C00000)
+    move.l  #$000000CE, ($C00000)
+    
+    lea     (GfxErrorFont), a6          ; Decompress and load font
+    lea     ($C00000), a5
+    SetVRAMAddr $0020, 4(a5)
+    moveq   #0, d2
+    move.w  #36*8-1, d7
+@FontRow:
+    move.b  (a6)+, d0
+    moveq   #8-1, d6
+@FontPixel:
+    lsl.l   #4, d1
+    add.b   d0, d0
+    addx.b  d2, d1
+    dbf     d6, @FontPixel
+    move.l  d1, d0
+    lsr.l   #3, d0
+    or.l    d0, d1
+    move.l  d1, (a5)
+    dbf     d7, @FontRow
+    
+    bsr.w   *+4                         ; Retrieve crash reason (we store it
+    move.l  (sp)+, d0                     ; into the high byte of the vector)
+    rol.l   #8, d0
+    and.w   #$FF, d0
+    lsl.w   #2, d0
+    lea     @Reasons(pc), a6
+    move.l  (a6,d0.w), a6
+    
+    moveq   #2, d7                      ; Draw reason on screen
+    moveq   #1, d6
+    moveq   #1, d5
+    bsr     DrawErrorStr
+    
+    lea     @Positions(pc), a0          ; Draw all the labels
+    lea     @Labels(pc), a6
+    moveq   #18-1, d0
+@DrawLabels:
+    moveq   #0, d7
+    moveq   #0, d6
+    moveq   #1, d5
+    move.b  (a0)+, d7
+    move.b  (a0)+, d6
+    bsr     DrawErrorStr
+    dbf     d0, @DrawLabels
+    
+    lea     @Positions(pc), a0          ; Draw the values of the registers
+    moveq   #16-1, d0
+@DrawRegisters:
+    moveq   #0, d7
+    moveq   #0, d6
+    moveq   #0, d5
+    move.b  (a0)+, d7
+    move.b  (a0)+, d6
+    addq.w  #3, d7
+    move.l  (sp)+, d4
+    bsr     DrawErrorLong
+    dbf     d0, @DrawRegisters
+    
+    moveq   #18, d7                     ; Draw where it crashed
+    moveq   #20, d6
+    moveq   #1, d5
+    move.l  2(sp), d4
+    bsr     DrawErrorLong
+    
+    moveq   #18, d7                     ; Draw the flags when it crashed
+    moveq   #22, d6
+    moveq   #1, d5
+    move.w  (sp), d4
+    bsr     DrawErrorShort
+    
+    move.l  sp, a0                      ; Draw the initial portion of the
+    moveq   #24, d1                       ; stack
+    moveq   #2-1, d3
+@DrawStackY:
+    moveq   #3, d0
+    moveq   #7-1, d2
+@DrawStackX:
+    move.w  d0, d7
+    move.w  d1, d6
+    moveq   #0, d5
+    moveq   #0, d4
+    move.w  (a0)+, d4
+    bsr     DrawErrorShort
+    addq.w  #5, d0
+    dbf     d2, @DrawStackX
+    addq.w  #2, d1
+    dbf     d3, @DrawStackY
+    
+    jsr     (EnableDisplay).w           ; Show the screen
+    bra.s   *                           ; Now hang
+
+;----------------------------------------------------------------------------
+; Reasons for each error
+;----------------------------------------------------------------------------
+
+@Reasons:
+    dc.l    StrAddressError
+    dc.l    StrBusError
+    dc.l    StrIllegalInstruction
+    dc.l    StrDivisionByZero
+    dc.l    StrUnusedInterrupt
+    dc.l    StrUnusedTrap
+    dc.l    StrUnknownError
+
+;----------------------------------------------------------------------------
+; Fields for each register
+;----------------------------------------------------------------------------
+
+@Positions:
+    dc.b    7,3, 7,5, 7,7, 7,9
+    dc.b    7,11, 7,13, 7,15, 7,17
+    dc.b    22,3, 22,5, 22,7, 22,9
+    dc.b    22,11, 22,13, 22,15, 22,17
+    dc.b    15,20, 15,22
+
+@Labels:
+    dc.b    "D0",0, "D1",0, "D2",0, "D3",0
+    dc.b    "D4",0, "D5",0, "D6",0, "D7",0
+    dc.b    "A0",0, "A1",0, "A2",0, "A3",0
+    dc.b    "A4",0, "A5",0, "A6",0, "SP",0
+    dc.b    "PC",0, "SR",0
+    
+    even
+
+;****************************************************************************
+; DrawErrorStr
+; Draws a string in the crash screen.
+;----------------------------------------------------------------------------
+; input d7.w .... X coordinate
+; input d6.w .... Y coordinate
+; input d5.b .... 0 = white, 1 = yellow
+; input a6.l .... String to draw
+;----------------------------------------------------------------------------
+; output a6.l ... After end of string
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a5
+;****************************************************************************
+
+DrawErrorStr:
+    lea     ($C00000), a5               ; VDP data port
+    lea     (TextLookup), a4            ; ASCII-to-tile look-up table
+    
+    lsl.w   #6, d6                      ; Calculate address in tilemap
+    add.w   d6, d7
+    add.w   d7, d7
+    and.l   #$1FFF, d7
+    add.w   #$C000, d7
+    lsl.l   #2, d7
+    lsr.w   #2, d7
+    or.w    #$4000, d7
+    swap    d7
+    move.l  d7, 4(a5)
+    
+    tst.b   d5                          ; Determine palette to use
+    sne.b   d5
+    ext.w   d5
+    and.w   #$2000, d5
+    
+@Loop:
+    moveq   #0, d7                      ; Retrieve character
+    move.b  (a6)+, d7
+    beq.s   @End
+    sub.b   #$20, d7
+    
+    move.b  (a4,d7.w), d7               ; Draw it
+    or.w    d5, d7
+    move.w  d7, (a5)
+    
+    bra.s   @Loop                       ; Go for next character
+    
+@End:
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawErrorLong
+; Draws a 32-bit hexadecimal number in the crash screen.
+;----------------------------------------------------------------------------
+; input d7.w .... X coordinate
+; input d6.w .... Y coordinate
+; input d5.b .... 0 = white, 1 = yellow
+; input d4.l .... Value to draw
+;----------------------------------------------------------------------------
+; breaks: d4-d7, a4-a6
+;****************************************************************************
+
+DrawErrorLong:
+    lea     ($C00000), a6               ; VDP data port
+    
+    lsl.w   #6, d6                      ; Calculate address in tilemap
+    add.w   d6, d7
+    add.w   d7, d7
+    and.l   #$1FFF, d7
+    add.w   #$C000, d7
+    lsl.l   #2, d7
+    lsr.w   #2, d7
+    or.w    #$4000, d7
+    swap    d7
+    move.l  d7, 4(a6)
+    
+    tst.b   d5                          ; Determine palette to use
+    sne.b   d5
+    ext.w   d5
+    and.w   #$2000, d5
+    
+    moveq   #8-1, d7                    ; Draw all 8 digits
+@Loop:
+    rol.l   #4, d4
+    move.b  d4, d5
+    and.b   #$0F, d5
+    addq.w  #1, d5
+    move.w  d5, (a6)
+    dbf     d7, @Loop
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawErrorShort
+; Draws a 16-bit hexadecimal number in the crash screen.
+;----------------------------------------------------------------------------
+; input d7.w .... X coordinate
+; input d6.w .... Y coordinate
+; input d5.b .... 0 = white, 1 = yellow
+; input d4.w .... Value to draw
+;----------------------------------------------------------------------------
+; breaks: d4-d7, a4-a6
+;****************************************************************************
+
+DrawErrorShort:
+    lea     ($C00000), a6               ; VDP data port
+    
+    lsl.w   #6, d6                      ; Calculate address in tilemap
+    add.w   d6, d7
+    add.w   d7, d7
+    and.l   #$1FFF, d7
+    add.w   #$C000, d7
+    lsl.l   #2, d7
+    lsr.w   #2, d7
+    or.w    #$4000, d7
+    swap    d7
+    move.l  d7, 4(a6)
+    
+    tst.b   d5                          ; Determine palette to use
+    sne.b   d5
+    ext.w   d5
+    and.w   #$2000, d5
+    
+    moveq   #4-1, d7                    ; Draw all 4 digits
+@Loop:
+    rol.w   #4, d4
+    move.b  d4, d5
+    and.b   #$0F, d5
+    addq.w  #1, d5
+    move.w  d5, (a6)
+    dbf     d7, @Loop
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; Vector addresses for each error
+;****************************************************************************
+
+                rsset ErrorHandler
+
+ErrorAdd:       rs.b 1<<24      ; Address error
+ErrorBus:       rs.b 1<<24      ; Bus error
+ErrorIll:       rs.b 1<<24      ; Illegal instruction
+ErrorDiv:       rs.b 1<<24      ; Division by zero
+ErrorInt:       rs.b 1<<24      ; Unhandled interrupt
+ErrorTrp:       rs.b 1<<24      ; Unhandled trap
+ErrorUnk:       rs.b 1<<24      ; Unknown error

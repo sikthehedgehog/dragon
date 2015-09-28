@@ -1,0 +1,136 @@
+;****************************************************************************
+; Global variables used everywhere
+;****************************************************************************
+
+                    rsset $FF0000
+JoyHold:            rs.b 1          ; Joypad buttons being held down
+JoyPress:           rs.b 1          ; Joypad buttons that just got pressed
+
+HBlank:             rs.b $80        ; Where the hblank handler resides
+DMABuf:             rs.w $200       ; Buffer for DMA commands
+DMABufEnd:          rs.l 1          ; End address of the above buffer
+VBlankFlag:         rs.b 1          ; Set when vblank starts
+NumSprites:         rs.b 1          ; Sprites drawn so far
+SpriteBuf:          rs.w 4*80       ; Sprite table buffer
+PaletteBuf:         rs.w 4*$10      ; Palette buffer
+WantsFade:          rs.b 1          ; Set this to fade in the next frame
+BlinkFlag:          rs.b 1          ; Toggled every *real* frame
+
+BGMToPlay:          rs.b 1          ; ID of BGM to be played next frame
+SFXToPlay:          rs.b 1          ; ID of SFX to be played next frame
+CurrentSFX:         rs.b 1          ; ID of SFX currently playing
+SoundTest:          rs.b 1          ; Sound test :)
+
+Anim:               rs.w 1          ; Global animation timer
+Subpixel:           rs.w 1          ; For faking subpixel precision
+
+Difficulty:         rs.b 1          ; Difficulty level
+StartLives:         rs.b 1          ; Starting lives count
+ControlSet:         rs.b 1          ; Which control mapping is being used
+JumpButton:         rs.b 1          ; Button used for jumping
+AttackButton:       rs.b 1          ; Button used for attacking
+MagicButton:        rs.b 1          ; Button used for magic
+
+Score:              rs.l 1          ; Current score (BCD)
+Lives:              rs.b 1          ; How many lives are left (BCD)
+Stage:              rs.b 1          ; Current stage
+Cheats:             rs.b 1          ; Enabled cheats
+                    rs.b 1
+
+LocalRAM:           rs.b 0          ; Where screen-specific data starts
+
+;****************************************************************************
+; Variables used in-game
+;****************************************************************************
+
+                    rsset LocalRAM
+
+GameState:          rs.b 1          ; Current state of the game
+
+GameSprites:        rs.b 1          ; Where the non-HUD sprites start
+AltSpriteBuf:       rs.w 4*80       ; Alternate sprite buffer (for water)
+
+CameraX:            rs.w 1          ; Camera's horizontal position
+CameraY:            rs.w 1          ; Camera's vertical position
+CameraLeft:         rs.w 1          ; Left limit of the camera
+CameraRight:        rs.w 1          ; Right limit of the camera
+CameraTop:          rs.w 1          ; Top limit of the camera
+CameraBottom:       rs.w 1          ; Bottom limit of the camera
+
+MapWidth:           rs.b 1          ; Width of the map in tiles
+MapHeight:          rs.b 1          ; Height of the map in tiles
+MapOffsets:         rs.w $20        ; Row address offsets look-up table
+TileAddr:           rs.l 1          ; Pointer to graphics map
+CollAddr:           rs.l 1          ; Pointer to collision map
+ColBuffer:          rs.w $10*$08    ; Buffer for drawing a column
+RowBuffer:          rs.w $10*$10    ; Buffer for drawing a row
+
+WaterHeight:        rs.w 1          ; Height of the water ($7FFF = no water)
+
+PlayerX:            rs.w 1          ; Merlina's horizontal position
+PlayerY:            rs.w 1          ; Merlina's vertical position
+PlayerXSpeed:       rs.w 1          ; Merlina's horizontal momentum
+PlayerYSpeed:       rs.w 1          ; Merlina's vertical momentum
+PlayerFlags:        rs.b 1          ; Status flags (see PF_*)
+PlayerPose:         rs.b 1          ; Merlina's last pose (see PA_*)
+PlayerHealth:       rs.b 1          ; Health points left (0..3)
+PlayerAttack:       rs.b 1          ; Frames left from attacking
+PlayerFlash:        rs.b 1          ; Invulnerability frames left
+MagicMeter:         rs.b 1          ; How much magic has been recharged
+
+PlayerMapping:      rs.l 1          ; Merlina's current sprite mapping
+PlayerGfxAddr:      rs.l 1          ; Merlina's current tiles (address)
+PlayerGfxSize:      rs.w 1          ; Merlina's current tiles (size)
+PlayerAnimLen:      rs.w 1          ; Time left until animation updates
+PlayerAnimNext:     rs.l 1          ; Next frame in the animation
+
+ObjList:            rs.b OBJ_SIZE*MAX_OBJ ; Object list
+
+;****************************************************************************
+; Variables used in menus
+;****************************************************************************
+
+                    rsset LocalRAM
+
+MenuData:           rs.l 1          ; Pointer to menu structure
+CurrentOption:      rs.b 1          ; Currently selected option
+NumOptions:         rs.b 1          ; Count how many options are there
+QuitMenu:           rs.b 1          ; Set to quit the menu
+                    rs.b 1
+
+SoundTestBuf:       rs.b 6          ; Sound test ID string buffer
+
+;****************************************************************************
+; Tile IDs for graphics in-game
+;****************************************************************************
+
+                    rsreset
+                    
+                    rs.b 1          ; Blank tile
+VramPlayer:         rs.b 50         ; Merlina's sprite
+VramTileset:        rs.b 63         ; Tileset graphics
+VramCandle:         rs.b 2*2        ; Candle fire
+VramChain:          rs.b 8*2        ; Platform chains
+VramHUDHealth:      rs.b 4*2        ; HUD health
+VramHUDCross:       rs.b 1          ; HUD cross (the "×")
+VramHUDNumber:      rs.b 10*2       ; HUD digits
+VramHUDBar:         rs.b 10*2       ; HUD energy bar
+VramHUDPause:       rs.b 5*2        ; "PAUSE"
+VramDoorClose:      rs.b 28         ; Closed door
+VramDoorOpen:       rs.b 28         ; Opened door
+VramSpikeball:      rs.b 16         ; Spikeballs
+VramGhost:          rs.b 12+8*2+20  ; Ghosts
+VramSpider:         rs.b 15+17      ; Spiders
+VramSpiderRope:     rs.b 4          ; Spider rope
+
+VusageIngame:       rs.b 0
+
+;****************************************************************************
+; Tile IDs for graphics in menus
+;****************************************************************************
+
+                    rsreset
+                    rs.b 1          ; Blank tile
+VramFont:           rs.b 36*2       ; Font for the text
+VramMenuBG:         rs.b 8          ; Menu background
+

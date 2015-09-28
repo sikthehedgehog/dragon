@@ -1,0 +1,44 @@
+;****************************************************************************
+; Options menu text
+;****************************************************************************
+
+StrOptions:             dc.b "OPCIONES",0
+
+StrDifficulty:          dc.b "DIFICULTAD",0
+StrEasy:                dc.b "FACIL  ",0
+StrNormal:              dc.b "NORMAL ",0
+StrHard:                dc.b "DIFICIL",0
+
+StrControls:            dc.b "CONTROLES",0
+StrMagic:               dc.b "MAGIA ",0
+StrAttack:              dc.b "ATACAR",0
+StrJump:                dc.b "SALTAR",0
+
+StrSoundTest:           dc.b "SOUND TEST",0
+StrExit:                dc.b "SALIR",0
+
+;****************************************************************************
+; Debug menu text
+;****************************************************************************
+
+    if DEBUG_MENU
+StrDebugMenu:           dc.b "MENU DEBUG",0
+StrStartingStage:       dc.b "NIVEL INICIAL",0
+StrInvincibility:       dc.b "INVENCIBILIDAD",0
+StrInfiniteLives:       dc.b "VIDAS INFINITAS",0
+
+StrYes:                 dc.b "SI",0
+StrNo:                  dc.b "NO",0
+    endc
+
+;****************************************************************************
+; Crash screen
+;****************************************************************************
+
+StrAddressError:        dc.b "ERROR DE DIRECCION",0
+StrBusError:            dc.b "ERROR DE BUS",0
+StrIllegalInstruction:  dc.b "INSTRUCCION ILEGAL",0
+StrDivisionByZero:      dc.b "DIVISION POR CERO",0
+StrUnusedInterrupt:     dc.b "INTERRUPCION SIN USAR",0
+StrUnusedTrap:          dc.b "TRAP SIN USAR",0
+StrUnknownError:        dc.b "ERROR DESCONOCIDO",0

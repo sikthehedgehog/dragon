@@ -1,0 +1,284 @@
+;****************************************************************************
+; DoMenu
+; Processes a menu and shows it on screen and such. It handles menus in
+; general, basically (even though there are like only two of them, and one
+; is debug-only).
+;----------------------------------------------------------------------------
+; input a0.l ... Menu data
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+DoMenu:
+    move.l  a0, -(sp)                   ; We'll need this later
+    jsr     (ResetVideo).w              ; Reset video hardware status
+    st.b    (WantsFade)                 ; We want to fade in
+    move.w  #$8B02, ($C00004)           ; We'll use hscroll per tile
+    
+    lea     (GfxTileset), a6            ; Load menu background
+    lea     (LocalRAM), a5
+    jsr     (DecompressSlz).w
+    DMA2VRAM LocalRAM, VramMenuBG*$20, 8*$20, ($C00004)
+    bsr     DrawMenuBG
+    
+    lea     (GfxFont), a6
+    lea     (LocalRAM), a5
+    jsr     (DecompressSlz).w
+    DMA2VRAM LocalRAM, VramFont*$20, 36*2*$20, ($C00004)
+    
+    lea     (PalMenuLo), a0             ; Set all menu palettes
+    lea     (PalMenuHi), a1
+    lea     (PalMenuBG), a2
+    move.w  #0, a3
+    jsr     (SetAllPalettes).w
+    
+    move.l  (sp)+, a0                   ; OK, time to go back to the menu
+    
+    move.l  (a0)+, a6                   ; Scroll the line with the title so
+    jsr     (GetStrLen).w                 ; it's centered (using hscroll so
+    add.w   d7, d7                        ; we can have sub-tile precision,
+    add.w   d7, d7                        ; because I'm that nitpicky)
+    neg.w   d7
+    add.w   #160, d7
+    SetVRAMAddr $F840, ($C00004)
+    move.w  d7, ($C00000)
+    SetVRAMAddr $F860, ($C00004)
+    move.w  d7, ($C00000)
+    
+    moveq   #0, d7                      ; Draw menu title
+    moveq   #2, d6
+    moveq   #0, d5
+    bsr     DrawText
+    
+    move.l  a0, (MenuData)              ; Keep track of the menu structure
+    
+    moveq   #0, d7                      ; Check how many options it has
+@CountOptions:
+    move.l  (a0), d6
+    beq.s   @NoMoreOptions
+    lea     $10(a0), a0
+    addq.w  #1, d7
+    bra.s   @CountOptions
+@NoMoreOptions:
+    move.b  d7, (NumOptions)
+    
+    clr.b   (CurrentOption)             ; Select first option by default
+    clr.b   (QuitMenu)                  ; Of course still not quitting!
+
+;----------------------------------------------------------------------------
+
+@MainLoop:
+    bsr     DrawMenu                    ; Redraw the menu
+    
+    move.b  (JoyPress), d0              ; Get joypad input
+    move.b  (CurrentOption), d1         ; What's the current option?
+    move.b  (NumOptions), d2            ; How many options are there?
+    subq.b  #1, d2
+    
+    btst.l  #1, d0                      ; Select next option?
+    beq.s   @NoDown
+    addq.b  #1, d1
+    cmp.b   d2, d1
+    bls.s   @NoDown
+    moveq   #0, d1
+@NoDown:
+    
+    btst.l  #0, d0                      ; Select previous option?
+    beq.s   @NoUp
+    subq.b  #1, d1
+    bge.s   @NoUp
+    move.b  d2, d1
+@NoUp:
+    
+    move.b  d1, (CurrentOption)         ; Update selection
+    
+    ext.w   d1                          ; Get info about this entry now
+    lsl.w   #4, d1
+    move.l  (MenuData), a0
+    lea     (a0,d1.w), a0
+    
+    btst.l  #3, d0                      ; Select next value?
+    beq.s   @NoRight
+    move.l  4(a0), d7
+    beq.s   @NoRight
+    move.l  d7, a6
+    jsr     (a6)
+@NoRight:
+    
+    btst.l  #2, d0                      ; Select previous value?
+    beq.s   @NoLeft
+    move.l  8(a0), d7
+    beq.s   @NoLeft
+    move.l  d7, a6
+    jsr     (a6)
+@NoLeft:
+    
+    btst.l  #7, d0                      ; Quit menu?
+    bne.s   @Quit
+    tst.b   (QuitMenu)
+    bne.s   @Quit
+    
+    and.b   #$70, d0                    ; Trigger option?
+    beq.s   @NoTrigger
+    move.l  12(a0), d7
+    beq.s   @NoTrigger
+    move.l  d7, a6
+    jsr     (a6)
+@NoTrigger:
+    
+    jsr     (NextFrame).w
+    bra     @MainLoop
+
+;----------------------------------------------------------------------------
+
+@Quit:
+    jsr     (FadeOut).w
+    rts
+
+;****************************************************************************
+; DrawMenu
+; Redraws the entire menu.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+DrawMenu:
+    move.l  (MenuData), a0              ; Get the menu structure
+    moveq   #6, d0                      ; Get position of first entry
+    move.b  (CurrentOption), d1         ; Get current selection
+    moveq   #0, d2                      ; ...and go through all IDs
+    
+@Loop:
+    move.l  (a0), d7                    ; Get next option
+    beq.s   @End
+    move.l  d7, a6
+    
+    cmp.w   d2, d1                      ; Get palette to use
+    seq.b   d3
+    ext.w   d3
+    neg.w   d3
+    
+    jsr     (a6)                        ; Get label and value strings
+    
+    jsr     (GetStrLen).w               ; Draw label
+    neg.w   d7
+    add.w   #20, d7
+    move.w  d0, d6
+    move.w  d3, d5
+    move.l  a5, -(sp)
+    jsr     (DrawText)
+    move.l  (sp)+, a6
+    
+    move.l  a6, d7                      ; Draw value, if any
+    beq.s   @NoValue
+    moveq   #23, d7
+    move.w  d0, d6
+    move.w  d3, d5
+    jsr     (DrawText)
+@NoValue:
+    
+    lea     $10(a0), a0                 ; Go for next option
+    addq.w  #2, d0
+    addq.w  #1, d2
+    bra.s   @Loop
+    
+@End:
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawMenuBG
+; Draws the menu background.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+DrawMenuBG:
+    lea     ($C00000), a6               ; VDP data port
+    SetPosB 0, 0, 4(a6)                 ; Set address to write into
+    
+    lea     @Pattern(pc), a5            ; Draw the brick pattern. The pattern
+    moveq   #$20-1, d6                    ; goes like this: 4 5 6 7
+@YLoop:                                   ;                 2 3 0 1
+    moveq   #$40/4-1, d7                  ;                 6 7 4 5
+@XLoop:                                   ;                 0 1 2 3
+    move.w  (a5)+, (a6)
+    move.w  (a5)+, (a6)
+    move.w  (a5)+, (a6)
+    move.w  (a5)+, (a6)
+    lea     -4*2(a5), a5
+    dbf     d7, @XLoop
+    lea     4*2(a5), a5
+    dbf     d6, @YLoop
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Pattern:
+    rept    7
+    dc.w    $4004+VramMenuBG, $4005+VramMenuBG, $4006+VramMenuBG, $4007+VramMenuBG
+    dc.w    $4002+VramMenuBG, $4003+VramMenuBG, $4000+VramMenuBG, $4001+VramMenuBG
+    dc.w    $4006+VramMenuBG, $4007+VramMenuBG, $4004+VramMenuBG, $4005+VramMenuBG
+    dc.w    $4000+VramMenuBG, $4001+VramMenuBG, $4002+VramMenuBG, $4003+VramMenuBG
+    endr
+
+;****************************************************************************
+; DrawText
+; Draws a nul-terminated ASCII string on screen.
+;----------------------------------------------------------------------------
+; input d7.w ... X coordinate (0..39)
+; input d6.w ... Y coordinate (0..27)
+; input d5.w ... Palette to use (0..1)
+; input a6.l ... String to draw
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+DrawText:
+    lea     (TextLookup), a5            ; ASCII look-up table
+    lea     ($C00000), a4               ; VDP data port
+    
+    lsl.w   #6, d6                      ; Determine address of the first row
+    add.w   d6, d7
+    add.w   d7, d7
+    and.l   #$1FFF, d7
+    swap    d7
+    or.l    #$40000003, d7
+    
+    tst.w   d5                          ; Determine base tile for the font
+    sne.b   d5                            ; (and the palette to use)
+    ext.w   d5
+    and.w   #$2000, d5
+    add.w   #$8000+VramFont, d5
+    
+    move.l  d7, 4(a4)                   ; Draw first row
+    move.l  a6, -(sp)
+    bsr     @Loop
+    move.l  (sp)+, a6
+    
+    addq.w  #1, d5                      ; Draw second row
+    add.l   #$80<<16, d7
+    move.l  d7, 4(a4)
+
+;----------------------------------------------------------------------------
+
+@Loop:
+    moveq   #0, d6                      ; Get next letter
+    move.b  (a6)+, d6
+    beq.s   @End
+    
+    sub.b   #$20, d6                    ; Draw tile for this letter
+    move.b  (a5,d6.w), d6
+    beq.s   @Space
+    subq.w  #1, d6
+    add.w   d6, d6
+    add.w   d5, d6
+    move.w  d6, (a4)
+    bra.s   @Loop
+    
+@Space:                                 ; Spaces are just the blank tile
+    move.w  #0, (a4)
+    bra.s   @Loop
+    
+@End:
+    rts                                 ; End of subroutine

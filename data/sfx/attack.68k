@@ -1,0 +1,29 @@
+;****************************************************************************
+; SFX for when Merlina attacks with her broom.
+;****************************************************************************
+
+    ESF_Lock        ESF_PSG3
+    ESF_Lock        ESF_PSG4
+    
+    ESF_SetInstr    ESF_PSG3, $02
+    ESF_SetInstr    ESF_PSG4, $02
+    ESF_SetVol      ESF_PSG3, $0F
+    
+    ESF_SetVol      ESF_PSG4, $02
+    ESF_NoteOn      ESF_PSG4, $07
+    ESF_NoteOn      ESF_PSG3, 5, 6
+    ESF_Delay       1
+    
+    ESF_SetVol      ESF_PSG4, $00
+    ESF_NoteOn      ESF_PSG3, 5, 10
+    ESF_Delay       2
+    
+    ESF_SetVol      ESF_PSG4, $02
+    ESF_NoteOn      ESF_PSG3, 5, 6
+    ESF_Delay       1
+    
+    ESF_SetVol      ESF_PSG4, $04
+    ESF_NoteOn      ESF_PSG3, 5, 2
+    ESF_Delay       2
+    
+    ESF_Stop
