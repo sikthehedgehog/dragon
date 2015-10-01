@@ -1,0 +1,26 @@
+output "src-data/enemies/enemies.4bpp"
+layout sprite
+
+input "src-data/enemies/spikeball.png"
+tiles 0 0 4 4
+
+input "src-data/enemies/ghost_1.png"
+tiles 0 0 4 3
+tiles 0 3 4 2
+input "src-data/enemies/ghost_2.png"
+tiles 0 3 4 2
+input "src-data/enemies/ghost_dead.png"
+tiles 0 0 4 3
+tiles 0 3 4 2
+
+input "src-data/enemies/spider_1.png"
+tiles 2 0 1 4
+tiles 2 4 1 1
+tiles 3 0 2 4
+tiles 3 4 2 1
+input "src-data/enemies/spider_2.png"
+tiles 4 0 3 4
+tiles 4 4 3 1
+tiles 4 5 2 1
+input "src-data/enemies/spider_rope.png"
+tiles 0 0 1 4

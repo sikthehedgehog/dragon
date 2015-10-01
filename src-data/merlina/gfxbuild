@@ -1,0 +1,146 @@
+layout sprite
+
+input "src-data/merlina/idle_1.png"
+output "data/merlina/idle_1.4bpp"
+tiles 1 0 3 1
+tiles 0 1 4 3
+tiles 1 4 3 2
+tiles 4 0 2 2
+tiles 4 2 1 1
+tiles 4 3 2 3
+
+input "src-data/merlina/idle_2.png"
+output "data/merlina/idle_2.4bpp"
+tiles 1 0 3 1
+tiles 0 1 4 3
+tiles 1 4 3 2
+tiles 4 0 2 2
+tiles 4 2 1 1
+tiles 4 3 2 3
+
+input "src-data/merlina/run_1.png"
+output "data/merlina/run_1.4bpp"
+tiles 1 0 3 1
+tiles 0 1 4 3
+tiles 1 4 3 2
+tiles 4 0 2 2
+tiles 4 2 1 1
+tiles 4 3 2 3
+
+input "src-data/merlina/run_2.png"
+output "data/merlina/run_2.4bpp"
+tiles 1 0 4 4
+tiles 1 4 4 2
+tiles 0 1 1 3
+tiles 5 0 1 2
+tiles 5 3 1 3
+
+input "src-data/merlina/run_3.png"
+output "data/merlina/run_3.4bpp"
+tiles 1 0 3 1
+tiles 0 1 4 4
+tiles 1 5 4 1
+tiles 4 0 2 2
+tiles 4 2 1 1
+tiles 4 3 2 2
+
+input "src-data/merlina/run_4.png"
+output "data/merlina/run_4.4bpp"
+tiles 1 0 3 1
+tiles 0 1 4 3
+tiles 1 4 3 2
+tiles 4 0 2 2
+tiles 4 2 1 1
+tiles 4 3 2 3
+
+input "src-data/merlina/run_5.png"
+output "data/merlina/run_5.4bpp"
+tiles 1 0 4 4
+tiles 1 4 4 2
+tiles 0 1 1 3
+tiles 5 0 1 2
+tiles 5 3 1 3
+
+input "src-data/merlina/run_6.png"
+output "data/merlina/run_6.4bpp"
+tiles 1 0 3 1
+tiles 0 1 4 4
+tiles 1 5 4 1
+tiles 4 0 2 2
+tiles 4 2 1 1
+tiles 4 3 2 2
+
+input "src-data/merlina/crouch.png"
+output "data/merlina/crouch.4bpp"
+tiles 1 0 4 4
+tiles 1 4 4 1
+tiles 0 2 1 2
+tiles 5 0 1 2
+tiles 5 3 1 2
+
+input "src-data/merlina/attack_1.png"
+output "data/merlina/attack_1.4bpp"
+tiles 3 0 4 4
+tiles 3 4 4 4
+tiles 2 0 1 1
+tiles 1 1 2 1
+tiles 0 2 3 3
+tiles 0 5 1 1
+tiles 2 5 1 1
+tiles 7 2 1 2
+tiles 7 7 1 1
+
+input "src-data/merlina/attack_2.png"
+output "data/merlina/attack_2.4bpp"
+tiles 2 0 4 1
+tiles 3 1 4 1
+tiles 1 2 3 2
+tiles 4 2 4 2
+tiles 0 4 4 3
+tiles 4 4 4 3
+tiles 2 7 4 1
+
+input "src-data/merlina/attack_3.png"
+output "data/merlina/attack_3.4bpp"
+tiles 1 0 4 4
+tiles 1 4 4 2
+tiles 0 2 1 2
+tiles 5 0 1 2
+tiles 5 3 3 2
+tiles 5 5 1 1
+
+input "src-data/merlina/hurt.png"
+output "data/merlina/hurt.4bpp"
+tiles 1 0 3 2
+tiles 0 2 4 3
+tiles 2 5 1 1
+tiles 4 0 2 2
+tiles 4 2 1 1
+tiles 4 3 2 3
+
+input "src-data/merlina/swim_1.png"
+output "data/merlina/swim_1.4bpp"
+tiles 1 0 4 4
+tiles 1 4 4 2
+tiles 0 2 1 3
+tiles 5 0 1 2
+tiles 5 3 1 2
+tiles 1 6 3 1
+
+input "src-data/merlina/swim_2.png"
+output "data/merlina/swim_2.4bpp"
+tiles 1 0 4 4
+tiles 1 4 4 2
+tiles 0 1 1 4
+tiles 5 0 1 2
+tiles 5 3 1 2
+tiles 1 6 3 1
+
+input "src-data/merlina/swim_3.png"
+output "data/merlina/swim_3.4bpp"
+tiles 1 0 4 4
+tiles 1 4 4 2
+tiles 0 2 1 3
+tiles 5 0 1 2
+tiles 5 3 1 2
+tiles 1 6 3 1

@@ -1,0 +1,7 @@
+input "src-data/menu/font.png"
+output "src-data/menu/font.4bpp"
+layout sprite
+tiles 0 0 9 2
+tiles 0 2 9 2
+tiles 0 4 9 2
+tiles 0 6 9 2

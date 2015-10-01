@@ -1,0 +1,48 @@
+output "src-data/tileset/tileset.4bpp"
+layout tilemap
+
+input "src-data/tileset/tile_02.png"
+tiles 0 0 4 2
+tiles 0 2 2 2
+input "src-data/tileset/tile_00.png"
+tiles 0 0 2 1
+input "src-data/tileset/tile_05.png"
+tiles 0 0 2 2
+tiles 1 2 1 1
+input "src-data/tileset/tile_06.png"
+tiles 0 0 1 3
+input "src-data/tileset/tile_09.png"
+tiles 1 2 2 1
+tiles 1 3 1 1
+input "src-data/tileset/tile_0A.png"
+tiles 0 0 1 1
+input "src-data/tileset/tile_0F.png"
+tiles 3 0 1 1
+tiles 0 0 1 1
+tiles 3 1 1 1
+tiles 0 1 1 1
+tiles 0 2 4 2
+input "src-data/tileset/tile_11.png"
+tiles 0 0 2 2
+input "src-data/tileset/tile_12.png"
+tiles 0 0 2 4
+input "src-data/tileset/tile_16.png"
+tiles 0 0 2 3
+input "src-data/tileset/tile_18.png"
+tiles 1 0 1 1
+tiles 0 1 2 3
+
+output "data/tileset/candle.4bpp"
+input "src-data/tileset/candle.png"
+layout tilemap
+tiles 0 0 2 2
+tiles 2 0 2 2
+tiles 4 0 2 2
+tiles 6 0 2 2
+
+output "data/tileset/chain.4bpp"
+input "src-data/tileset/tile_19.png"
+tiles 1 0 1 4
+tiles 1 0 1 4
+tiles 2 0 1 4
+tiles 2 0 1 4

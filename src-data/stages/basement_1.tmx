@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="40" height="8" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32">
+  <image source="../tileset/tileset.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="65" name="objset" tilewidth="64" tileheight="64">
+  <image source="../tileset/objset.png" trans="000000" width="512" height="512"/>
+ </tileset>
+ <layer name="Capa de Patrones 1" width="40" height="8">
+  <data encoding="csv">
+3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+3,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,2,
+3,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,19,1,1,1,1,1,1,3,2,
+3,4,1,1,1,1,1,1,1,19,19,19,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,20,21,22,1,1,1,1,1,3,2,
+3,4,18,1,1,1,1,1,20,21,21,21,22,1,1,18,18,1,1,1,19,1,1,1,1,1,1,1,1,1,19,18,18,1,1,1,1,1,3,2,
+3,4,18,18,1,1,1,1,19,19,19,19,19,1,18,18,18,18,1,20,21,22,1,1,1,1,1,1,1,18,18,18,18,1,1,1,1,1,3,2,
+3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,1,1,1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,17,17,17,3,2,2,2,2,2,2,2,2,2,2,2,2,2
+</data>
+ </layer>
+ <objectgroup name="Capa de Objetos 1" width="40" height="8">
+  <object gid="66" x="144" y="207"/>
+  <object gid="67" x="144" y="206"/>
+  <object name="STAGE_BASEMENT2" gid="66" x="1136" y="205"/>
+  <object name="88" gid="68" x="304" y="79"/>
+  <object name="56" gid="68" x="560" y="79"/>
+  <object name="56" gid="68" x="944" y="80"/>
+ </objectgroup>
+</map>
