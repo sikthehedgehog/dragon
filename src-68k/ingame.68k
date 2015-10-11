@@ -32,7 +32,7 @@ StartGame:
     move.b  #$99, (Lives)
 @NoInfiniteLives:
     
-    moveq   #BGM_INGAME, d7             ; Start playing the main theme :)
+    ;moveq   #BGM_INGAME, d7             ; Start playing the main theme :)
     ;jsr     (PlayBGM).w
     
     ; Fall through to InGame...
