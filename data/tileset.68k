@@ -151,13 +151,23 @@ TilesetMappings:
     dc.w    @T+$203B, @T+$203C, @T+$283C, @T+$283B
     dc.w    @T+$203D, @T+$203E, @T+$283E, @T+$283D
     
-    dc.w    @T+$200C, @H+$2000, @H+$2004, @T+$200D      ; Tile $19
-    dc.w    @T+$200D, @H+$2001, @H+$2005, @T+$200C      ; Chain (downwards)
-    dc.w    @T+$200C, @H+$2002, @H+$2006, @T+$200D
-    dc.w    @T+$200D, @H+$2003, @H+$2007, @T+$200C
+    dc.w    @T+$200C, @H+$2000, @T+$200C, @H+$2003      ; Tile $19
+    dc.w    @T+$200D, @H+$2001, @T+$200D, @H+$2002      ; Downwards chains
+    dc.w    @T+$200C, @H+$2000, @T+$200C, @H+$2003      ; (left half)
+    dc.w    @T+$200D, @H+$2001, @T+$200D, @H+$2002
     
-    dc.w    @T+$200C, @H+$2008, @H+$200C, @T+$200D      ; Tile $1A
-    dc.w    @T+$200D, @H+$2009, @H+$200D, @T+$200C      ; Chain (downwards)
-    dc.w    @T+$200C, @H+$200A, @H+$200E, @T+$200D
-    dc.w    @T+$200D, @H+$200B, @H+$200F, @T+$200C
+    dc.w    @H+$2003, @T+$200D, @H+$2000, @T+$200D      ; Tile $1A
+    dc.w    @H+$2002, @T+$200C, @H+$2001, @T+$200C      ; Downwards chains
+    dc.w    @H+$2003, @T+$200D, @H+$2000, @T+$200D      ; (right half)
+    dc.w    @H+$2002, @T+$200C, @H+$2001, @T+$200C
+    
+    dc.w    @T+$200C, @H+$2002, @T+$200C, @H+$2001      ; Tile $1B
+    dc.w    @T+$200D, @H+$2003, @T+$200D, @H+$2000      ; Upwards chains
+    dc.w    @T+$200C, @H+$2002, @T+$200C, @H+$2001      ; (left half)
+    dc.w    @T+$200D, @H+$2003, @T+$200D, @H+$2000
+    
+    dc.w    @H+$2001, @T+$200D, @H+$2002, @T+$200D      ; Tile $1C
+    dc.w    @H+$2000, @T+$200C, @H+$2003, @T+$200C      ; Upwards chains
+    dc.w    @H+$2001, @T+$200D, @H+$2002, @T+$200D      ; (right half)
+    dc.w    @H+$2000, @T+$200C, @H+$2003, @T+$200C
 

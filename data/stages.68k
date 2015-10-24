@@ -21,6 +21,7 @@ StageData_Entrance4:        include "data/stages/entrance_4.68k"
 
 StageData_Hall1:            include "data/stages/hall_1.68k"
 StageData_Hall2:            include "data/stages/hall_2.68k"
+StageData_Hall3:            include "data/stages/hall_3.68k"
 
 StageData_Basement1:        include "data/stages/basement_1.68k"
 StageData_Basement2:        include "data/stages/basement_2.68k"
@@ -49,6 +50,7 @@ STAGE_\name: rs.b 1
     
     @Entry      Hall1
     @Entry      Hall2
+    @Entry      Hall3
     
     @Entry      Basement1
     @Entry      Basement2

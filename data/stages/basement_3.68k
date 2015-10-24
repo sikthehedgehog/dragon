@@ -49,7 +49,7 @@
     dc.w    $7FFF
 
     dc.w    OBJTYPE_DOOR|$00<<8, $0070, $0210
-    dc.w    OBJTYPE_DOOR|STAGE_ENTRANCE2<<8, $0130, $0090
+    dc.w    OBJTYPE_DOOR|STAGE_HALL3<<8, $0130, $0090
     dc.w    OBJTYPE_GHOST|$00<<8, $00E0, $0160
     dc.w    OBJTYPE_GHOST|$00<<8, $00C0, $00C0
     dc.w    $0000

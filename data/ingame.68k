@@ -35,3 +35,29 @@ SprDoor:
     dc.w    $04, -$28, $0800, %1011
     dc.w    $04, -$08, $0810, %1010
     dc.w    $8000
+
+;****************************************************************************
+; SprPlatform_*
+; Sprite mappings for platforms. There are different mappings to allow the
+; effect of the player making it tilt.
+;****************************************************************************
+
+SprPlatform_Idle:
+    dc.w    -$20, -$09, $0000, %1101
+    dc.w    $00, -$09, $0000, %1101
+    dc.w    $8000
+
+SprPlatform_Left:
+    dc.w    -$1F, -$08, $0000, %1101
+    dc.w    -$01, -$09, $0000, %1101
+    dc.w    $8000
+
+SprPlatform_Middle:
+    dc.w    -$20, -$08, $0000, %1101
+    dc.w    $00, -$08, $0000, %1101
+    dc.w    $8000
+
+SprPlatform_Right:
+    dc.w    -$1F, -$09, $0000, %1101
+    dc.w    -$01, -$08, $0000, %1101
+    dc.w    $8000
