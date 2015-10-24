@@ -56,7 +56,7 @@ InGame:
     lea     (GfxIngame), a6             ; Load common graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramHUDHealth*$20, 115*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramHUDHealth*$20, 123*$20, ($C00004)
     
     lea     (GfxEnemies), a6            ; Load enemy graphics
     lea     (LocalRAM), a5

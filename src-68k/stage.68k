@@ -23,14 +23,26 @@ InitStage:
     move.b  d0, (MapWidth)
     move.b  d1, (MapHeight)
     
-    moveq   #0, d7                      ; Determine the default camera limits
-    moveq   #0, d6
-    move.b  d0, d7
-    move.b  d1, d6
+    move.w  d0, d7                      ; Determine the map limits
+    move.w  d1, d6
     asl.w   #5, d7
     asl.w   #5, d6
-    sub.w   #320, d7
-    sub.w   #224, d6
+    subq.w  #1, d7
+    subq.w  #1, d6
+    move.w  d7, (MapRight)
+    move.w  d6, (MapBottom)
+    
+;    moveq   #0, d7                      ; Determine the default camera limits
+;    moveq   #0, d6
+;    move.b  d0, d7
+;    move.b  d1, d6
+;    asl.w   #5, d7
+;    asl.w   #5, d6
+;    sub.w   #320, d7
+;    sub.w   #224, d6
+    
+    sub.w   #320-1, d7                  ; Determine the default camera limits
+    sub.w   #224-1, d6
     clr.w   (CameraLeft)
     clr.w   (CameraTop)
     move.w  d7, (CameraRight)
@@ -463,21 +475,15 @@ UpdateStageAnim:
     
     moveq   #0, d7                      ; Chains
     move.w  (Anim), d7
-    and.w   #$1F, d7
+    and.w   #$0F, d7
     add.w   d7, d7
     add.w   d7, d7
-    move.l  d7, d5
-    eor.w   #$1F<<2, d5
-    add.l   #GfxChain, d7
-    add.l   #GfxChain, d5
     move.l  d7, d6
-    move.l  d5, d4
-    add.l   #8*$20, d6
-    add.l   #8*$20, d4
-    DMA2VRAM_S d7, (VramChain+8)*$20, 4*$20, a6
-    DMA2VRAM_S d6, (VramChain+12)*$20, 4*$20, a6
-    DMA2VRAM_S d5, (VramChain)*$20, 4*$20, a6
-    DMA2VRAM_S d4, (VramChain+4)*$20, 4*$20, a6
+    eor.w   #$0F<<2, d6
+    add.l   #GfxChain, d7
+    add.l   #GfxChain, d6
+    DMA2VRAM_S d7, (VramChain)*$20, 2*$20, a6
+    DMA2VRAM_S d6, (VramChain+2)*$20, 2*$20, a6
     
     move.l  a6, (DMABufEnd)             ; Done with the DMAs
     rts                                 ; End of subroutine

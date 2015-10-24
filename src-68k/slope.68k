@@ -8,7 +8,7 @@
 ;****************************************************************************
 
 RunSlope:
-    move.w  OBJ_X(a0), d0
+    move.w  OBJ_X(a0), d0               ; Get player and player status
     move.w  OBJ_Y(a0), d1
     move.w  (PlayerX), d2
     move.w  (PlayerY), d3

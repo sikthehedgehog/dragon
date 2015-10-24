@@ -42,7 +42,5 @@ tiles 6 0 2 2
 
 output "data/tileset/chain.4bpp"
 input "src-data/tileset/tile_19.png"
-tiles 1 0 1 4
-tiles 1 0 1 4
-tiles 2 0 1 4
-tiles 2 0 1 4
+tiles 1 0 1 2
+tiles 1 0 1 2

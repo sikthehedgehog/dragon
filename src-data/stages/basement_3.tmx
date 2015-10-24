@@ -32,7 +32,7 @@
  <objectgroup name="Capa de Objetos 1" width="13" height="19">
   <object gid="67" x="81" y="559"/>
   <object gid="66" x="80" y="557"/>
-  <object name="STAGE_ENTRANCE2" gid="66" x="271" y="169"/>
+  <object name="STAGE_HALL3" gid="66" x="271" y="169"/>
   <object gid="65" x="193" y="388"/>
   <object gid="65" x="164" y="223"/>
  </objectgroup>

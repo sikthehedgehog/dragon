@@ -49,6 +49,9 @@ OF_ACTIVE:      rs.b 1      ; This object is in active mode
                     rs.b 1      ; No object
 OBJTYPE_SLOPE:      rs.b 1      ; Slope
 OBJTYPE_DOOR:       rs.b 1      ; Door
+OBJTYPE_UPLATFORM:  rs.b 1      ; Upwards platform
+OBJTYPE_DPLATFORM:  rs.b 1      ; Downwards platform
+OBJTYPE_PLATSPAWN:  rs.b 1      ; Platform spawner
 OBJTYPE_SPIKEBALL:  rs.b 1      ; Spikeball
 OBJTYPE_GHOST:      rs.b 1      ; Ghost
 OBJTYPE_SPIDER:     rs.b 1      ; Spider
@@ -123,6 +126,9 @@ AddObject:
     dc.l    @Null
     dc.l    @Null                       ; OBJTYPE_SLOPE
     dc.l    InitDoor                    ; OBJTYPE_DOOR
+    dc.l    @Null                       ; OBJTYPE_UPLATFORM
+    dc.l    @Null                       ; OBJTYPE_DPLATFORM
+    dc.l    InitPlatformSpawner         ; OBJTYPE_PLATSPAWN
     dc.l    InitSpikeball               ; OBJTYPE_SPIKEBALL
     dc.l    InitGhost                   ; OBJTYPE_GHOST
     dc.l    InitSpider                  ; OBJTYPE_SPIDER
@@ -159,6 +165,9 @@ RunAllObjects:
     dc.l    @Null
     dc.l    RunSlope                    ; OBJTYPE_SLOPE
     dc.l    RunDoor                     ; OBJTYPE_DOOR
+    dc.l    RunPlatformUpwards          ; OBJTYPE_UPLATFORM
+    dc.l    RunPlatformDownwards        ; OBJTYPE_DPLATFORM
+    dc.l    RunPlatformSpawner          ; OBJTYPE_PLATSPAWN
     dc.l    RunSpikeball                ; OBJTYPE_SPIKEBALL
     dc.l    RunGhost                    ; OBJTYPE_GHOST
     dc.l    RunSpider                   ; OBJTYPE_SPIDER
@@ -182,6 +191,9 @@ DrawAllObjects:
     dc.l    @Null
     dc.l    @Null                       ; OBJTYPE_SLOPE
     dc.l    DrawDoor                    ; OBJTYPE_DOOR
+    dc.l    DrawPlatform                ; OBJTYPE_UPLATFORM
+    dc.l    DrawPlatform                ; OBJTYPE_DPLATFORM
+    dc.l    @Null                       ; OBJTYPE_PLATSPAWN
     dc.l    DrawSpikeball               ; OBJTYPE_SPIKEBALL
     dc.l    DrawGhost                   ; OBJTYPE_GHOST
     dc.l    DrawSpider                  ; OBJTYPE_SPIDER

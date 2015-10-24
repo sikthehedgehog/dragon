@@ -59,6 +59,8 @@ CameraBottom:       rs.w 1          ; Bottom limit of the camera
 
 MapWidth:           rs.b 1          ; Width of the map in tiles
 MapHeight:          rs.b 1          ; Height of the map in tiles
+MapRight:           rs.w 1          ; Right limit of the map (left is 0)
+MapBottom:          rs.w 1          ; Bottom limit of the map (top is 0)
 MapOffsets:         rs.w $20        ; Row address offsets look-up table
 TileAddr:           rs.l 1          ; Pointer to graphics map
 CollAddr:           rs.l 1          ; Pointer to collision map
@@ -110,7 +112,7 @@ SoundTestBuf:       rs.b 6          ; Sound test ID string buffer
 VramPlayer:         rs.b 50         ; Merlina's sprite
 VramTileset:        rs.b 63         ; Tileset graphics
 VramCandle:         rs.b 2*2        ; Candle fire
-VramChain:          rs.b 8*2        ; Platform chains
+VramChain:          rs.b 2*2        ; Platform chains
 VramHUDHealth:      rs.b 4*2        ; HUD health
 VramHUDCross:       rs.b 1          ; HUD cross (the "×")
 VramHUDNumber:      rs.b 10*2       ; HUD digits
@@ -118,6 +120,7 @@ VramHUDBar:         rs.b 10*2       ; HUD energy bar
 VramHUDPause:       rs.b 5*2        ; "PAUSE"
 VramDoorClose:      rs.b 28         ; Closed door
 VramDoorOpen:       rs.b 28         ; Opened door
+VramPlatform:       rs.b 4*2        ; Platform
 VramSpikeball:      rs.b 16         ; Spikeballs
 VramGhost:          rs.b 12+8*2+20  ; Ghosts
 VramSpider:         rs.b 15+17      ; Spiders

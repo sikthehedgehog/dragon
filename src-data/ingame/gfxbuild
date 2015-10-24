@@ -18,3 +18,5 @@ input "src-data/ingame/door_opened.png"
 tiles 0 0 4 4
 tiles 0 4 4 3
 
+input "src-data/ingame/platform.png"
+tiles 0 0 4 2
