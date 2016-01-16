@@ -1,0 +1,55 @@
+;****************************************************************************
+; InitRand
+; Initializes the RNG with a random seed.
+;----------------------------------------------------------------------------
+; breaks: all
+;----------------------------------------------------------------------------
+; notes: best called before you touch any RAM yet
+;****************************************************************************
+
+InitRand:
+    lea     ($FF07E8), a6               ; Do some weird stuff with the
+    lea     ($C00008), a5                 ; garbage left in RAM, the HV
+    move.w  #$10000/$400-1, d5            ; counter and whatever d7 had
+@Loop:                                    ; beforehand (because why not)
+    add.w   (a6), d7                      ; The starting address for RAM is
+    move.w  (a5), d6                      ; just a random place, could be
+    eor.w   d6, d7                        ; anywhere (as long as it's word
+    lea     $400(a6), a6                  ; aligned, mind you)
+    dbf     d5, @Loop
+    
+    move.w  d7, (RandSeed)              ; Use the resulting mess as a seed
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; Rand
+; Generates a random number between $0000 and $FFFF.
+;----------------------------------------------------------------------------
+; output d7.w ... Random number
+;****************************************************************************
+
+Rand:
+    move.w  (RandSeed), d7              ; Work from the old seed
+    
+    rol.w   #3, d7                      ; Go crazy :3
+    add.w   ($C00008), d7
+    rol.w   #5, d7
+    sub.w   ($C00008), d7
+    ror.w   #1, d7
+    
+    move.w  d7, (RandSeed)              ; Store the new seed
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; Rand32
+; Generates a random number between $00000000 and $FFFFFFFF.
+;----------------------------------------------------------------------------
+; output d7.l ... Random number
+;****************************************************************************
+
+Rand32:
+    jsr     (Rand).w
+    swap    d7
+    jsr     (Rand).w
+    rol.l   #8, d7
+    rts

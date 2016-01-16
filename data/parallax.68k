@@ -1,0 +1,8 @@
+;****************************************************************************
+; GfxFog
+; Graphics for the fog outdoors. This includes both the tilemap and the tiles
+;****************************************************************************
+
+GfxFog:
+    incbin  "data/parallax/fog.slz"
+    even

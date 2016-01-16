@@ -1,0 +1,9 @@
+input "src-data/title/logo_en.png"
+output "src-data/title/logo_en.4bpp"
+output2 "src-data/title/logo_en.map"
+map 0 0 29 11
+
+input "src-data/title/logo_es.png"
+output "src-data/title/logo_es.4bpp"
+output2 "src-data/title/logo_es.map"
+map 0 0 31 14

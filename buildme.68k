@@ -2,10 +2,14 @@
 ; Build settings
 ;****************************************************************************
 
+SHOW_COPYRIGHT:     equ 1       ; Show copyright on title screen?
+HAS_MUSIC:          equ 0       ; Include music?
+
 DEBUG_INIT:         equ 0       ; Simulate some real hardware conditions
 DEBUG_MENU:         equ 1       ; Enable the debug menu
 DEBUG_CONTROLS:     equ 1       ; Enable debug-only controls
-DEBUG_HUD:          equ 1       ; Show debug info in the HUD
+DEBUG_HUD:          equ 0       ; Show debug info in the HUD
+DEBUG_DRAWUSAGE:    equ 0       ; Show time spent drawing objects (emu only!)
 
 LANG_EN:            equ 1       ; Set this to make an English build
 LANG_ES:            equ 0       ; Set this to make a Spanish build
@@ -17,7 +21,7 @@ LANG_ES:            equ 0       ; Set this to make a Spanish build
 SCORE_BROOM:        equ $100        ; Killing an enemy with the broom
 SCORE_MAGIC:        equ $200        ; Killing an enemy with magic
 SCORE_FREEZE:       equ $25         ; Bella freezes an enemy
-SCORE_ITEM:         equ $200        ; Getting an item
+SCORE_ITEM:         equ $250        ; Getting an item
 
 ;****************************************************************************
 ; Program source code
@@ -32,6 +36,7 @@ SCORE_ITEM:         equ $200        ; Getting an item
     include "src-68k/hblank.68k"        ; Raster effect routines
     include "src-68k/sound.68k"         ; Sound hardware code
     include "src-68k/decompress.68k"    ; Decompression subroutines
+    include "src-68k/random.68k"        ; Random number generator
     
     include "src-68k/text.68k"          ; String manipulation
     include "src-68k/menu.68k"          ; Handler for all menus
@@ -53,13 +58,21 @@ SCORE_ITEM:         equ $200        ; Getting an item
     include "src-68k/ingame.68k"        ; In-game main loop
     include "src-68k/hud.68k"           ; Drawing the HUD
     include "src-68k/stage.68k"         ; Handles stage data
+    include "src-68k/parallax.68k"      ; Parallaxes
     include "src-68k/player.68k"        ; Player behavior
     include "src-68k/objects.68k"       ; Object manager
-    include "src-68k/slope.68k"         ; Slope platforms
+    include "src-68k/platform.68k"      ; Platform objects
+    include "src-68k/slope.68k"         ; Slope objects
+    include "src-68k/items.68k"         ; Items and the like
+    include "src-68k/magic.68k"         ; Magic-related objects
+    include "src-68k/particles.68k"     ; Harmless particles
     include "src-68k/door.68k"          ; Door behavior
     include "src-68k/spikeball.68k"     ; Spikeball behavior
     include "src-68k/ghost.68k"         ; Ghost behavior
     include "src-68k/spider.68k"        ; Spider behavior
+    include "src-68k/mirror.68k"        ; Merlina doppleganger
+    include "src-68k/cogwheel.68k"      ; Cogwheels
+    include "src-68k/lava.68k"          ; Lava hazards
     
     include "src-68k/variables.68k"     ; Variable declarations
 
@@ -73,7 +86,9 @@ SCORE_ITEM:         equ $200        ; Getting an item
     include "data/enemies.68k"          ; Enemy sprites
     include "data/tileset.68k"          ; Level tileset
     include "data/ingame.68k"           ; Common graphics in-game
+    include "data/parallax.68k"         ; Parallax graphics
     
+    include "data/title.68k"            ; Title screen graphics
     include "data/menu.68k"             ; Menu graphics
     include "data/error.68k"            ; Crash screen font
 
@@ -83,6 +98,7 @@ SCORE_ITEM:         equ $200        ; Getting an item
 
     include "data/stages.68k"           ; All stage layouts
     include "data/text.68k"             ; Data needed to display text
+    include "data/math.68k"             ; Look-up tables and such
     
     include "data/sound.68k"            ; Sound data
 

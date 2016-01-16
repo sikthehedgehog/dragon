@@ -25,12 +25,6 @@ InitSound:
 UpdateSound:
     movem.l d0-d1/a0-a1, -(sp)          ; Blame Echo for this...
     
-    bsr     Echo_GetStatus              ; Check if a SFX is still playing
-    btst.l  #0, d0                        ; (if not we can let lower priority
-    bne.s   @SFXPlaying                   ; SFXs to play now)
-    clr.b   (CurrentSFX)
-@SFXPlaying:
-    
     moveq   #0, d7                      ; Play a BGM?
     move.b  (BGMToPlay), d7
     beq.s   @NoBGM
@@ -56,7 +50,14 @@ UpdateSound:
     lea     (SfxList), a6
     move.l  (a6,d7.w), a0
     bsr     Echo_PlaySFX
+    bra.s   @End
 @NoSFX:
+    
+    bsr     Echo_GetStatus              ; Check if a SFX is still playing
+    btst.l  #0, d0                        ; (if not we can let lower priority
+    bne.s   @SFXPlaying                   ; SFXs to play now)
+    clr.b   (CurrentSFX)
+@SFXPlaying:
     
 @End:
     movem.l (sp)+, d0-d1/a0-a1          ; Restore clobbered registers
@@ -82,7 +83,7 @@ PlayBGM:
 
 PlaySFX:
     cmp.b   (CurrentSFX), d7            ; Only play SFX if there isn't one
-    bls.s   @Skip                         ; with higher priority playing
+    blo.s   @Skip                         ; with higher priority playing
     move.b  d7, (CurrentSFX)              ; (priority is based on ID)
     move.b  d7, (SFXToPlay)
     

@@ -52,7 +52,21 @@ RunPlatformUpwards:
     cmp.w   #-$10, d7                   ; Too far?
     blt     DestroySelf
     
-    bra     RunPlatformCommon           ; Now do platformy stuff
+    btst.b  #OF_ACTIVE, OBJ_FLAGS(a0)   ; Prevent players from going into
+    beq.s   @NoCeilCheck                  ; the ceiling
+    move.w  (PlayerX), d7
+    move.w  (PlayerY), d6
+    add.w   #PLAYER_Y1-1, d6
+    bsr     TileAt
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @NoCeilCheck
+    bset.b  #OF_DISABLED, OBJ_FLAGS(a0)
+    bclr.b  #OF_ACTIVE, OBJ_FLAGS(a0)
+    bclr.b  #PF_PLATFORM, (PlayerFlags)
+@NoCeilCheck:
+    
+    move.w  #-1, OBJ_YSPEED(a0)         ; Now do platformy stuff
+    bra     RunPlatformCommon
 
 ;****************************************************************************
 ; RunPlatformDownwards
@@ -73,7 +87,21 @@ RunPlatformDownwards:
     cmp.w   d6, d7
     bgt     DestroySelf
     
-    bra     RunPlatformCommon           ; Now do platformy stuff
+    btst.b  #OF_ACTIVE, OBJ_FLAGS(a0)   ; Prevent players from going into
+    beq.s   @NoGroundCheck                ; the floor
+    move.w  (PlayerX), d7
+    move.w  (PlayerY), d6
+    add.w   #PLAYER_Y2+1, d6
+    bsr     TileAt
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @NoGroundCheck
+    bset.b  #OF_DISABLED, OBJ_FLAGS(a0)
+    bclr.b  #OF_ACTIVE, OBJ_FLAGS(a0)
+    bclr.b  #PF_PLATFORM, (PlayerFlags)
+@NoGroundCheck:
+    
+    move.w  #1, OBJ_YSPEED(a0)          ; Now do platformy stuff
+    bra     RunPlatformCommon
 
 ;****************************************************************************
 ; RunPlatformCommon
@@ -85,6 +113,11 @@ RunPlatformDownwards:
 ;****************************************************************************
 
 RunPlatformCommon:
+    btst.b  #OF_DISABLED, OBJ_FLAGS(a0) ; Is the platform usable?
+    beq.s   @StillWorking
+    rts
+@StillWorking:
+    
     move.w  OBJ_X(a0), d0               ; Get player and player status
     move.w  OBJ_Y(a0), d1
     move.w  (PlayerX), d2
@@ -136,8 +169,10 @@ RunPlatformCommon:
     rts
 @YesSeriously:
     
-    sub.w   #$10+$08, d1                ; Keep player on the platform
-    move.w  d1, (PlayerY)
+    move.w  OBJ_XSPEED(a0), d7           ; Keep player on the platform
+    add.w   d7, (PlayerX)
+    move.w  OBJ_YSPEED(a0), d7
+    add.w   d7, (PlayerY)
     clr.w   (PlayerYSpeed)
     
     move.w  d0, d7                      ; Is the player still on it?
@@ -174,6 +209,15 @@ DrawPlatform:
     sub.w   (CameraX), d0
     sub.w   (CameraY), d1
     
+    cmp.w   #-$40, d1                   ; These turn out to be common enough
+    ble.s   @Skip                         ; in some rooms to be a problem
+    cmp.w   #320+$20, d1
+    bge.s   @Skip
+    cmp.w   #-$40, d0
+    ble.s   @Skip
+    cmp.w   #320+$20, d0
+    bge.s   @Skip
+    
     lea     (SprPlatform_Idle), a6      ; Check which sprite to use
     btst.b  #OF_ACTIVE, OBJ_FLAGS(a0)     ; This is for the tilting look
     beq.s   @NotSteppedOn
@@ -188,6 +232,151 @@ DrawPlatform:
     
     move.w  #$2000+VramPlatform, d2     ; Draw platform
     jsr     (AddMetasprite).w
+    
+@Skip:
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Tilting:
+    dcb.l   3, SprPlatform_Left
+    dcb.l   2, SprPlatform_Middle
+    dcb.l   3, SprPlatform_Right
+
+;****************************************************************************
+; InitRotatingPlatform
+; Initializes a rotating platform.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitRotatingPlatform:
+    moveq   #0, d7                      ; Store rotation where it's more
+    move.b  OBJ_FLAGS(a6), d7             ; relevant
+    move.w  d7, OBJ_TIMER(a6)
+    clr.b   OBJ_FLAGS(a6)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunRotatingPlatform
+; Executes the behavior for rotating platforms.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunRotatingPlatform:
+    move.w  OBJ_TIMER(a0), d7           ; Get current offset of platform
+    add.w   d7, d7
+    lea     (Sines), a1
+    lea     (Cosines), a2
+    move.w  (a2,d7.w), d0
+    move.w  (a1,d7.w), d1
+    neg.w   d1
+    asr.w   #1, d0
+    asr.w   #1, d1
+    
+    move.w  OBJ_TIMER(a0), d7           ; Make platform spin
+    addq.b  #1, d7
+    cmp.b   #OBJTYPE_CCWPLATFORM, OBJ_TYPE(a0)
+    beq.s   @NotClockwise
+    subq.b  #2, d7
+@NotClockwise:
+    move.w  d7, OBJ_TIMER(a0)
+    
+    add.w   d7, d7                      ; Determine how much the platform
+    move.w  (a2,d7.w), d2                 ; has moved
+    move.w  (a1,d7.w), d3
+    neg.w   d3
+    asr.w   #1, d2
+    asr.w   #1, d3
+    sub.w   d0, d2
+    sub.w   d1, d3
+    move.w  d2, OBJ_XSPEED(a0)
+    move.w  d3, OBJ_YSPEED(a0)
+    
+    add.w   d0, d2                      ; Do platformy stuff
+    add.w   d1, d3
+    move.w  OBJ_X(a0), -(sp)
+    move.w  OBJ_Y(a0), -(sp)
+    add.w   d2, OBJ_X(a0)
+    add.w   d3, OBJ_Y(a0)
+    bsr     RunPlatformCommon
+    move.w  (sp)+, OBJ_Y(a0)
+    move.w  (sp)+, OBJ_X(a0)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawRotatingPlatform
+; Draws a rotating platform (those spinning around a chain)
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawRotatingPlatform:
+    move.w  OBJ_X(a0), d0               ; Determine origin on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  OBJ_TIMER(a0), d7           ; Get horizontal and vertical deltas
+    and.w   #$FF, d7
+    add.w   d7, d7
+    lea     (Sines), a1
+    move.w  (a1,d7.w), d5
+    lea     $80(a1), a1
+    move.w  (a1,d7.w), d4
+    neg.w   d5
+    
+    movem.w d0-d1/d4-d5, -(sp)          ; Calculate position of the platform
+    asr.w   #1, d4
+    asr.w   #1, d5
+    add.w   d4, d0
+    add.w   d5, d1
+    
+    lea     (SprPlatform_Idle), a6      ; Check which sprite to use
+    btst.b  #OF_ACTIVE, OBJ_FLAGS(a0)     ; This is for the tilting look
+    beq.s   @NotSteppedOn
+    move.w  (PlayerX), d7
+    sub.w   OBJ_X(a0), d7
+    sub.w   d4, d7
+    add.w   #$20, d7
+    lsr.w   #1, d7
+    and.w   #$07<<2, d7
+    lea     @Tilting(pc), a6
+    move.l  (a6,d7.w), a6
+@NotSteppedOn:
+    
+    move.w  #$2000+VramPlatform, d2     ; Draw platform
+    jsr     (AddMetasprite).w
+    
+    movem.w (sp)+, d0-d1/d4-d5          ; Draw the chain
+    subq.w  #8, d0
+    subq.w  #8, d1
+    move.w  #VramLink, d2
+    moveq   #%0101, d3
+    
+    move.w  d4, a1
+    move.w  d5, a2
+    moveq   #7-1, d7
+@ChainLoop:
+    movem.w d0-d1/d4-d5/d7, -(sp)
+    asr.w   #4, d4
+    asr.w   #4, d5
+    add.w   d4, d0
+    add.w   d5, d1
+    jsr     (AddSprite).w
+    movem.w (sp)+, d0-d1/d4-d5/d7
+    add.w   a1, d4
+    add.w   a2, d5
+    dbf     d7, @ChainLoop
     
     rts                                 ; End of subroutine
 

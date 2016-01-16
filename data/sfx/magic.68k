@@ -1,0 +1,28 @@
+;****************************************************************************
+; SFX for when Merlina uses magic.
+;****************************************************************************
+
+    ESF_Lock        ESF_FM5
+    ESF_SetInstr    ESF_FM5, $0B
+    ESF_SetVol      ESF_FM5, $00
+    
+    ESF_NoteOn      ESF_FM5, 6, 0
+    ESF_Delay       4
+    ESF_NoteOn      ESF_FM5, 6, 2
+    ESF_Delay       4
+    ESF_NoteOn      ESF_FM5, 6, 4
+    ESF_Delay       4
+    ESF_NoteOff     ESF_FM5
+    ESF_Delay       4
+    ESF_SetVol      ESF_FM5, $08
+    ESF_NoteOn      ESF_FM5, 6, 4
+    ESF_Delay       4
+    ESF_NoteOff     ESF_FM5
+    ESF_Delay       4
+    ESF_SetVol      ESF_FM5, $10
+    ESF_NoteOn      ESF_FM5, 6, 4
+    ESF_Delay       4
+    ESF_NoteOff     ESF_FM5
+    ESF_Delay       8
+    
+    ESF_Stop

@@ -15,6 +15,9 @@
     incgfx  GfxMerlina_Attack1, "data/merlina/attack_1.4bpp"
     incgfx  GfxMerlina_Attack2, "data/merlina/attack_2.4bpp"
     incgfx  GfxMerlina_Attack3, "data/merlina/attack_3.4bpp"
+    incgfx  GfxMerlina_Magic1, "data/merlina/magic_1.4bpp"
+    incgfx  GfxMerlina_Magic2, "data/merlina/magic_2.4bpp"
+    incgfx  GfxMerlina_Magic3, "data/merlina/magic_3.4bpp"
     incgfx  GfxMerlina_Hurt, "data/merlina/hurt.4bpp"
     incgfx  GfxMerlina_Swim1, "data/merlina/swim_1.4bpp"
     incgfx  GfxMerlina_Swim2, "data/merlina/swim_2.4bpp"
@@ -98,6 +101,21 @@ SprMerlina_Attack3:
     dc.w    $08+4, $08, 34, %0000
     dc.w    $8000
 
+SprMerlina_Magic1:
+SprMerlina_Magic3:
+    dc.w    -$18+4, -$20, 0, %1111
+    dc.w    -$18+4, $00, 16, %1101
+    dc.w    $08+4, -$20, 24, %0010
+    dc.w    $08+4, $08, 27, %0000
+    dc.w    $8000
+
+SprMerlina_Magic2:
+    dc.w    -$18+4, -$20, 0, %1111
+    dc.w    $08+4, -$20, 16, %0011
+    dc.w    -$18+4, $00, 20, %0000
+    dc.w    -$10+4, $00, 21, %1101
+    dc.w    $8000
+
 SprMerlina_Hurt:
     dc.w    -$18+4, -$20, 0, %1001
     dc.w    -$20+4, -$10, 6, %1110
@@ -173,7 +191,12 @@ AnimMerlina_Crouch:
 AnimMerlina_Attack:
     Frame   Attack1, 49, 4
     Frame   Attack2, 50, 4
-    Frame   Attack3, 35, 4, AnimMerlina_Attack+$20
+    Frame   Attack3, 35, -1, AnimMerlina_Attack+$20
+
+AnimMerlina_Magic:
+    Frame   Magic1, 28, 4
+    Frame   Magic2, 29, 4
+    Frame   Magic3, 28, -1, AnimMerlina_Magic+$20
 
 AnimMerlina_Hurt:
     Frame   Hurt, 30, AnimMerlina_Hurt

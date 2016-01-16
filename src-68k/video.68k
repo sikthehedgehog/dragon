@@ -187,6 +187,120 @@ FlushDMABuffer:
     rts                                 ; End of subroutine
 
 ;****************************************************************************
+; LoadPlane
+; Loads an entire 64×32 tilemap mapping into a plane.
+;----------------------------------------------------------------------------
+; input d7.w ... Base tile ID
+; input d6.w ... Plane address
+; input a6.l ... Mappings
+;----------------------------------------------------------------------------
+; breaks: a4-a6, d5-d7
+;****************************************************************************
+
+LoadPlane:
+    lea     ($C00000), a5               ; VDP port
+    
+    and.l   #$F000, d6                  ; Set VRAM address
+    lsl.l   #2, d6
+    lsr.w   #2, d6
+    or.w    #$4000, d6
+    swap    d6
+    move.l  d6, 4(a5)
+    
+    move.w  #64*32-1, d6                ; Copy all tiles into VRAM
+@Loop:
+    move.w  (a6)+, d5
+    add.w   d7, d5
+    move.w  d5, (a5)
+    dbf     d6, @Loop
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; LoadPlaneA, LoadPlaneB
+; Convenience subroutine to load mappings to planes A and B in their default
+; addresses, respectively.
+;----------------------------------------------------------------------------
+; input d7.w ... Base tile ID
+; input a6.l ... Mappings
+;----------------------------------------------------------------------------
+; breaks: a4-a6, d5-d7
+;****************************************************************************
+
+LoadPlaneA:
+    move.w  #$C000, d6
+    bra     LoadPlane
+
+LoadPlaneB:
+    move.w  #$E000, d6
+    bra     LoadPlane
+
+;****************************************************************************
+; DrawTilemap
+; Draws a tilemap into one of the scroll planes. Breaks all the registers
+; because look how many parameters it needs O_O
+;----------------------------------------------------------------------------
+; input d0.w ... X coordinate
+; input d1.w ... Y coordinate
+; input d2.w ... Width
+; input d3.w ... Height
+; input d4.w ... Base tile
+; input d5.w ... Plane address
+; input a6.l ... Tilemap data
+;----------------------------------------------------------------------------
+; breaks: all
+;----------------------------------------------------------------------------
+; notes: the tilemap shouldn't cross boundaries!
+;****************************************************************************
+
+DrawTilemap:
+    lea     ($C00004), a0               ; VDP control address
+    lea     ($C00000), a1               ; VDP data address
+    
+    and.l   #$003F, d0                  ; Make VDP command we're going to use
+    and.w   #$001F, d1                    ; to set each row address
+    lsl.w   #6, d1
+    add.w   d1, d0
+    add.w   d0, d0
+    add.w   d5, d0
+    lsl.l   #2, d0
+    lsr.w   #2, d0
+    or.w    #$4000, d0
+    swap    d0
+    
+    subq.w  #1, d2                      ; To account for DBF
+    subq.w  #1, d3
+    
+@YLoop:                                 ; Draw tilemap into VRAM
+    move.l  d0, (a0)
+    move.w  d2, d6
+@XLoop:
+    move.w  (a6)+, d7
+    add.w   d4, d7
+    move.w  d7, (a1)
+    dbf     d6, @XLoop
+    add.l   #$80<<16, d0
+    dbf     d3, @YLoop
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawTilemapA, DrawTilemapB
+; Convenience subroutine to draw mappings to planes A and B in their default
+; addresses, respectively.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+DrawTilemapA:
+    move.w  #$C000, d5
+    bra     DrawTilemap
+
+DrawTilemapB:
+    move.w  #$E000, d5
+    bra     DrawTilemap
+
+;****************************************************************************
 ; ClearSprites
 ; Clears the sprite buffer.
 ;----------------------------------------------------------------------------
@@ -223,6 +337,7 @@ AddSprite:
     bge.s   @Skip
     
     lea     (SpriteBuf), a6             ; Sprite buffer address
+    
     move.b  (NumSprites), d7            ; Check how many sprites are there
     beq.s   @First                        ; (and make sure we don't attempt
     cmp.b   #80, d7                       ; to show too many)
@@ -236,8 +351,9 @@ AddSprite:
     move.b  d7, -5(a6)                  ; Update link of last entry
     
 @First:
-    add.w   #$80, d0                    ; Apply offset wanted by VDP
-    add.w   #$80, d1
+    moveq   #-$80, d6                   ; Apply offset wanted by VDP
+    sub.w   d6, d0
+    sub.w   d6, d1
     
     move.w  d1, (a6)+                   ; Store new sprite entry
     move.b  d3, (a6)+
@@ -245,8 +361,8 @@ AddSprite:
     move.w  d2, (a6)+
     move.w  d0, (a6)+
     
-    sub.w   #$80, d0                    ; Undo the offset
-    sub.w   #$80, d1
+    add.w   d6, d0                      ; Undo the offset
+    add.w   d6, d1
     
     addq.b  #1, d7                      ; Update sprite count
     move.b  d7, (NumSprites)
@@ -321,6 +437,83 @@ AddMetasprite:
 
 @End:
     movem.l (sp)+, d0-d4/a0-a1          ; Restore registers
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; SortSprites
+; Relinks the sprites so they're sorted by their priority flag. This allows
+; you to draw sprites in any order (something useful when drawing objects
+; in-game, as you can't tell in which order the objects will be drawn).
+;----------------------------------------------------------------------------
+; breaks: all
+;----------------------------------------------------------------------------
+; Special flags:
+;    size, bit 4 = treat as high priority (list override)
+;----------------------------------------------------------------------------
+; QUIRK: this subroutine assumes that the first sprite will always appear on
+; top of everything else (it fails to sort that one). This is not a problem
+; in-game, where the HUD is always first (and HUD is high priority sprites).
+; Don't use this subroutine unless really needed...
+;****************************************************************************
+
+SortSprites:
+    moveq   #0, d0                      ; Last high priority sprite
+    moveq   #0, d1                      ; Last low priority sprite
+    moveq   #0, d2                      ; First low priority sprite
+    
+    move.b  (NumSprites), d3            ; How many sprites are there?
+    bne.s   @HasSprites
+    rts
+@HasSprites:
+    
+    lea     (SpriteBuf), a0             ; Sprite table buffer
+    
+    moveq   #0, d7
+@Loop:
+    move.w  d7, d6                      ; Check priority of the next sprite
+    lsl.w   #3, d6
+    lea     (a0,d6.w), a6
+    clr.b   3(a6)
+    btst.b  #7, 4(a6)
+    bne.s   @High
+    btst.b  #4, 2(a6)
+    bne.s   @High
+    
+    tst.b   d2                          ; Is it the first low priority
+    bne.s   @NoFirstLow                   ; sprite? (we need to know so we
+    move.b  d7, d2                        ; can link both "sublists" later)
+    move.b  d7, d1
+    bra.s   @Ready
+    
+@NoFirstLow:
+    move.w  d1, d6                      ; Link this sprite to the previous
+    lsl.w   #3, d6                        ; low priority one
+    lea     (a0,d6.w), a5
+    move.b  d7, 3(a5)
+    move.b  d7, d1
+    bra.s   @Ready
+    
+@High:
+    move.w  d0, d6                      ; Link this sprite to the previous
+    lsl.w   #3, d6                        ; high priority one
+    lea     (a0,d6.w), a5
+    move.b  d7, 3(a5)
+    move.b  d7, d0
+    
+@Ready:
+    addq.w  #1, d7                      ; Process next sprite
+    cmp.b   d3, d7
+    bne.s   @Loop
+    
+@End:
+    tst.b   d2                          ; Ensure the high priority sprites
+    beq.s   @NoLow                        ; are followed by the low priority
+    move.w  d0, d6                        ; ones (if any)
+    lsl.w   #3, d6
+    lea     (a0,d6.w), a6
+    move.b  d2, 3(a6)
+    
+@NoLow:
     rts                                 ; End of subroutine
 
 ;****************************************************************************

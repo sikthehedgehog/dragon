@@ -1,0 +1,51 @@
+;****************************************************************************
+; SFX for when Merlina gets a cross.
+;****************************************************************************
+
+    ESF_Lock        ESF_FM5
+    ESF_Lock        ESF_PSG3
+    
+    ESF_SetInstr    ESF_FM5, $0B
+    ESF_SetVol      ESF_FM5, $00
+    ESF_SetInstr    ESF_PSG3, $02
+    ESF_SetVol      ESF_PSG3, $00
+    
+    ESF_NoteOn      ESF_FM5, 4, 0
+    ESF_NoteOn      ESF_PSG3, 2, 0
+    ESF_Delay       6
+    ESF_NoteOn      ESF_FM5, 5, 0
+    ESF_NoteOn      ESF_PSG3, 3, 0
+    ESF_Delay       6
+    ESF_NoteOn      ESF_FM5, 4, 6
+    ESF_NoteOn      ESF_PSG3, 2, 6
+    ESF_Delay       6
+    ESF_NoteOn      ESF_FM5, 4, 0
+    ESF_NoteOn      ESF_PSG3, 2, 0
+    ESF_Delay       6
+    ESF_NoteOn      ESF_FM5, 5, 0
+    ESF_NoteOn      ESF_PSG3, 3, 0
+    ESF_Delay       6
+    
+    ESF_NoteOff     ESF_FM5
+    ESF_NoteOff     ESF_PSG3
+    ESF_Delay       2
+    ESF_SetVol      ESF_FM5, $10
+    ESF_SetVol      ESF_PSG3, $04
+    ESF_NoteOn      ESF_FM5, 5, 0
+    ESF_NoteOn      ESF_PSG3, 3, 0
+    ESF_Delay       6
+    
+    ESF_NoteOff     ESF_FM5
+    ESF_NoteOff     ESF_PSG3
+    ESF_Delay       2
+    ESF_SetVol      ESF_FM5, $20
+    ESF_SetVol      ESF_PSG3, $08
+    ESF_NoteOn      ESF_FM5, 5, 0
+    ESF_NoteOn      ESF_PSG3, 3, 0
+    ESF_Delay       6
+    
+    ESF_NoteOff     ESF_FM5
+    ESF_NoteOff     ESF_PSG3
+    ESF_Delay       4
+    
+    ESF_Stop

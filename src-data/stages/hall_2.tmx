@@ -42,9 +42,13 @@
  <objectgroup name="Capa de Objetos 1" width="20" height="29">
   <object gid="66" x="112" y="527"/>
   <object gid="67" x="112" y="525"/>
-  <object gid="66" x="462" y="302"/>
+  <object name="STAGE_HALL4" gid="66" x="462" y="302"/>
   <object name="STAGE_HALL3" gid="66" x="463" y="750"/>
   <object gid="70" x="240" y="81"/>
   <object gid="71" x="335" y="912"/>
+  <object name="1" gid="81" x="240" y="894"/>
+  <object name="0" gid="81" x="335" y="894"/>
+  <object name="0" gid="81" x="335" y="95"/>
+  <object name="1" gid="81" x="237" y="97"/>
  </objectgroup>
 </map>

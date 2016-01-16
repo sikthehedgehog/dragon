@@ -35,5 +35,6 @@
   <object name="STAGE_HALL3" gid="66" x="271" y="169"/>
   <object gid="65" x="193" y="388"/>
   <object gid="65" x="164" y="223"/>
+  <object gid="74" x="64" y="180"/>
  </objectgroup>
 </map>

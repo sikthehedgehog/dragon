@@ -1,0 +1,125 @@
+;****************************************************************************
+; InitLavaBurst
+; Initializes the collision box of bursting lava.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitLavaBurst:
+    move.w  #-$20, OBJ_BOXX1(a6)
+    move.w  #-$20, OBJ_BOXY1(a6)
+    move.w  #$1F, OBJ_BOXX2(a6)
+    move.w  #$3F, OBJ_BOXY2(a6)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunLavaBurst
+; Executes the behavior for lava bursting from the floor.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunLavaBurst:
+    tst.b   OBJ_HEALTH(a0)              ; Frozen?
+    bne.s   @NotFrozen
+    tst.w   OBJ_TIMER(a0)
+    beq.s   @Chilled
+    subq.w  #1, OBJ_TIMER(a0)
+@Chilled:
+    rts
+@NotFrozen:
+    
+    btst.b  #OF_ACTIVE, OBJ_FLAGS(a0)   ; Bursted already?
+    bne.s   @Bursted
+    
+    move.w  OBJ_X(a0), d7               ; Should it burst?
+    sub.w   (PlayerX), d7
+    cmp.w   #-$38, d7
+    bgt.s   @KeepIdle
+    
+    bset.b  #OF_ACTIVE, OBJ_FLAGS(a0)   ; BURST!!
+    bsr     TriggerQuake
+    moveq   #SFX_DEMOLISH, d7
+    jsr     (PlaySFX).w
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    sub.w   #$20, d6
+    bsr     ThrowDerbisUp
+    
+@KeepIdle:
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Bursted:
+    move.l  a0, a6                      ; Getting frozen?!
+    bsr     CollidesMagic
+    tst.w   d7
+    beq.s   @StillHot
+    
+    moveq   #SFX_TRANSFORM, d7          ; Stuff as usual
+    jsr     (PlaySFX).w
+    move.l  #SCORE_MAGIC, d7
+    bsr     AddScore
+    
+    clr.b   OBJ_HEALTH(a0)
+    move.w  #$20, OBJ_TIMER(a0)
+    rts
+@StillHot:
+    
+    move.l  a0, a6                      ; Lava hurts!
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NotHurting
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    bsr     HurtPlayer
+@NotHurting:
+    
+    move.w  OBJ_TIMER(a0), d7           ; Timer because we need to keep
+    addq.w  #1, d7                        ; looping forever
+    cmp.w   #12, d7
+    beq.s   @Loop
+    
+    move.w  d7, OBJ_TIMER(a0)           ; Go upwards
+    sub.w   #$08, OBJ_Y(a0)
+    rts
+    
+@Loop:
+    move.w  #8, OBJ_TIMER(a0)           ; Loop position
+    add.w   #$20-$08, OBJ_Y(a0)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawLavaBurst
+; Draws lava bursting from the floor.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawLavaBurst:
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  #$4000+VramLavaBurst, d2    ; Determine palette
+    tst.b   OBJ_HEALTH(a0)
+    bne.s   @Hot
+    btst.b  #0, OBJ_TIMER+1(a0)
+    bne.s   @Hot
+    or.w    #$2000, d2
+@Hot:
+    
+    lea     (SprLavaBurst), a6          ; Draw it
+    jsr     (AddMetasprite).w
+    
+    rts                                 ; End of subroutine

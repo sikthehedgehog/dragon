@@ -14,7 +14,8 @@ EntryPoint:
     move.l  ($100).w, ($A14000)
 @NoTMSS:
     
-    jsr     (InitJoypad).w              ; Initialize system
+    jsr     (InitRand).w                ; Initialize system
+    jsr     (InitJoypad).w
     jsr     (InitSound).w
     jsr     (InitVideo).w
     
@@ -26,6 +27,7 @@ EntryPoint:
     clr.b   (Cheats)                    ; Disable all cheats
     
     bra     TitleScreen                 ; Start the game
+    ;bra     StartGame
     ;bra     OptionsMenu
 
 ;****************************************************************************
@@ -51,7 +53,7 @@ NextFrame:
     jsr     (UpdateSound).w             ; Update sound playback
     jsr     (ReadJoypad).w              ; Update the joypad status
     
-    bchg.b  #1, (BlinkFlag)             ; Update 60/50Hz blinking
+    not.b   (BlinkFlag)                 ; Update 60/50Hz blinking
     rts                                 ; End of subroutine
 
 ;****************************************************************************

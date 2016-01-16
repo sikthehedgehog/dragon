@@ -1,0 +1,35 @@
+;****************************************************************************
+; DrawReflection
+; Draws Merlina's reflection in the mirror rooms.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawReflection:
+    tst.b   (PlayerFlash)               ; If Merlina is flashing, so do we
+    beq.s   @NoFlash
+    btst.b  #PF_HURT, (PlayerFlags)
+    bne.s   @NoFlash
+    tst.b   (BlinkFlag)
+    beq.s   @NoFlash
+    rts
+@NoFlash:
+    
+    move.w  #$4000+VramPlayer, d2       ; Check which way Merlina is facing
+    btst.b  #PF_DIR, (PlayerFlags)
+    beq.s   @NotFlipped
+    or.w    #$0800, d2
+@NotFlipped:
+    
+    move.w  (PlayerX), d0               ; Appear a bit shifted from
+    move.w  (PlayerY), d1                 ; Merlina's position
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    sub.w   #12, d0
+    
+    move.l  (PlayerMapping), a6         ; Draw the reflection
+    jsr     (AddMetasprite).w
+    
+    rts                                 ; End of subroutine

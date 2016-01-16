@@ -1,0 +1,47 @@
+;****************************************************************************
+; GfxTitleLogo
+; The logo for the game's name. This includes both the mappings and the
+; tiles. Note that because the name is localizable, we need to change which
+; graphics we use depending on the language.
+;****************************************************************************
+; TITLELOGO_W, TITLELOGO_H
+; The width and height of the logo (in tiles), respectively.
+;****************************************************************************
+; TITLELOGO_Z
+; How many tiles it takes up.
+;****************************************************************************
+
+    if LANG_EN
+TITLELOGO_W: equ 29
+TITLELOGO_H: equ 11
+TITLELOGO_Z: equ filesize("src-data/title/logo_en.4bpp")/$20
+GfxTitleLogo:
+    incbin  "data/title/logo_en.slz"
+    even
+    endc
+
+    if LANG_ES
+TITLELOGO_W: equ 31
+TITLELOGO_H: equ 14
+TITLELOGO_Z: equ filesize("src-data/title/logo_es.4bpp")/$20
+GfxTitleLogo:
+    incbin  "data/title/logo_es.slz"
+    even
+    endc
+
+;****************************************************************************
+; TITLELOGO_X, TITLELOGO_Y
+; Determine where the game name will appear on screen in the title. These are
+; calculated based on the logo size, so no need to explicitly localize this
+; (the assembler will do it impliticly).
+;****************************************************************************
+
+TITLELOGO_X: equ 20-((TITLELOGO_W+1)/2)
+TITLELOGO_Y: equ 16-TITLELOGO_H
+
+;****************************************************************************
+; TITLELOGO_WH
+; The area taken up by the logo. Also calculated by the assembler.
+;****************************************************************************
+
+TITLELOGO_WH: equ TITLELOGO_W*TITLELOGO_H

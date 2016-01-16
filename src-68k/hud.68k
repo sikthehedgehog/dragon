@@ -25,6 +25,12 @@ DrawHUD:
     lea     @HealthTable(pc), a0          ; 0 health points: ...
     lea     (a0,d7.w), a0
     
+    move.w  (HealthBlink), d7           ; Make health meter blink?
+    and.w   #$02, d7
+    beq.s   @NoHealthBlink
+    lea     @HealthBlink(pc), a0
+@NoHealthBlink:
+    
     move.w  #16, d0                     ; Draw all three hearts
     move.w  #200, d1
     moveq   #%0101, d3
@@ -77,6 +83,12 @@ DrawHUD:
     lea     @MagicTable(pc), a0
     lea     (a0,d4.w), a0
     
+    move.w  (Supermagic), d7            ; During supermagic? :D
+    and.w   #$04, d7
+    beq.s   @NoSupermagic
+    lea     @MagicBlink(pc), a0
+@NoSupermagic:
+    
     move.w  #228, d0                    ; Draw left side of magic bar
     move.w  #200, d1
     move.w  #$8010+VramHUDBar, d2
@@ -126,7 +138,7 @@ DrawHUD:
 
 ;----------------------------------------------------------------------------
 
-    if      DEBUG_HUD
+    if      DEBUG_CONTROLS
     btst.b  #GS_PAUSED, (GameState)     ; Only show stage ID while paused
     beq.s   @NoStage
     
@@ -159,7 +171,87 @@ DrawHUD:
     jsr     (AddSprite).w
 @NoStage:
     endc
+
+;----------------------------------------------------------------------------
+
+    if      DEBUG_HUD
+    move.b  (LastUsage), d0             ; Get last CPU usage
     
+    move.b  #$AA, d4                    ; Can we calculate the CPU usage?
+    cmp.b   #$FF, d0                      ; (vblank is unreliable)
+    beq.s   @CantCalcUsage
+    
+    lea     (NTSCUsage), a6             ; Determine how much CPU was used
+    btst.b  #0, ($C00005)
+    beq.s   @CalcForNTSC
+    lea     (PALUsage), a6
+@CalcForNTSC:
+    and.w   #$FF, d0
+    move.b  (a6,d0.w), d4
+    
+@CantCalcUsage:
+    move.w  #$10, d0                    ; Draw first digit
+    move.w  #$18, d1
+    move.b  d4, d2
+    lsr.b   #4, d2
+    and.w   #$0F, d2
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    moveq   #%0001, d3
+    jsr     (AddSprite).w
+    
+    addq.w  #8, d0                      ; Draw second digit
+    move.b  d4, d2
+    and.w   #$0F, d2
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    jsr     (AddSprite).w
+    
+    addq.w  #8, d0                      ; Draw percent sign
+    move.w  #$8000+VramHUDPercent, d2
+    jsr     (AddSprite).w
+
+;----------------------------------------------------------------------------
+
+    lea     (ObjList), a6               ; Count how many objects exist
+    moveq   #0, d4
+    moveq   #MAX_OBJ-1, d7
+@CountObjects:
+    tst.b   OBJ_TYPE(a6)
+    sne.b   d6
+    sub.b   d6, d4
+    lea     OBJ_SIZE(a6), a6
+    dbf     d7, @CountObjects
+    
+    add.w   #$10, d0                    ; Why not?
+    addq.w  #8, d1
+    move.w  #$8000+VramHUDCross, d2
+    moveq   #%0000, d3
+    jsr     (AddSprite).w
+    
+    divu.w  #10, d4                     ; Split low and high digits
+    add.l   d4, d4                      ; Since tile IDs are in steps of 2
+    
+    addq.w  #8, d0                      ; Draw first digit
+    subq.w  #8, d1
+    moveq   #%0001, d3
+    tst.w   d4
+    beq.s   @LessThan10Obj
+    move.w  d4, d2
+    add.w   #$8000+VramHUDNumber, d2
+    jsr     (AddSprite).w
+    addq.w  #8, d0
+@LessThan10Obj:
+    
+    swap    d4                          ; Draw second digit
+    move.w  d4, d2
+    add.w   #$8000+VramHUDNumber, d2
+    jsr     (AddSprite).w
+    
+    endc
+
+;----------------------------------------------------------------------------
+
     move.b  (NumSprites), (GameSprites) ; Let raster effects know where the
                                           ; ingame sprites start so they can
                                           ; safely affect only those
@@ -171,6 +263,8 @@ DrawHUD:
 @HealthTable:
     dcb.w   3, $8004+VramHUDHealth
     dcb.w   3, $8000+VramHUDHealth
+@HealthBlink:
+    dcb.w   3, $8008+VramHUDHealth
 
 @MagicTable:
     dc.w    $8008+VramHUDBar, $8008+VramHUDBar
@@ -182,3 +276,6 @@ DrawHUD:
     dc.w    $8000+VramHUDBar, $8004+VramHUDBar
     dc.w    $8000+VramHUDBar, $8002+VramHUDBar
     dc.w    $8000+VramHUDBar, $8000+VramHUDBar
+@MagicBlink:
+    dc.w    $8014+VramHUDBar, $8014+VramHUDBar
+

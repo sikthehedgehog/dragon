@@ -21,10 +21,7 @@ DoMenu:
     DMA2VRAM LocalRAM, VramMenuBG*$20, 8*$20, ($C00004)
     bsr     DrawMenuBG
     
-    lea     (GfxFont), a6
-    lea     (LocalRAM), a5
-    jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramFont*$20, 36*2*$20, ($C00004)
+    bsr     LoadFont                    ; Load font
     
     lea     (PalMenuLo), a0             ; Set all menu palettes
     lea     (PalMenuHi), a1
@@ -133,6 +130,22 @@ DoMenu:
 
 @Quit:
     jsr     (FadeOut).w
+    rts
+
+;****************************************************************************
+; LoadFont
+; Loads the menu font. Split into its own subroutine in case something else
+; wants the font too.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+LoadFont:
+    lea     (GfxFont), a6
+    lea     (LocalRAM), a5
+    jsr     (DecompressSlz).w
+    DMA2VRAM LocalRAM, VramFont*$20, 41*2*$20, ($C00004)
+    
     rts
 
 ;****************************************************************************

@@ -26,6 +26,19 @@
    add("src-data/merlina/idle_1.png");
    add("src-data/enemies/spider_1.png");
    add("src-data/enemies/spikeball.png");
+   add("src-data/ingame/platform.png");
+   add("src-data/ingame/platform.png");
+   add("src-data/enemies/chain_horizontal.png");
+   add("src-data/enemies/chain_vertical.png");
+   add("src-data/ingame/red_potion.png");
+   add("src-data/ingame/yellow_potion.png");
+   add("src-data/ingame/rotating_platform_ccw.png");
+   add("src-data/ingame/rotating_platform_cw.png");
+   add("src-data/enemies/swinging_spikeball.png");
+   add("src-data/ingame/cross.png");
+   add("src-data/enemies/lava_burst.png");
+   add("src-data/enemies/cogwheel.png");
+   add("src-data/enemies/spikeball_hswing.png");
    
    imagepng($img, "src-data/tileset/objset.png");
 ?>

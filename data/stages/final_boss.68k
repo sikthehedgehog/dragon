@@ -22,6 +22,11 @@
     dc.l    PalTileset
     dc.l    0
     dc.l    0
+
+    dc.l    0
+    dc.w    0
+    dc.l    InitNoParallax
+    dc.l    UpdateNoParallax
     dc.w    $7FFF
 
     dc.w    $0000

@@ -1,0 +1,120 @@
+;****************************************************************************
+; InitPotion
+; Initializes a potion's collision box (also crosses due to being similar).
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitPotion:
+    move.w  #-12, OBJ_BOXX1(a6)
+    move.w  #-8, OBJ_BOXY1(a6)
+    move.w  #11, OBJ_BOXX2(a6)
+    move.w  #15, OBJ_BOXY2(a6)
+    rts
+
+;****************************************************************************
+; RunRedPotion
+; Executes the behavior for a red potion.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunRedPotion:
+    move.l  a0, a6                      ; Taken by the player?
+    bsr     (CollidesPlayer)
+    tst.w   d7
+    bne.s   @Taken
+    rts
+
+@Taken:
+    moveq   #SFX_HEALTH, d7             ; Make noise
+    jsr     (PlaySFX).w
+    move.l  #SCORE_ITEM, d7             ; Bonus
+    bsr     (AddScore)
+    
+    move.b  #3, (PlayerHealth)          ; Refill the player's health
+    move.w  #$18, (HealthBlink)
+    
+    bra     DestroySelf                 ; We're gone!
+
+;****************************************************************************
+; RunYellowPotion
+; Executes the behavior for a yellow potion.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunYellowPotion:
+    move.l  a0, a6                      ; Taken by the player?
+    bsr     (CollidesPlayer)
+    tst.w   d7
+    bne.s   @Taken
+    rts
+
+@Taken:
+    moveq   #SFX_SUPERMAGIC, d7         ; Make noise
+    jsr     (PlaySFX).w
+    move.l  #SCORE_ITEM, d7             ; Bonus
+    bsr     (AddScore)
+    
+    move.w  #30*60, (Supermagic)        ; Supermagiiiiic!
+    bra     DestroySelf                 ; We're gone!
+
+;****************************************************************************
+; RunCross
+; Executes the behavior for a cross.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunCross:
+    move.l  a0, a6                      ; Taken by the player?
+    bsr     (CollidesPlayer)
+    tst.w   d7
+    bne.s   @Taken
+    rts
+
+@Taken:
+    move.l  #SCORE_ITEM, d7             ; Bonus
+    bsr     (AddScore)
+    
+    bsr     AddLife                     ; Extra life! :D
+    bra     DestroySelf                 ; We're gone!
+
+;****************************************************************************
+; DrawPotion
+; Draws a potion item (also crosses due to being similar).
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawPotion:
+    move.w  OBJ_X(a0), d0               ; Determine sprite coordinate
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    sub.w   #12, d0
+    sub.w   #8, d1
+    
+    move.w  #VramRedPotion, d2          ; What color is it?
+    moveq   #0, d7
+    move.b  OBJ_TYPE(a0), d7
+    sub.b   #OBJTYPE_RPOTION, d7
+    add.w   d7, d2
+    lsl.w   #3, d7
+    add.w   d7, d2
+    
+    moveq   #%1010, d3                  ; Draw the sprite
+    jsr     (AddSprite).w
+    
+    rts                                 ; End of subroutine

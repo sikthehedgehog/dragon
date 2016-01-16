@@ -3,6 +3,12 @@ layout sprite
 
 input "src-data/enemies/spikeball.png"
 tiles 0 0 4 4
+input "src-data/enemies/link.png"
+tiles 0 0 2 2
+input "src-data/enemies/base_link.png"
+tiles 0 0 2 2
+input "src-data/enemies/pivot.png"
+tiles 0 0 2 4
 
 input "src-data/enemies/ghost_1.png"
 tiles 0 0 4 3
@@ -24,3 +30,17 @@ tiles 4 4 3 1
 tiles 4 5 2 1
 input "src-data/enemies/spider_rope.png"
 tiles 0 0 1 4
+
+output "src-data/enemies/cogwheel.4bpp"
+layout sprite
+input "src-data/enemies/cogwheel.png"
+tiles 0 0 4 4
+input "src-data/enemies/cog.png"
+tiles 0 0 9 3
+tiles 0 3 9 3
+tiles 0 6 9 3
+
+output "src-data/enemies/lava.4bpp"
+layout sprite
+input "src-data/enemies/lava_burst.png"
+tiles 0 0 4 4

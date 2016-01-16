@@ -6,9 +6,16 @@ MAX_SPEED:          equ $280        ; Maximum running speed
 ACCEL_SPEED:        equ $40         ; Acceleration rate when running
 ACCEL_FALL:         equ $40         ; Acceleration rate when falling
 JUMP_FORCE:         equ $40*26      ; Strength of a jump
-ATTACK_TIME:        equ 12          ; How long an attack lasts
+ATTACK_TIME:        equ 12          ; How long attacking takes up
+MAGIC_TIME:         equ 20          ; How long using magic takes up
+SUPERMAGIC_TIME:    equ 12          ; How long using supermagic takes up
 RECOIL_SPEED:       equ $180        ; Horizontal speed of a recoil
 RECOIL_FORCE:       equ $40*14      ; Vertical speed of a recoil
+
+PLAYER_X1:          equ -8          ; Player hitbox (left boundary)
+PLAYER_Y1:          equ -24         ; Player hitbox (top boundary)
+PLAYER_X2:          equ 7           ; Player hitbox (right boundary)
+PLAYER_Y2:          equ 15          ; Player hitbox (bottom boundary)
 
 ;****************************************************************************
 ; PF_*
@@ -35,6 +42,7 @@ PA_RUNSLOW:         rs.b 1          ; Merlina is running (half speed)
 PA_JUMP:            rs.b 1          ; Merlina is in the air
 PA_CROUCH:          rs.b 1          ; Merlina is crouching
 PA_ATTACK:          rs.b 1          ; Merlina is attacking
+PA_MAGIC:           rs.b 1          ; Merlina is using magic
 PA_HURT:            rs.b 1          ; Merlina is recoiling
 PA_SWIM:            rs.b 1          ; Merlina is swimming
 
@@ -52,8 +60,25 @@ InitPlayer:
     clr.b   (PlayerFlags)               ; Default state
     move.b  #3, (PlayerHealth)          ; Start with full health
     clr.b   (PlayerAttack)              ; Not attacking yet
+    clr.b   (PlayerMagic)               ; Not using magic yet
     clr.b   (PlayerFlash)               ; Not invulnerable yet
     clr.b   (MagicMeter)                ; Magic has been depleted
+    
+    moveq   #0, d7                      ; Reset magic hitboxes
+    moveq   #-1, d6
+    lea     (MagicBounds), a6
+    move.l  d7, (a6)+
+    move.l  d6, (a6)+
+    move.l  d7, (a6)+
+    move.l  d6, (a6)+
+    move.l  d7, (a6)+
+    move.l  d6, (a6)+
+    move.l  d7, (a6)+
+    move.l  d6, (a6)+
+    clr.b   (NextMagicSlot)
+    
+    clr.w   (HealthBlink)               ; Don't blink the hearts
+    clr.w   (Supermagic)                ; No supermagic yet
     
     move.b  #-1, (PlayerPose)           ; Force an animation change
     rts                                 ; End of subroutine
@@ -66,10 +91,31 @@ InitPlayer:
 ;****************************************************************************
 
 RunPlayer:
+    lea     (OldPosition), a0           ; Update the log that keeps track of
+    move.l  4(a0), (a0)+                  ; our old positions
+    move.l  4(a0), (a0)+
+    move.l  4(a0), (a0)+
+    move.l  4(a0), (a0)+
+    move.l  4(a0), (a0)+
+    move.l  4(a0), (a0)+
+    move.l  4(a0), (a0)+
+    move.l  (PlayerX), (a0)
+    
+    tst.w   (HealthBlink)               ; Health meter blinking?
+    beq.s   @NoHealthBlink
+    subq.w  #1, (HealthBlink)
+@NoHealthBlink:
+    
     if      DEBUG_CONTROLS              ; During free move?
     btst.b  #CH_FREEMOVE, (Cheats)
     bne     FreeMovePlayer
     endc
+    
+    tst.w   (Supermagic)                ; Supermagic in effect?
+    beq.s   @NoSupermagic
+    subq.w  #1, (Supermagic)
+    move.b  #$40, (MagicMeter)
+@NoSupermagic:
     
     cmp.b   #$40, (MagicMeter)          ; Recharging magic?
     bhs.s   @NotRecharging
@@ -104,6 +150,10 @@ RunPlayer:
     beq.s   @NotAttacking
     and.b   #$70, d5
 @NotAttacking:
+    tst.b   (PlayerMagic)
+    beq.s   @NotMagicing
+    and.b   #$70, d5
+@NotMagicing:
     
     bclr.l  #PF_CROUCH, d4              ; Crouching?
     btst.l  #1, d5
@@ -202,7 +252,7 @@ RunPlayer:
     beq.s   @NormalJump                   ; "one"-way platforms (instead of
     move.w  d0, d7                        ; jumping as usual)
     move.w  d1, d6
-    add.w   #$10, d6
+    add.w   #PLAYER_Y2+1, d6
     bsr     TileAt
     cmp.b   #COLL_FLOOR, d6
     bne.s   @NormalJump
@@ -230,19 +280,34 @@ RunPlayer:
 ;----------------------------------------------------------------------------
 
     move.b  (PlayerAttack), d5          ; Busy attacking?
-    beq.s   @TestAttack
+    beq.s   @CheckMagic
     subq.b  #1, d5
     move.b  d5, (PlayerAttack)
+    bra.s   @DoneAttacking
+    
+@CheckMagic:
+    move.b  (PlayerMagic), d5
+    beq.s   @TestAttack
+    subq.b  #1, d5
+    move.b  d5, (PlayerMagic)
     bra.s   @DoneAttacking
     
 @TestAttack:
     move.b  (AttackButton), d7          ; Attack with the broom?
     btst.b  d7, (JoyPress)
-    beq.s   @DoneAttacking
+    beq.s   @TestMagic
     move.b  #ATTACK_TIME, (PlayerAttack)
-    
     moveq   #SFX_ATTACK, d7
     jsr     (PlaySFX).w
+    bra.s   @DoneAttacking
+    
+@TestMagic:
+    cmp.b   #$40, (MagicMeter)
+    bne.s   @DoneAttacking
+    move.b  (MagicButton), d7           ; Throw magic?
+    btst.b  d7, (JoyPress)
+    beq.s   @DoneAttacking
+    bsr     UseMagic
     
 @DoneAttacking:
 
@@ -265,7 +330,7 @@ RunPlayer:
     
     move.w  d0, d7                      ; Did we hit a wall?
     move.w  d1, d6
-    addq.w  #7, d7
+    add.w   #PLAYER_X2, d7
     bsr     TileAt
     cmp.b   #COLL_SOLID, d6
     bne.s   @NoHorMove
@@ -289,7 +354,7 @@ RunPlayer:
     
     move.w  d0, d7                      ; Did we hit a wall?
     move.w  d1, d6
-    subq.w  #8, d7
+    add.w   #PLAYER_X1, d7
     bsr     TileAt
     cmp.b   #COLL_SOLID, d6
     bne.s   @NoHorMove
@@ -337,7 +402,7 @@ RunPlayer:
     
     move.w  d0, d7                      ; Did we hit the floor?
     move.w  d1, d6
-    add.w   #$10, d6
+    add.w   #PLAYER_Y2+1, d6
     bsr     TileAt
     bclr.l  #PF_LANDED, d4
     cmp.b   #COLL_FLOOR, d6
@@ -345,9 +410,9 @@ RunPlayer:
     cmp.b   #COLL_SOLID, d6
     bne.s   @NoVerMove
     
-    add.w   #$10, d1                    ; Don't go through the floor
+    add.w   #PLAYER_Y2+1, d1            ; Don't go through the floor
     and.w   #$FFE0, d1
-    sub.w   #$10, d1
+    sub.w   #PLAYER_Y2+1, d1
     moveq   #0, d3
     bset.l  #PF_LANDED, d4
     bra.s   @NoVerMove
@@ -356,16 +421,16 @@ RunPlayer:
 
 @OneWayFloor:
     move.w  d1, d6                      ; Did she go through the floor? (as
-    add.w   #$10, d6                      ; opposed of just going under it)
+    add.w   #PLAYER_Y2+1, d6              ; opposed of just going under it)
     add.w   #$0F, d5                      ; (I have no idea how I got this to
     and.w   #$1F, d6                      ; work but it works reliably?)
     and.w   #$1F, d5
     cmp.w   d6, d5
     blt.s   @NoVerMove
     
-    add.w   #$10, d1                    ; Put her back on the floor then
+    add.w   #PLAYER_Y2+1, d1            ; Put her back on the floor then
     and.w   #$FFE0, d1
-    sub.w   #$10, d1
+    sub.w   #PLAYER_Y2+1, d1
     moveq   #0, d3
     bset.l  #PF_LANDED, d4
     bra.s   @NoVerMove
@@ -385,11 +450,11 @@ RunPlayer:
     
     move.w  d0, d7                      ; Did we hit a ceiling?
     move.w  d1, d6
-    sub.w   #$14, d6
+    add.w   #PLAYER_Y1, d6
     bsr     TileAt
     cmp.b   #COLL_SOLID, d6
     bne.s   @NoVerMove
-    sub.w   #$14, d1
+    add.w   #PLAYER_Y1, d1
     and.w   #$FFE0, d1
     add.w   #$34, d1
     moveq   #0, d3
@@ -438,6 +503,10 @@ RunPlayer:
     beq.s   @NoAttackAnim
     moveq   #PA_ATTACK, d7
 @NoAttackAnim:
+    tst.b   (PlayerMagic)
+    beq.s   @NoMagicAnim
+    moveq   #PA_MAGIC, d7
+@NoMagicAnim:
     btst.l  #PF_HURT, d4
     beq.s   @NoHurtAnim
     moveq   #PA_HURT, d7
@@ -474,6 +543,7 @@ RunPlayer:
     dc.l    AnimMerlina_Jump            ; PA_JUMP
     dc.l    AnimMerlina_Crouch          ; PA_CROUCH
     dc.l    AnimMerlina_Attack          ; PA_ATTACK
+    dc.l    AnimMerlina_Magic           ; PA_MAGIC
     dc.l    AnimMerlina_Hurt            ; PA_HURT
     dc.l    AnimMerlina_Swim            ; PA_SWIM
 
@@ -566,6 +636,83 @@ DrawPlayer:
     move.l  (PlayerMapping), a6
     jsr     (AddMetasprite).w
     
+    tst.w   (Supermagic)                ; Should draw the trail?
+    bne.s   @HasTrail
+    rts
+    
+@HasTrail:
+    lea     (OldPosition), a0           ; Draw the trail by using an old
+    tst.b   (BlinkFlag)                   ; position
+    beq.s   @AltTrail
+    lea     4*4(a0), a0
+@AltTrail:
+    
+    move.w  (a0)+, d0                   ; Draw Merlina again!
+    move.w  (a0)+, d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    move.l  (PlayerMapping), a6
+    jsr     (AddMetasprite).w
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; UseMagic
+; Spawns all the magic stuff when Merlina uses magic.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+UseMagic:
+    moveq   #SFX_MAGIC, d7              ; Sparkly sound!
+    jsr     (PlaySFX).w
+    
+    tst.w   (Supermagic)                ; Set up the delay for Merlina's
+    bne.s   @WithSupermagic               ; action (and deplete magic if
+    move.b  #MAGIC_TIME, (PlayerMagic)    ; required)
+    clr.b   (MagicMeter)
+    bra.s   @MagicUsed
+@WithSupermagic:
+    move.b  #SUPERMAGIC_TIME, (PlayerMagic)
+@MagicUsed:
+    
+    move.w  (PlayerX), d7               ; Spawn the hitbox that actually
+    move.w  (PlayerY), d6                 ; takes care of applying magic
+    moveq   #OBJTYPE_MAGICHITBOX, d5
+    btst.b  #PF_DIR, (PlayerFlags)
+    beq.s   @HitRight
+    bset.l  #OF_DIR+8, d5
+@HitRight:
+    bsr     AddObject
+    
+    move.w  (PlayerX), d7               ; Determine where stars will spawn
+    move.w  (PlayerY), d6
+    subq.w  #8, d7
+    subq.w  #8, d6
+    btst.b  #PF_DIR, (PlayerFlags)
+    bne.s   *+6
+    add.w   #$10, d7
+    
+    moveq   #8-1, d5                    ; Spawn stars
+@Loop:
+    movem.l d5-d7, -(sp)
+    moveq   #OBJTYPE_MAGICSTAR, d5
+    bsr     AddObject
+    jsr     (Rand).w
+    and.w   #$1FF, d7
+    add.w   #$100, d7
+    btst.b  #PF_DIR, (PlayerFlags)
+    beq.s   *+4
+    neg.w   d7
+    move.w  d7, OBJ_XSPEED(a6)
+    jsr     (Rand).w
+    and.w   #$1FF, d7
+    add.w   #$100, d7
+    neg.w   d7
+    move.w  d7, OBJ_YSPEED(a6)
+    movem.l (sp)+, d5-d7
+    dbf     d5, @Loop
+    
     rts                                 ; End of subroutine
 
 ;****************************************************************************
@@ -580,14 +727,15 @@ DrawPlayer:
 
 HurtPlayer:
     btst.b  #PF_HURT, (PlayerFlags)     ; Check if we can hurt Merlina first
-    bne.s   @CantHurt
+    bne     @CantHurt
     tst.b   (PlayerFlash)
-    bne.s   @CantHurt
+    bne     @CantHurt
     btst.b  #CH_MUTEKI, (Cheats)
-    bne.s   @CantHurt
+    bne     @CantHurt
     
     bset.b  #PF_HURT, (PlayerFlags)     ; Cause recoil
     bclr.b  #PF_LANDED, (PlayerFlags)
+    bclr.b  #PF_PLATFORM, (PlayerFlags)
     move.w  #RECOIL_SPEED, d5
     cmp.w   (PlayerX), d7
     blt.s   *+4
@@ -604,6 +752,9 @@ HurtPlayer:
     
     move.b  #60, (PlayerFlash)          ; Give mercy invulnerability
     clr.b   (PlayerAttack)              ; Player can't attack when hurt
+    
+    moveq   #SFX_HURT, d7               ; "Ouch"
+    jsr     (PlaySFX).w
     
     subq.b  #1, (PlayerHealth)          ; Reduce health
     beq     KillPlayer                  ; All health gone?
@@ -648,13 +799,13 @@ CollidesPlayer:
     sub.w   (PlayerX), d5
     sub.w   (PlayerY), d4
     
-    cmp.w   #$08, d7                    ; Check the boundaries
+    cmp.w   #PLAYER_X2, d7              ; Check the boundaries
     bgt.s   @Nope
-    cmp.w   #-$07, d5
+    cmp.w   #PLAYER_X1, d5
     blt.s   @Nope
-    cmp.w   #$10, d6
+    cmp.w   #PLAYER_Y2, d6
     bgt.s   @Nope
-    cmp.w   #-$18, d4
+    cmp.w   #PLAYER_Y1, d4
     blt.s   @Nope
     
 @Yep:

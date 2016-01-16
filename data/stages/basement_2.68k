@@ -44,6 +44,11 @@
     dc.l    PalTileset
     dc.l    PalMerlinaUnderwater
     dc.l    PalTilesetUnderwater
+
+    dc.l    0
+    dc.w    0
+    dc.l    InitNoParallax
+    dc.l    UpdateNoParallax
     dc.w    $00E0
 
     dc.w    OBJTYPE_DOOR|$00<<8, $0070, $0090
@@ -54,12 +59,12 @@
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $00D0, $0220
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $0130, $0220
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $0150, $0220
-    dc.w    OBJTYPE_SPIKEBALL|$00<<8, $00B0, $0130
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $00D0, $0130
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $0130, $0130
-    dc.w    OBJTYPE_SPIKEBALL|$00<<8, $0150, $0130
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $00F0, $01A0
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $0110, $01A0
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $0130, $01A0
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $00D0, $01A0
+    dc.w    OBJTYPE_HCHAIN|$00<<8, $0150, $0130
+    dc.w    OBJTYPE_HCHAIN|$00<<8, $00B0, $0130
     dc.w    $0000

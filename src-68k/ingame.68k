@@ -45,23 +45,28 @@ StartGame:
 ;****************************************************************************
 
 InGame:
+    bclr.b  #CH_FREEMOVE, (Cheats)      ; Because for some reason this breaks
+                                          ; everything when loading a level,
+                                          ; there isn't much reason to keep
+                                          ; it on so let's just clear it
+    
     jsr     (ResetVideo).w              ; Reset video status
     st.b    (WantsFade)                 ; We want fading in
     
     lea     (GfxTileset), a6            ; Load tileset graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramTileset*$20, 63*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramTileset*$20, 104*$20, ($C00004)
     
     lea     (GfxIngame), a6             ; Load common graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramHUDHealth*$20, 123*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramHUDHealth*$20, 243*$20, ($C00004)
     
     lea     (GfxEnemies), a6            ; Load enemy graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramSpikeball*$20, 100*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramSpikeball*$20, 116*$20, ($C00004)
     
     move.b  #%0, (GameState)            ; Initialize game state
     bsr     InitStage                   ; Set up current stage
@@ -70,14 +75,6 @@ InGame:
 ;----------------------------------------------------------------------------
 
 @MainLoop:
-    move.w  (CameraX), d7
-    move.w  (CameraY), d6
-    SetVRAMAddr $F800, ($C00004)
-    neg.w   d7
-    move.w  d7, ($C00000)
-    SetVSRAMAddr 0, ($C00004)
-    move.w  d6, ($C00000)
-    
     btst.b  #7, (JoyPress)              ; Press Start to toggle pause
     beq.s   @NoPauseToggle
     bchg.b  #GS_PAUSED, (GameState)
@@ -127,7 +124,16 @@ InGame:
     bsr     DrawPlayer
     bsr     DrawAllObjects
     bsr     UpdateStageAnim
+    jsr     (SortSprites).w
     bsr     SplitWater
+    
+    if      DEBUG_HUD                   ; Store CPU usage so it can be
+    st.b    (LastUsage)                   ; displayed the next time
+    btst.b  #3, ($C00004)
+    bne.s   @UsageNotReliable
+    move.b  ($C00008), (LastUsage)
+@UsageNotReliable:
+    endc
     
     jsr     (NextFrame).w               ; Wait for next frame
     bsr     SetupWater
@@ -138,6 +144,12 @@ InGame:
 @Logic:
     bsr     RunPlayer                   ; Update player
     bsr     RunAllObjects               ; Update all objects
+    
+    tst.w   (QuakeTimer)                ; Update quakes
+    beq.s   @NoQuake
+    subq.w  #1, (QuakeTimer)
+@NoQuake:
+    
     rts                                 ; Return back to loop...
 
 ;****************************************************************************
@@ -170,4 +182,28 @@ AddScore:
     
     ror.l   #8, d6                      ; Put digits back into place
     move.l  d6, (Score)                 ; Store updated score
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; AddLife
+; Awards an extra life to the player.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+AddLife:
+    moveq   #SFX_1UP, d7                ; Jingle!
+    jsr     (PlaySFX).w
+    
+    move.b  (Lives), d7                 ; Get current lives
+    
+    moveq   #$01, d6                    ; Add one :)
+    and.b   #$00, ccr
+    abcd.b  d6, d7
+    
+    bcc.s   @NoOverflow                 ; Make sure to check for overflow
+    move.b  #$99, d7
+@NoOverflow:
+    
+    move.b  d7, (Lives)                 ; Store new lives count
     rts                                 ; End of subroutine

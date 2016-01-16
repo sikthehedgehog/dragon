@@ -1,2 +1,54 @@
+;****************************************************************************
+; TitleScreen
+; Shows up the title screen.
+;----------------------------------------------------------------------------
+; notes: doesn't return (use BRA/JMP instead of BSR/JSR)
+;****************************************************************************
+
 TitleScreen:
-    bra     StartGame
+    jsr     (ResetVideo).w              ; Reset video hardware status
+    st.b    (WantsFade)                 ; We want to fade in
+    
+    lea     (GfxTitleLogo), a6          ; Decompress the graphics
+    lea     (LocalRAM), a5
+    jsr     (DecompressSLZ).w
+    DMA2VRAM LocalRAM+TITLELOGO_WH*2, VramTitleLogo*$20, TITLELOGO_Z*$20, ($C00004)
+    
+    moveq   #TITLELOGO_X, d0            ; Draw game name on screen
+    moveq   #TITLELOGO_Y, d1
+    moveq   #TITLELOGO_W, d2
+    moveq   #TITLELOGO_H, d3
+    move.w  #$C000+VramTitleLogo, d4
+    lea     (LocalRAM), a6
+    jsr     (DrawTilemapA).w
+    
+    bsr     LoadFont                    ; We want this too
+    
+    if      SHOW_COPYRIGHT              ; Draw copyright string
+    moveq   #38-15, d7
+    moveq   #27-2, d6
+    moveq   #0, d5
+    lea     (StrCopyright), a6
+    bsr     (DrawText)
+    endc
+    
+    lea     (PalMenuLo), a0             ; Load the palettes
+    move.l  (PalMenuHi), a1
+    lea     (PalTitleLogo), a2
+    move.l  #0, a3
+    jsr     (SetAllPalettes).w
+
+;----------------------------------------------------------------------------
+
+@MainLoop:
+    btst.b  #7, (JoyPress)              ; Selected something?
+    bne.s   @Quit
+    
+    jsr     (NextFrame).w               ; Wait for next frame
+    bra     @MainLoop
+
+;----------------------------------------------------------------------------
+
+@Quit:
+    jsr     (FadeOut).w                 ; Shut off screen
+    bra     StartGame                   ; For now...

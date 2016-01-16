@@ -1,0 +1,21 @@
+;****************************************************************************
+; Sines, Cosines
+; Look-up tables for sines and cosines. Each entry is a word ranging from
+; -$100 (-1.0) to $100 (1.0) and there are 256 angles.
+;****************************************************************************
+
+Sines:
+    incbin  "data/math/sines.lut"
+
+Cosines: equ Sines+$80
+
+;****************************************************************************
+; Look-up tables used to calculate CPU usage
+; Note that they don't register when it's so low we're in vblank!
+; (reason: we can't reliably determine how much time has actually passed)
+;****************************************************************************
+
+    if      DEBUG_HUD
+    include "data/math/ntsc_usage.68k"
+    include "data/math/pal_usage.68k"
+    endc

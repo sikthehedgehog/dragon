@@ -1,0 +1,19 @@
+;****************************************************************************
+; SFX for when part of the castle gets demolished
+;****************************************************************************
+
+    ESF_Lock        ESF_FM5
+    ESF_Lock        ESF_FM6
+    
+    ESF_SetInstr    ESF_FM5, $0E
+    ESF_SetVol      ESF_FM5, $00
+    
+    ESF_NoteOn      ESF_FM5, 0, 0
+    ESF_NoteOn      ESF_PCM, $0F
+    ESF_Delay       4
+    ESF_NoteOn      ESF_FM5, 0, 2
+    ESF_Delay       24
+    ESF_NoteOff     ESF_FM5
+    ESF_Delay       8
+    
+    ESF_Stop

@@ -19,14 +19,32 @@ StageData_Entrance2:        include "data/stages/entrance_2.68k"
 StageData_Entrance3:        include "data/stages/entrance_3.68k"
 StageData_Entrance4:        include "data/stages/entrance_4.68k"
 
-StageData_Hall1:            include "data/stages/hall_1.68k"
-StageData_Hall2:            include "data/stages/hall_2.68k"
-StageData_Hall3:            include "data/stages/hall_3.68k"
-
 StageData_Basement1:        include "data/stages/basement_1.68k"
 StageData_Basement2:        include "data/stages/basement_2.68k"
 StageData_Basement3:        include "data/stages/basement_3.68k"
 StageData_Basement4:        include "data/stages/basement_4.68k"
+StageData_Basement5:        include "data/stages/basement_5.68k"
+StageData_Basement5B:       include "data/stages/basement_5b.68k"
+
+StageData_Hall1:            include "data/stages/hall_1.68k"
+StageData_Hall2:            include "data/stages/hall_2.68k"
+StageData_Hall3:            include "data/stages/hall_3.68k"
+StageData_Hall4:            include "data/stages/hall_4.68k"
+StageData_Hall4B:           include "data/stages/hall_4b.68k"
+StageData_Hall5:            include "data/stages/hall_5.68k"
+StageData_HallOut:          include "data/stages/hall_outside.68k"
+
+StageData_Mirror1:          include "data/stages/mirror_1.68k"
+StageData_Mirror2:          include "data/stages/mirror_2.68k"
+
+StageData_Lava1:            include "data/stages/lava_1.68k"
+StageData_Lava2:            include "data/stages/lava_2.68k"
+StageData_Lava3:            include "data/stages/lava_3.68k"
+StageData_Lava4:            include "data/stages/lava_4.68k"
+
+StageData_Shrine1:          include "data/stages/shrine_1.68k"
+StageData_Shrine2:          include "data/stages/shrine_2.68k"
+StageData_Shrine3:          include "data/stages/shrine_3.68k"
 
 StageData_FinalBoss:        include "data/stages/final_boss.68k"
 
@@ -48,13 +66,33 @@ STAGE_\name: rs.b 1
     @Entry      Entrance3
     @Entry      Entrance4
     
-    @Entry      Hall1
-    @Entry      Hall2
-    @Entry      Hall3
-    
     @Entry      Basement1
     @Entry      Basement2
     @Entry      Basement3
     @Entry      Basement4
+    @Entry      Basement5
+    @Entry      Basement5B
+    
+    @Entry      Hall1
+    @Entry      Hall2
+    @Entry      Hall3
+    @Entry      Hall4
+    @Entry      Hall4B
+    @Entry      Hall5
+    @Entry      HallOut
+    
+    @Entry      Mirror1
+    @Entry      Mirror2
+    
+    @Entry      Lava1
+    @Entry      Lava2
+    @Entry      Lava3
+    @Entry      Lava4
+    
+    @Entry      Shrine1
+    @Entry      Shrine2
+    @Entry      Shrine3
     
     @Entry      FinalBoss
+    
+    inform 0, "Number of stages: %d", __RS

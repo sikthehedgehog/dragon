@@ -15,5 +15,11 @@
     ESF_Delay       4
     ESF_SetVol      ESF_FM5, $08
     ESF_Delay       1
+    ESF_SetVol      ESF_FM5, $10
+    ESF_Delay       1
+    ESF_SetVol      ESF_FM5, $18
+    ESF_Delay       1
+    ESF_NoteOff     ESF_FM5
+    ESF_Delay       2
     
     ESF_Stop

@@ -1,0 +1,98 @@
+;****************************************************************************
+; InitNoParallax
+; Initialization when there's no parallax.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+InitNoParallax:
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; UpdateNoParallax
+; Update function when there's no parallax.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+UpdateNoParallax:
+    move.w  (CameraX), d7               ; Update the camera position
+    move.w  (CameraY), d6
+    neg.w   d7
+    move.w  d7, (HScrollABuf)
+    move.w  d6, (VScrollABuf)
+    
+    move.l  (DMABufEnd), a6             ; Set up DMA to load the scrolling
+    DMA2VRAM HScrollABuf, $F800, 2, (a6)+
+    DMA2VSRAM VScrollABuf, $0000, 2, (a6)+
+    move.l  a6, (DMABufEnd)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; InitFogParallax
+; Initialization when there's fog outside the castle.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+InitFogParallax:
+    lea     (GfxFog), a6                ; Decompress graphics
+    lea     (FreeRAM), a5
+    jsr     (DecompressSLZ).w
+    
+    lea     (FreeRAM), a6               ; Load fog graphics
+    move.w  #$A000+VramFog, d7
+    jsr     (LoadPlaneB).w
+    DMA2VRAM FreeRAM+$1000, VramFog*$20, 7*$20, ($C00004)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; UpdateFogParallax
+; Update function when there's fog outside the castle.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+UpdateFogParallax:
+    move.w  (Anim), d7                  ; Determine position of the fog
+    add.w   d7, d7                        ; Fog scrolls at the same ratio as
+    add.w   (CameraX), d7                 ; the foreground, but also is
+    move.w  (CameraY), d6                 ; constantly moving to the left
+    neg.w   d7
+    move.w  d7, (HScrollBBuf)
+    move.w  d6, (VScrollBBuf)
+    
+    move.l  (DMABufEnd), a6             ; Set up DMA to load the scrolling
+    DMA2VRAM HScrollBBuf, $F802, 2, (a6)+
+    DMA2VSRAM VScrollBBuf, $0002, 2, (a6)+
+    move.l  a6, (DMABufEnd)
+    
+    bra     UpdateNoParallax            ; Update camera as usual
+
+;****************************************************************************
+; InitLavaParallax
+; Initialization when there's lava in the room.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+InitLavaParallax:
+    lea     (GfxLava), a6               ; Decompress graphics
+    lea     (FreeRAM), a5
+    jsr     (DecompressSLZ).w
+    DMA2VRAM FreeRAM, VramLavaBurst*$20, 16*$20, ($C00004)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; UpdateLavaParallax
+; Update function for the rooms with lava.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+UpdateLavaParallax:
+    bra     UpdateNoParallax            ; Update camera as usual
+

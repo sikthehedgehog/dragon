@@ -1,4 +1,16 @@
 ;****************************************************************************
+; Some parameters for tweaking the spikeballs
+;****************************************************************************
+
+SPIKEBALL_X1:       equ -$0C            ; Left boundary of collision box
+SPIKEBALL_Y1:       equ -$0C            ; Top boundary of collision box
+SPIKEBALL_X2:       equ $0B             ; Right boundary of collision box
+SPIKEBALL_Y2:       equ $0B             ; Bottom boundary of collision box
+
+STRAY_XFORCE:       equ $280            ; Speed at which stray spikeballs
+STRAY_YFORCE:       equ $300              ; get thrown away
+
+;****************************************************************************
 ; InitSpikeball
 ; Initializes a spikeball's collision box.
 ;----------------------------------------------------------------------------
@@ -8,10 +20,10 @@
 ;****************************************************************************
 
 InitSpikeball:
-    move.w  #-$0C, OBJ_BOXX1(a6)        ; Set up collision box
-    move.w  #-$0C, OBJ_BOXY1(a6)
-    move.w  #$0B, OBJ_BOXX2(a6)
-    move.w  #$0B, OBJ_BOXY2(a6)
+    move.w  #SPIKEBALL_X1, OBJ_BOXX1(a6) ; Set up collision box
+    move.w  #SPIKEBALL_Y1, OBJ_BOXY1(a6)
+    move.w  #SPIKEBALL_X2, OBJ_BOXX2(a6)
+    move.w  #SPIKEBALL_Y2, OBJ_BOXY2(a6)
     
     rts                                 ; End of subroutine
 
@@ -25,6 +37,23 @@ InitSpikeball:
 ;****************************************************************************
 
 RunSpikeball:
+    move.l  a0, a6                      ; Did the player kick us out?
+    bsr     CollidesAttack
+    tst.w   d7
+    beq.s   @NotAttacked
+    
+    moveq   #SFX_HIT, d7                ; Like an enemy
+    jsr     (PlaySFX).w
+    move.l  #SCORE_BROOM, d7
+    bsr     AddScore
+    
+    move.w  OBJ_X(a0), d7               ; Oh dear we're stray now!
+    move.w  OBJ_Y(a0), d6
+    moveq   #OBJTYPE_STRAYBALL, d5
+    bsr     AddObject
+    bra     DestroySelf
+@NotAttacked:
+
     move.l  a0, a6                      ; Did we hit the player?
     bsr     CollidesPlayer
     tst.w   d7
@@ -83,3 +112,721 @@ DrawSpikeball:
 
 @FloatTable:
     dc.w    0, 1, 1, 1, 0, -1, -1, -1
+
+;****************************************************************************
+; InitStraySpikeball
+; Initializes a stray spikeball.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitStraySpikeball:
+    move.w  #SPIKEBALL_X1, OBJ_BOXX1(a6) ; Set up collision box
+    move.w  #SPIKEBALL_Y1, OBJ_BOXY1(a6)
+    move.w  #SPIKEBALL_X2, OBJ_BOXX2(a6)
+    move.w  #SPIKEBALL_Y2, OBJ_BOXY2(a6)
+    
+    move.w  #-STRAY_YFORCE, OBJ_YSPEED(a6) ; Always start going up
+    
+    move.w  #STRAY_XFORCE, d7           ; Move away from player
+    move.w  OBJ_X(a6), d6
+    cmp.w   (PlayerX), d6
+    bge.s   @GoingRight
+    neg.w   d7
+@GoingRight:
+    move.w  d7, OBJ_XSPEED(a6)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunStraySpikeball
+; Executes the behavior for a fallen spikeball.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunStraySpikeball:
+    btst.b  #OF_ACTIVE, OBJ_FLAGS(a0)   ; Hit the floor already?
+    bne     @Fallen
+    
+    move.w  OBJ_X(a0), d0               ; Get our current position
+    move.w  OBJ_Y(a0), d1
+    
+    move.w  OBJ_XSPEED(a0), d2          ; Determine our momentum
+    move.w  OBJ_YSPEED(a0), d3
+    add.w   (Subpixel), d2
+    add.w   (Subpixel), d3
+    asr.w   #8, d2
+    asr.w   #8, d3
+    
+    add.w   d2, d0                      ; Move around first
+    add.w   d3, d1
+    move.w  d0, OBJ_X(a0)
+    move.w  d1, OBJ_Y(a0)
+    
+    add.w   #$40, OBJ_YSPEED(a0)        ; Fall!
+    
+    tst.w   d2                          ; Bounce off walls to the right
+    blt.s   @NotRight
+    move.w  d0, d7
+    move.w  d1, d6
+    add.w   #SPIKEBALL_X2+1, d7
+    bsr     TileAt
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @NotRight
+    sub.w   d2, d0
+    neg.w   OBJ_XSPEED(a0)
+@NotRight:
+    
+    tst.w   d2                          ; Bounce off walls to the left
+    bgt.s   @NotLeft
+    move.w  d0, d7
+    move.w  d1, d6
+    add.w   #SPIKEBALL_X1-1, d7
+    bsr     TileAt
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @NotLeft
+    sub.w   d2, d0
+    neg.w   OBJ_XSPEED(a0)
+@NotLeft:
+    
+    tst.w   d3                          ; Check if we landed
+    blt.s   @NotDown
+    move.w  d0, d7
+    move.w  d1, d6
+    add.w   #SPIKEBALL_Y2+1, d6
+    bsr     TileAt
+    cmp.b   #COLL_SOLID, d6
+    beq.s   @Landed
+    move.w  d1, d7
+    and.w   #$10, d7
+    beq.s   @NotDown
+    cmp.b   #COLL_FLOOR, d6
+    bne.s   @NotDown
+@Landed:                                ; There we go!
+    bset.b  #OF_ACTIVE, OBJ_FLAGS(a0)
+    add.w   #$10, d1
+    and.w   #$FFE0, d1
+    sub.w   #$10, d1
+@NotDown:
+
+;----------------------------------------------------------------------------
+
+@Fallen:
+    move.l  a0, a6                      ; Did we hit the player?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NoAttack
+    
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    bsr     HurtPlayer
+    
+@NoAttack:
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; InitSwingingSpikeball
+; Initializes a swinging spikeball's initial angle.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitSwingingSpikeball:
+    moveq   #0, d7                      ; Store rotation where it's more
+    move.b  OBJ_FLAGS(a6), d7             ; relevant
+    move.w  d7, OBJ_TIMER(a6)
+    clr.b   OBJ_FLAGS(a6)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunSwingingSpikeball
+; Executes the behavior for a swinging spikeball.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunSwingingSpikeball:
+    move.w  OBJ_TIMER(a0), d7           ; Swing the spikeball
+    addq.b  #2, d7
+    move.w  d7, OBJ_TIMER(a0)
+    
+    add.w   d7, d7                      ; Determine new position of the
+    lea     (Sines), a1                   ; spikeball based on its angle
+    lea     (Cosines), a2
+    move.w  (a1,d7.w), d7
+    asr.w   #2, d7
+    move.w  d7, d6
+    asr.w   #3, d6
+    sub.w   d6, d7
+    add.b   #$C0, d7
+    and.w   #$FF, d7
+    move.b  d7, OBJ_DATA(a0)
+    add.w   d7, d7
+    move.w  (a2,d7.w), d0
+    move.w  (a1,d7.w), d1
+    asr.w   #2, d0
+    asr.w   #2, d1
+    neg.w   d1
+    
+    move.w  d0, d7                      ; Update collision box accordingly
+    add.w   #SPIKEBALL_X1, d7
+    move.w  d7, OBJ_BOXX1(a0)
+    move.w  d1, d7
+    add.w   #SPIKEBALL_Y1, d7
+    move.w  d7, OBJ_BOXY1(a0)
+    move.w  d0, d7
+    add.w   #SPIKEBALL_X2, d7
+    move.w  d7, OBJ_BOXX2(a0)
+    move.w  d1, d7
+    add.w   #SPIKEBALL_Y2, d7
+    move.w  d7, OBJ_BOXY2(a0)
+    
+    tst.b   OBJ_HEALTH(a0)              ; Is the spikeball still attached?
+    bne.s   @StillAlive
+    rts
+@StillAlive:
+    
+    move.l  a0, a6                      ; Did the player kick us out?
+    bsr     CollidesAttack
+    tst.w   d7
+    beq.s   @NotAttacked
+    
+    moveq   #SFX_HIT, d7                ; Like an enemy
+    jsr     (PlaySFX).w
+    move.l  #SCORE_BROOM, d7
+    bsr     AddScore
+    
+    moveq   #0, d7                      ; Release the links!
+    move.b  OBJ_DATA(a0), d7              ; We don't care about accuracy here
+    add.w   d7, d7                        ; (unlike when the chain swings) so
+    lea     (Sines), a1                   ; we do it the lazy way
+    move.w  (a1,d7.w), d3
+    lea     $80(a1), a1
+    move.w  (a1,d7.w), d2
+    asr.w   #4, d2
+    asr.w   #4, d3
+    neg.w   d3
+    
+    movem.l d0-d1, -(sp)
+    move.w  OBJ_X(a0), d0
+    move.w  OBJ_Y(a0), d1
+    moveq   #3-1, d4
+@ReleaseLinks:
+    add.w   d2, d0
+    add.w   d3, d1
+    move.w  d0, d7
+    move.w  d1, d6
+    moveq   #OBJTYPE_STRAYLINK, d5
+    bsr     AddObject
+    dbf     d4, @ReleaseLinks
+    movem.l (sp)+, d0-d1
+    
+    move.w  d0, d7                      ; Oh dear we're stray now!
+    move.w  d1, d6
+    add.w   OBJ_X(a0), d7
+    add.w   OBJ_Y(a0), d6
+    moveq   #OBJTYPE_STRAYBALL, d5
+    bsr     AddObject
+    bra     DestroySelf
+@NotAttacked:
+    
+    move.l  a0, a6                      ; Did we hit the player?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NoAttack
+    
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    add.w   d0, d7
+    add.w   d1, d6
+    bsr     HurtPlayer
+    
+@NoAttack:
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawSwingingSpikeball
+; Draws a swinging spikeball.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawSwingingSpikeball:
+    move.w  OBJ_BOXX1(a0), d0           ; Determine spikeball position
+    move.w  OBJ_BOXY1(a0), d1
+    add.w   OBJ_X(a0), d0
+    add.w   OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    sub.w   #SPIKEBALL_X1+$10, d0       ; Draw spikeball
+    sub.w   #SPIKEBALL_Y1+$10, d1
+    move.w  #VramSpikeball, d2
+    moveq   #%1111, d3
+    jsr     (AddSprite).w
+    
+    move.w  OBJ_X(a0), d0               ; Determine origin for links
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    subq.w  #8, d0
+    subq.w  #8, d1
+    
+    moveq   #0, d7                      ; Determine offsets for each link
+    move.b  OBJ_DATA(a0), d7
+    add.w   d7, d7
+    lea     (Sines), a1
+    lea     (Cosines), a2
+    move.w  (a2,d7.w), d4
+    move.w  (a1,d7.w), d5
+    neg.w   d5
+    move.w  d4, a1
+    move.w  d5, a2
+    
+    move.w  #VramLink, d2               ; Draw the chain
+    moveq   #%0101, d3
+    moveq   #3-1, d7
+@DrawChain:
+    movem.l d0-d1/d4-d5/d7, -(sp)
+    asr.w   #4, d4
+    asr.w   #4, d5
+    add.w   d4, d0
+    add.w   d5, d1
+    jsr     (AddSprite).w
+    movem.l (sp)+, d0-d1/d4-d5/d7
+    add.w   a1, d4
+    add.w   a2, d5
+    dbf     d7, @DrawChain
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunHorSwingSpikeball
+; Executes the behavior for a horizontally swinging spikeball.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunHorSwingSpikeball:
+    tst.b   OBJ_HEALTH(a0)              ; Spikeball still attached?
+    bne.s   @StillThere
+    rts
+@StillThere:
+    
+    move.w  OBJ_TIMER(a0), d7           ; Swing the spikeball
+    addq.b  #2, d7
+    move.w  d7, OBJ_TIMER(a0)
+    
+    add.w   d7, d7                      ; Determine distance of the
+    lea     (Sines), a1                   ; spikeball
+    move.w  (a1,d7.w), d7
+    asr.w   #2, d7
+    
+    move.w  d7, d6                      ; Update collision box
+    add.w   #SPIKEBALL_X1, d7
+    add.w   #SPIKEBALL_X2, d6
+    move.w  d7, OBJ_BOXX1(a0)
+    move.w  d6, OBJ_BOXX2(a0)
+    move.w  #SPIKEBALL_Y1, OBJ_BOXY1(a0)
+    move.w  #SPIKEBALL_Y2, OBJ_BOXY2(a0)
+    
+    move.l  a0, a6                      ; Hit by the broom?
+    bsr     CollidesAttack
+    tst.w   d7
+    beq.s   @NotAttacked
+    
+    moveq   #SFX_HIT, d7                ; Like an enemy
+    jsr     (PlaySFX).w
+    move.l  #SCORE_BROOM, d7
+    bsr     AddScore
+    
+    move.w  OBJ_BOXX1(a0), d7           ; Oh dear we're stray now!
+    move.w  OBJ_BOXY1(a0), d6
+    add.w   #-SPIKEBALL_X1, d7
+    add.w   #-SPIKEBALL_X2, d6
+    add.w   OBJ_X(a0), d7
+    add.w   OBJ_Y(a0), d6
+    moveq   #OBJTYPE_STRAYBALL, d5
+    bsr     AddObject
+    
+    bsr     @SpawnLinks                 ; Release all the links
+    clr.b   OBJ_HEALTH(a0)              ; Leave only the pivot
+    rts
+@NotAttacked:
+    
+    move.l  a0, a6                      ; Hit the player?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NotAttacking
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    bsr     HurtPlayer
+@NotAttacking:
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@SpawnLinks:
+    move.w  OBJ_X(a0), d0               ; Get origin
+    move.w  OBJ_Y(a0), d1
+    
+    move.w  OBJ_TIMER(a0), d7           ; Determine how far each link goes
+    add.w   d7, d7
+    lea     (Sines), a1
+    move.w  (a1,d7.w), d2
+    asr.w   #4, d2
+    
+    moveq   #3-1, d3                    ; Spawn the links
+@LinkLoop:
+    add.w   d2, d0
+    move.w  d0, d7
+    move.w  d1, d6
+    moveq   #OBJTYPE_STRAYLINK, d5
+    bsr     AddObject
+    dbf     d3, @LinkLoop
+    
+    rts                                 ; End of subsubroutine
+
+;****************************************************************************
+; DrawHorSwingSpikeball
+; Draws a horizontally swinging spikeball.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawHorSwingSpikeball:
+    move.w  OBJ_X(a0), d0               ; Determine origin on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    tst.b   OBJ_HEALTH(a0)              ; Kicked out?
+    bne.s   @StillThere
+    bra     @DrawPivot
+@StillThere:
+    
+    lea     (Sines), a1                 ; Everything will need this
+    
+    move.w  OBJ_TIMER(a0), d7           ; Is the spikeball in front or back?
+    add.b   #$40, d7
+    bmi.s   @Back
+    
+@Front:                                 ; Spikeball in front
+    bsr     @DrawSpikeball
+    bsr     @DrawChain
+    bsr     @DrawPivot
+    rts
+    
+@Back:                                  ; Spikeball in back
+    bsr     @DrawPivot
+    bsr     @DrawRevChain
+    bsr     @DrawSpikeball
+    rts
+
+;----------------------------------------------------------------------------
+
+@DrawSpikeball:
+    move.w  d0, -(sp)                   ; Preserve these
+    move.w  d1, -(sp)
+    
+    move.w  OBJ_TIMER(a0), d7           ; Determine position of the spikeball
+    add.w   d7, d7
+    move.w  (a1,d7.w), d7
+    asr.w   #2, d7
+    add.w   d7, d0
+    
+    sub.w   #$10, d0                    ; Draw spikeball
+    sub.w   #$10, d1
+    move.w  #VramSpikeball, d2
+    moveq   #%1111, d3
+    jsr     (AddSprite).w
+    
+    move.w  (sp)+, d1                   ; End of subsubroutine
+    move.w  (sp)+, d0
+    rts
+
+;----------------------------------------------------------------------------
+
+@DrawChain:
+    move.w  d0, -(sp)                   ; Preserve these
+    move.w  d1, -(sp)
+    
+    move.w  OBJ_TIMER(a0), d7           ; Determine offset of each chain
+    add.w   d7, d7
+    move.w  (a1,d7.w), d4
+    move.w  d4, d5
+    
+    move.w  d4, d7                      ; Start from the spikeball
+    asr.w   #2, d7
+    add.w   d7, d0
+    
+    move.w  #VramLink, d2               ; Draw the chain
+    moveq   #%0101, d3
+    subq.w  #8, d0
+    subq.w  #8, d1
+    moveq   #3-1, d7
+@Loop:
+    movem.l d0/d4/d7, -(sp)
+    asr.w   #4, d4
+    sub.w   d4, d0
+    jsr     (AddSprite).w
+    movem.l (sp)+, d0/d4/d7
+    add.w   d5, d4
+    dbf     d7, @Loop
+    
+    move.w  (sp)+, d1                   ; End of subsubroutine
+    move.w  (sp)+, d0
+    rts
+
+;----------------------------------------------------------------------------
+
+@DrawRevChain:
+    move.w  d0, -(sp)                   ; Preserve these
+    move.w  d1, -(sp)
+    
+    move.w  OBJ_TIMER(a0), d7           ; Determine offset of each chain
+    add.w   d7, d7
+    move.w  (a1,d7.w), d4
+    move.w  d4, d5
+    
+    move.w  #VramLink, d2               ; Draw the chain
+    moveq   #%0101, d3
+    subq.w  #8, d0
+    subq.w  #8, d1
+    moveq   #3-1, d7
+@RevLoop:
+    movem.l d0/d4/d7, -(sp)
+    asr.w   #4, d4
+    add.w   d4, d0
+    jsr     (AddSprite).w
+    movem.l (sp)+, d0/d4/d7
+    add.w   d5, d4
+    dbf     d7, @RevLoop
+    
+    move.w  (sp)+, d1                   ; End of subsubroutine
+    move.w  (sp)+, d0
+    rts
+
+;----------------------------------------------------------------------------
+
+@DrawPivot:
+    move.w  d0, -(sp)                   ; Preserve these
+    move.w  d1, -(sp)
+    
+    subq.w  #8, d0                      ; Draw pivot
+    subq.w  #8, d1
+    move.w  #$2000+VramPivot, d2
+    moveq   #%0111, d3
+    jsr     (AddSprite).w
+    
+    move.w  (sp)+, d1                   ; End of subsubroutine
+    move.w  (sp)+, d0
+    rts
+
+;****************************************************************************
+; DrawLink
+; Draws a single link.
+;----------------------------------------------------------------------------
+; input d0.w ... X coordinate
+; input d1.w ... Y coordinate
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d0-d3, d5-d7, a4-a6
+;****************************************************************************
+
+DrawLink:
+    subq.w  #8, d0                      ; Just draw the sprites
+    subq.w  #8, d1
+    move.w  #VramLink, d2
+    moveq   #%0101, d3
+    jmp     (AddSprite).w
+
+;****************************************************************************
+; DrawHorChain, DrawVerChain
+; Draws a chunk of a chain (two horizontal or vertical links). They were
+; going to be separate subroutines but in the end it was easier this way...
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawHorChain:
+DrawVerChain:
+    move.w  OBJ_X(a0), d4               ; Base coordinates
+    move.w  OBJ_Y(a0), d5
+    sub.w   (CameraX), d4
+    sub.w   (CameraY), d5
+    
+    lea     @NoFloatTable(pc), a1       ; Chains float in water
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    bsr     TileAt
+    cmp.b   #COLL_WATER, d6
+    bne.s   @NotFloating
+    
+    move.w  OBJ_X(a0), d6
+    move.w  (Anim), d7
+    add.w   d7, d7
+    add.w   d7, d7
+    add.w   d6, d7
+    add.w   d6, d7
+    add.w   d6, d7
+    lsr.w   #6-2, d7
+    and.w   #$07<<1, d7
+    lea     4(a1,d7.w), a1
+@NotFloating:
+    
+    cmp.b   #OBJTYPE_VCHAIN, OBJ_TYPE(a0) ; Is it vertical or horizontal?
+    beq.s   @Vertical
+
+;----------------------------------------------------------------------------
+
+@Horizontal:
+    move.w  d4, d0                      ; Draw first link
+    move.w  d5, d1
+    subq.w  #8, d0
+    add.w   (a1), d1
+    bsr     DrawLink
+    
+    move.w  d4, d0                      ; Draw second link
+    move.w  d5, d1
+    addq.w  #8, d0
+    add.w   6(a1), d1
+    bsr     DrawLink
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Vertical:
+    move.w  d4, d0                      ; Draw first link
+    move.w  d5, d1
+    subq.w  #8, d1
+    add.w   (a1), d0
+    bsr     DrawLink
+    
+    move.w  d4, d0                      ; Draw second link
+    move.w  d5, d1
+    addq.w  #8, d1
+    add.w   6(a1), d0
+    bsr     DrawLink
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@NoFloatTable:
+    dc.w    0, 0, 0, 0
+@FloatTable:
+    dc.w    0, 1, 1, 1, 0, -1, -1, -1, 0, 1, 1, 1
+
+;****************************************************************************
+; DrawBaseLink
+; Draws the link used as anchor by moving chains.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawBaseLink:
+    move.w  OBJ_X(a0), d0               ; Determine position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    subq.w  #8, d0
+    subq.w  #8, d1
+    
+    move.w  #$2000+VramBaseLink, d2     ; Draw sprite
+    moveq   #%0101, d3
+    jsr     (AddSprite).w
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; InitStrayLink
+; Initializes a stray link.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitStrayLink:
+    jsr     (Rand).w                    ; Determine horizontal speed
+    and.w   #$3FF, d7
+    sub.w   #$200, d7
+    move.w  d7, OBJ_XSPEED(a6)
+    
+    jsr     (Rand).w                    ; Determine vertical speed
+    and.w   #$FF, d7
+    add.w   #$200, d7
+    neg.w   d7
+    move.w  d7, OBJ_YSPEED(a6)
+    
+    move.w  #$20, OBJ_TIMER(a6)         ; How long it'll last
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunStrayLink
+; Executes the behavior for a stray link.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunStrayLink:
+    move.w  OBJ_XSPEED(a0), d7          ; Keep moving
+    move.w  OBJ_YSPEED(a0), d6
+    add.w   (Subpixel), d7
+    add.w   (Subpixel), d6
+    asr.w   #8, d7
+    asr.w   #8, d6
+    add.w   d7, OBJ_X(a0)
+    add.w   d6, OBJ_Y(a0)
+    
+    add.w   #$30, OBJ_YSPEED(a0)        ; Falling!
+    
+    subq.w  #1, OBJ_TIMER(a0)           ; Vanish after a while
+    beq     DestroySelf
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawStrayLink
+; Draws a stray link.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawStrayLink:
+    move.w  OBJ_X(a0), d0               ; Determine position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    tst.b   (BlinkFlag)                 ; Pretty much a blinking link
+    beq     DrawLink
+    
+    rts                                 ; End of subroutine

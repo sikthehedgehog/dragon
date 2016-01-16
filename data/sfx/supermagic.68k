@@ -1,0 +1,34 @@
+;****************************************************************************
+; SFX for when Merlina gets a yellow potion.
+;****************************************************************************
+
+    ESF_Lock        ESF_FM5
+    ESF_Lock        ESF_PSG3
+    
+    ESF_SetInstr    ESF_FM5, $0B
+    ESF_SetInstr    ESF_PSG3, $02
+    
+@note = 0
+    rept 6
+    ESF_SetVol      ESF_FM5, $00
+    ESF_SetVol      ESF_PSG3, $00
+    ESF_NoteOn      ESF_FM5, 5, @note/2*4
+    ESF_NoteOn      ESF_PSG3, 2, @note/2*4
+    ESF_Delay       1
+    ESF_SetFreq     ESF_FM5, 5, ESF_FMFREQ_0+@note/2*4
+    ESF_NoteOn      ESF_PSG3, 2, @note/2*4+2
+    ESF_Delay       1
+    ESF_SetFreq     ESF_FM5, 5, ESF_FMFREQ_0+@note/2*4
+    ESF_NoteOn      ESF_PSG3, 2, @note/2*4+1
+    ESF_Delay       1
+    ESF_SetVol      ESF_FM5, $04
+    ESF_SetVol      ESF_PSG3, $04
+    ESF_Delay       1
+    ESF_NoteOff     ESF_FM5
+    ESF_NoteOff     ESF_PSG3
+    ESF_Delay       1
+@note = @note+1
+    endr
+    
+    ESF_Delay       3
+    ESF_Stop

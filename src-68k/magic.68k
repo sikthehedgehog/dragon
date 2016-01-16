@@ -1,0 +1,250 @@
+;****************************************************************************
+; InitMagicHitbox
+; Initializes a new magic hitbox.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitMagicHitbox:
+    move.b  (NextMagicSlot), d7         ; Get slot to use
+    move.b  d7, OBJ_DATA(a6)
+    
+    addq.b  #1, d7                      ; Set up slot for next hitbox
+    and.b   #$03, d7
+    move.b  d7, (NextMagicSlot)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunMagicHitbox
+; Takes care of the actual hitbox that triggers magic.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunMagicHitbox:
+    move.w  OBJ_TIMER(a0), d7           ; Determine size of the hitbox
+    add.w   #$10, d7
+    
+    move.w  OBJ_X(a0), d0               ; Determine horizontal boundaries of
+    move.w  d0, d2                        ; the hitbox
+    sub.w   d7, d0
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)
+    bne.s   @ToTheLeft
+    add.w   d7, d0
+    add.w   d7, d2
+@ToTheLeft:
+    
+    move.w  OBJ_Y(a0), d1               ; Determine vertical boundaries of
+    move.w  d1, d3                        ; the hitbox
+    sub.w   d7, d1
+    
+    moveq   #0, d7                      ; Which hitbox slot are we using?
+    move.b  OBJ_DATA(a0), d7
+    lsl.w   #3, d7
+    lea     (MagicBounds), a1
+    lea     (a1,d7.w), a1
+    
+    move.w  OBJ_TIMER(a0), d7           ; Keep expanding for a while
+    addq.w  #1, d7
+    move.w  d7, OBJ_TIMER(a0)
+    cmp.w   #$20, d7
+    bne.s   @StillGoing
+    
+    move.l  #0, (a1)+                   ; Gone
+    move.l  #-1, (a1)+
+    bra     DestroySelf
+    
+@StillGoing:
+    move.w  d0, (a1)+                   ; Store computed hitbox
+    move.w  d1, (a1)+
+    move.w  d2, (a1)+
+    move.w  d3, (a1)+
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunMagicStar
+; Executes the behavior for the stars that appear when using magic.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunMagicStar:
+    move.w  OBJ_XSPEED(a0), d0          ; Flying in the air!
+    move.w  OBJ_YSPEED(a0), d1
+    add.w   (Subpixel), d0
+    add.w   (Subpixel), d1
+    asr.w   #8, d0
+    asr.w   #8, d1
+    add.w   d0, OBJ_X(a0)
+    add.w   d1, OBJ_Y(a0)
+    
+    add.w   #$20, OBJ_YSPEED(a0)        ; Falling though
+    
+    move.w  OBJ_TIMER(a0), d7           ; Vanish after a while
+    addq.w  #1, d7
+    move.w  d7, OBJ_TIMER(a0)
+    cmp.w   #$20, d7
+    beq     DestroySelf
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawMagicStar
+; Draws one of the stars that appear when using magic.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawMagicStar:
+    cmp.w   #$18, OBJ_TIMER(a0)         ; Flash when we're about to disappear
+    blo.s   @NoFlash
+    tst.b   (BlinkFlag)
+    beq.s   @NoFlash
+    rts
+@NoFlash:
+    
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    subq.w  #8, d0
+    subq.w  #8, d1
+    
+    move.w  (Anim), d7                  ; Determine sprite to use
+    lsl.w   #1, d7
+    and.w   #$03<<1, d7
+    lea     @AnimTable(pc), a6
+    move.w  (a6,d7.w), d2
+    
+    moveq   #%0101, d3                  ; Draw sprite
+    jsr     (AddSprite).w
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@AnimTable:
+    dc.w    $8000+VramMagic
+    dc.w    $8004+VramMagic
+    dc.w    $9800+VramMagic
+    dc.w    $9804+VramMagic
+
+;****************************************************************************
+; RunMagicPuff
+; Executes the behavior for the smoke puff when something transforms.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunMagicPuff:
+    move.w  OBJ_TIMER(a0), d7           ; Still transforming?
+    addq.w  #1, d7
+    move.w  d7, OBJ_TIMER(a0)
+    cmp.w   #$20, d7
+    beq.s   @Disappear
+    rts
+@Disappear:
+    
+    move.w  OBJ_X(a0), d7               ; Turn into the transformed object
+    move.w  OBJ_Y(a0), d6
+    move.b  OBJ_FLAGS(a0), d5
+    lsl.w   #8, d5
+    move.b  OBJ_DATA(a0), d5
+    bsr     AddObject
+    
+    bra     DestroySelf                 ; Puff gone!
+
+;****************************************************************************
+; DrawMagicPuff
+; Draws the smoke puff when something transforms through magic.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawMagicPuff:
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  OBJ_TIMER(a0), d7           ; Determine sprite to use
+    and.w   #$03<<2, d7
+    add.w   d7, d7
+    lea     @AnimTable(pc), a6
+    lea     (a6,d7.w), a6
+    sub.w   (a6)+, d0
+    sub.w   (a6)+, d1
+    move.w  (a6)+, d2
+    move.w  (a6)+, d3
+    
+    jsr     (AddSprite).w               ; Draw sprite
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@AnimTable:
+    dc.w    $0C, $0C, VramTransform+$00, %1010
+    dc.w    $10, $10, VramTransform+$09, %1111
+    dc.w    $10, $10, VramTransform+$19, %1111
+    dc.w    $10, $10, VramTransform+$09, %1111
+
+;****************************************************************************
+; CollidesMagic
+; Checks if an object collides with a magic hitbox.
+;----------------------------------------------------------------------------
+; input a6.l .... Pointer to object
+;----------------------------------------------------------------------------
+; output d7.w ... Non-zero if collision, zero if not
+;----------------------------------------------------------------------------
+; breaks: d4-d6, a4-a6
+;****************************************************************************
+
+CollidesMagic:
+    move.w  OBJ_X(a6), d7               ; Calculate the hitbox's world
+    move.w  OBJ_Y(a6), d6                 ; coordinates
+    move.w  d7, d5
+    move.w  d6, d4
+    add.w   OBJ_BOXX1(a6), d7
+    add.w   OBJ_BOXY1(a6), d6
+    add.w   OBJ_BOXX2(a6), d5
+    add.w   OBJ_BOXY2(a6), d4
+    
+    lea     (MagicBounds), a5           ; The boundaries for magic hitboxes
+    lea     4*4*2(a5), a4               ; Where magic hitboxes end
+    
+@Loop:
+    cmp.w   (a5), d5                    ; Check against the next hitbox
+    blt.s   @Nope
+    cmp.w   2(a5), d4
+    blt.s   @Nope
+    cmp.w   4(a5), d7
+    bgt.s   @Nope
+    cmp.w   6(a5), d6
+    bgt.s   @Nope
+    bra.s   @Yep
+    
+@Nope:
+    addq.w  #8, a5                      ; That was all hitboxes?
+    cmp.l   a4, a5
+    bne.s   @Loop
+    
+    moveq   #0, d7                      ; No collision, safe
+    rts                                 ; End of subroutine
+
+@Yep:
+    moveq   #1, d7                      ; Time to transform!
+    rts                                 ; End of subroutine

@@ -38,13 +38,13 @@
   <object gid="69" x="176" y="575"/>
   <object gid="69" x="272" y="577"/>
   <object gid="69" x="303" y="575"/>
-  <object gid="69" x="146" y="334"/>
-  <object gid="69" x="178" y="332"/>
-  <object gid="69" x="273" y="333"/>
-  <object gid="69" x="304" y="334"/>
+  <object gid="69" x="174" y="335"/>
+  <object gid="69" x="272" y="336"/>
   <object gid="69" x="208" y="443"/>
   <object gid="69" x="240" y="443"/>
   <object gid="69" x="271" y="445"/>
   <object gid="69" x="177" y="444"/>
+  <object gid="72" x="302" y="335"/>
+  <object gid="72" x="145" y="335"/>
  </objectgroup>
 </map>

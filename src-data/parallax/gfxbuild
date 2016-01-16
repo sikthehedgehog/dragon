@@ -1,0 +1,3 @@
+output "src-data/parallax/fog.4bpp"
+input "src-data/parallax/fog.png"
+tiles 0 0 7 1

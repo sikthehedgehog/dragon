@@ -142,21 +142,47 @@ RunGhost:
     move.w  d2, OBJ_XSPEED(a0)
     move.w  d3, OBJ_YSPEED(a0)
     move.b  d4, OBJ_FLAGS(a0)
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Did we get caught by magic?
+    move.w  d4, -(sp)
+    bsr     CollidesMagic
+    move.w  (sp)+, d4
+    tst.w   d7
+    beq.s   @NoMagic
     
+    moveq   #SFX_TRANSFORM, d7          ; Stuff as usual
+    jsr     (PlaySFX).w
+    move.l  #SCORE_MAGIC, d7
+    bsr     AddScore
+    
+    move.w  d0, d7                      ; Oh no! Transform!
+    move.w  d1, d6
+    moveq   #OBJTYPE_MAGICPUFF, d5
+    bsr     AddObject
+    move.b  d4, OBJ_FLAGS(a6)
+    move.b  #OBJTYPE_ANGEL, OBJ_DATA(a6)
+    
+    bra     DestroySelf                 ; Puff!
+@NoMagic:
+
+;----------------------------------------------------------------------------
+
     move.l  a0, a6                      ; Did we get hit by the player?
     bsr     CollidesAttack
     tst.w   d7
     beq.s   @NotHurt
     
-    clr.b   OBJ_HEALTH(a0)
-    moveq   #SFX_HIT, d7
+    clr.b   OBJ_HEALTH(a0)              ; Ouch!
+    moveq   #SFX_HIT, d7                ; Stuff as usual
     jsr     (PlaySFX).w
     move.l  #SCORE_BROOM, d7
     bsr     AddScore
     
-    move.l  a0, a6
-    bsr     FacePlayer
-    move.b  d7, d4
+    move.l  a0, a6                      ; Ensure we face the player when we
+    bsr     FacePlayer                    ; get hit (so we recoil in the
+    move.b  d7, d4                        ; correct direction)
     move.w  #$300, d7
     btst.l  #OF_DIR, d4
     bne.s   *+4
@@ -164,10 +190,12 @@ RunGhost:
     move.w  d7, OBJ_XSPEED(a0)
     move.w  #-$300, OBJ_YSPEED(a0)
     
-    move.w  #GHOST_DEATH, OBJ_TIMER(a0)
-    rts
+    move.w  #GHOST_DEATH, OBJ_TIMER(a0) ; Start recoil
+    rts                                 ; End of subroutine
 @NotHurt:
-    
+
+;----------------------------------------------------------------------------
+
     move.l  a0, a6                      ; Did we hit the player?
     bsr     CollidesPlayer
     tst.w   d7
@@ -241,3 +269,80 @@ DrawGhost:
 @Mappings:
     dc.l    SprGhost_1
     dc.l    SprGhost_2
+
+;****************************************************************************
+; InitAngel
+; Initializes a saved soul.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitAngel:
+    move.w  #$40, OBJ_TIMER(a6)         ; How long does it last
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunAngel
+; Executes the behavior for a saved soul.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunAngel:
+    subq.w  #1, OBJ_Y(a0)               ; Go upwards
+    
+    subq.w  #1, OBJ_TIMER(a0)           ; Disappear after a while
+    beq     DestroySelf
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawAngel
+; Draws a saved soul as it escapes.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawAngel:
+    cmp.w   #$10, OBJ_TIMER(a0)         ; Blink when about to vanish
+    bhi.s   @NoBlink
+    tst.b   (BlinkFlag)
+    beq.s   @NoBlink
+    rts
+@NoBlink:
+    
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  OBJ_TIMER(a0), d7           ; Angel wobbles around
+    and.w   #$3F, d7
+    lsl.w   #2+1, d7
+    lea     (Sines), a6
+    move.w  (a6,d7.w), d7
+    asr.w   #5, d7
+    add.w   d7, d0
+    
+    move.w  (Anim), d7                  ; Get mapping to use
+    and.w   #$01<<3, d7
+    lsr.w   #1, d7
+    lea     @Mappings(pc), a6
+    move.l  (a6,d7.w), a6
+    
+    move.w  #$A000+VramAngel, d2        ; Draw angel
+    jsr     (AddMetasprite).w
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Mappings:
+    dc.l    SprAngel_1
+    dc.l    SprAngel_2

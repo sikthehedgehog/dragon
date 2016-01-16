@@ -3,22 +3,46 @@
    $height = 7;
    $tilemap = Array();
    $collmap = Array();
+   $pal = Array("PalMerlina", "PalTileset", "0", "0");
+   $parallax = "NoParallax";
+   $extragfx = "0";
+   $extrasize = 0;
    $startx = 0x10;
    $starty = 0x10;
    
+   $anim = 0x0000;
    $water = -1;
+   $cogwheel = false;
+   $outdoors = false;
+   $mirror = (strstr($argv[1], "mirror") !== false);
+   $lava = (strstr($argv[1], "lava") !== false);
    
    $colltypes = Array(0x00, 0x01, 0x01, 0x01, 0x01, 0x02, 0x00, 0x00,
                       0x00, 0x00, 0xFF, 0x00, 0xFE, 0x00, 0x00, 0x00,
                       0x03, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
-                      0x00, 0x00, 0x00);
+                      0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01,
+                      0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
+                      0x02, 0x02, 0x02);
    
    $objlist = "";
    $objnames = Array("OBJTYPE_GHOST",
                      "OBJTYPE_DOOR",
                      "<start>",
                      "OBJTYPE_SPIDER",
-                     "OBJTYPE_SPIKEBALL");
+                     "OBJTYPE_SPIKEBALL",
+                     "OBJTYPE_DPLATFORM",
+                     "OBJTYPE_UPLATFORM",
+                     "OBJTYPE_HCHAIN",
+                     "OBJTYPE_VCHAIN",
+                     "OBJTYPE_RPOTION",
+                     "OBJTYPE_YPOTION",
+                     "OBJTYPE_CCWPLATFORM",
+                     "OBJTYPE_CWPLATFORM",
+                     "OBJTYPE_SWINGBALL",
+                     "OBJTYPE_CROSS",
+                     "OBJTYPE_LAVABURST",
+                     "OBJTYPE_COGWHEEL",
+                     "OBJTYPE_HSWINGBALL");
    
    $in = explode("\n", file_get_contents($argv[1]));
    
@@ -56,6 +80,11 @@
             $id = (int)($id) - 1;
             $coll = $colltypes[$id];
             
+            if ($id == 0x09)
+               $anim |= 0x0001;
+            if ($id == 0x19 || $id == 0x1A)
+               $anim |= 0x0002;
+            
             if ($colltypes[$id] >= 0xFE) {
                $dir = ($coll == 0xFE) ? 1 : 0;
                $coll = 0x00;
@@ -71,9 +100,10 @@
             array_push($tilemap, $id);
             array_push($collmap, $coll);
             
-            if ($water == -1 && $colltypes[$id] == 0x03) {
+            if ($water == -1 && $colltypes[$id] == 0x03)
                $water = $y;
-            }
+            if ($id == 0x20 || $id == 0x21)
+               $outdoors = true;
             
             $x++;
          }
@@ -111,7 +141,58 @@
                $fall = (int)(substr(strstr($line, "name=\""), 6));
                $flags = "" + ($fall / 4);
                break;
-               
+            
+            case "OBJTYPE_DPLATFORM":
+            case "OBJTYPE_UPLATFORM":
+               $flags = $name;
+               $name = "OBJTYPE_PLATSPAWN";
+               break;
+            
+            case "OBJTYPE_CCWPLATFORM":
+               $objlist = $objlist.
+                  "    dc.w    ".$name."|0x00<<8, ".
+                     sprintf("\$%04X", $x).", ".sprintf("\$%04X", $y)."\n".
+                  "    dc.w    ".$name."|0x55<<8, ".
+                     sprintf("\$%04X", $x).", ".sprintf("\$%04X", $y)."\n".
+                  "    dc.w    ".$name."|0xAA<<8, ".
+                     sprintf("\$%04X", $x).", ".sprintf("\$%04X", $y)."\n";
+               $name = "OBJTYPE_CHAINBASE";
+               $flags = "\$00";
+               break;
+            
+            case "OBJTYPE_CWPLATFORM":
+               $objlist = $objlist.
+                  "    dc.w    ".$name."|0x2B<<8, ".
+                     sprintf("\$%04X", $x).", ".sprintf("\$%04X", $y)."\n".
+                  "    dc.w    ".$name."|0x80<<8, ".
+                     sprintf("\$%04X", $x).", ".sprintf("\$%04X", $y)."\n".
+                  "    dc.w    ".$name."|0xD5<<8, ".
+                     sprintf("\$%04X", $x).", ".sprintf("\$%04X", $y)."\n";
+               $name = "OBJTYPE_CHAINBASE";
+               $flags = "\$00";
+               break;
+            
+            case "OBJTYPE_SWINGBALL":
+               $y += 8;
+               $objlist = $objlist."    dc.w    ".
+                  "OBJTYPE_CHAINBASE|$00<<8, ".sprintf("\$%04X", $x).", ".
+                  sprintf("\$%04X", $y)."\n";
+               $angle = (int)(substr(strstr($line, "name=\""), 6));
+               $flags = "" + ($angle);
+               break;
+            
+            case "OBJTYPE_HSWINGBALL":
+               $y -= 8;
+               $angle = (int)(substr(strstr($line, "name=\""), 6));
+               $flags = "" + ($angle);
+               break;
+            
+            case "OBJTYPE_COGWHEEL":
+               $cogwheel = true;
+               $dir = (int)(substr(strstr($line, "name=\""), 6));
+               $flags = "" + $dir;
+               break;
+            
             default:
                $flags = "\$00";
                break;
@@ -122,9 +203,34 @@
                $name."|".$flags."<<8, ".
                sprintf("\$%04X", $x).
                ", ".sprintf("\$%04X", $y)."\n";
+            
+            if ($name == "OBJTYPE_PLATSPAWN") {
+               if ($flags == "OBJTYPE_DPLATFORM")
+               while ($y < $height * 0x20) {
+                  $objlist = $objlist."    dc.w    ".
+                     "OBJTYPE_DPLATFORM|\$00<<8, ".
+                     sprintf("\$%04X", $x).
+                     ", ".sprintf("\$%04X", $y)."\n";
+                  $y += 0x40;
+               }
+               
+               if ($flags == "OBJTYPE_UPLATFORM")
+               while ($y > 0x00) {
+                  $objlist = $objlist."    dc.w    ".
+                     "OBJTYPE_UPLATFORM|\$00<<8, ".
+                     sprintf("\$%04X", $x).
+                     ", ".sprintf("\$%04X", $y)."\n";
+                  $y -= 0x40;
+               }
+            }
          }
       }
    }
+   
+   if ($argv[1] == (strstr($argv[1], "mirror_1") !== false))
+      $objlist = $objlist."    dc.w    OBJTYPE_REFLECTION|0<<8, 0, 0\n";
+   if ($argv[1] == (strstr($argv[1], "mirror_2") !== false))
+      $objlist = $objlist."    dc.w    OBJTYPE_REFLECTION|1<<8, 0, 0\n";
    
    
    $out = "";
@@ -156,16 +262,37 @@
    $out = $out."\n";
    
    if ($water != -1) {
-      $out = $out."    dc.l    PalMerlina\n";
-      $out = $out."    dc.l    PalTileset\n";
-      $out = $out."    dc.l    PalMerlinaUnderwater\n";
-      $out = $out."    dc.l    PalTilesetUnderwater\n";
-   } else {
-      $out = $out."    dc.l    PalMerlina\n";
-      $out = $out."    dc.l    PalTileset\n";
-      $out = $out."    dc.l    0\n";
-      $out = $out."    dc.l    0\n";
+      $pal[2] = "PalMerlinaUnderwater";
+      $pal[3] = "PalTilesetUnderwater";
    }
+   if ($outdoors) {
+      $pal[0] = "PalMerlinaOutside";
+      $pal[1] = "PalTilesetOutside";
+      $parallax = "FogParallax";
+   }
+   if ($cogwheel) {
+      $extragfx = "GfxCogwheel";
+      $extrasize = 4*4 + 3*3*9;
+   }
+   if ($mirror) {
+      $pal[2] = "PalMerlinaMirror";
+   }
+   if ($lava) {
+      $pal[2] = "PalLava";
+      $pal[3] = "PalFrozenLava";
+      $parallax = "LavaParallax";
+   }
+   
+   $out = $out."    dc.l    ".$pal[0]."\n";
+   $out = $out."    dc.l    ".$pal[1]."\n";
+   $out = $out."    dc.l    ".$pal[2]."\n";
+   $out = $out."    dc.l    ".$pal[3]."\n\n";
+   
+   $out = $out."    dc.l    ".$extragfx."\n";
+   $out = $out."    dc.w    ".$extrasize."\n";
+   
+   $out = $out."    dc.l    Init".$parallax."\n";
+   $out = $out."    dc.l    Update".$parallax."\n";
    
    $out = $out."    dc.w    ".sprintf("\$%04X",
       $water == -1 ? 0x7FFF : $water << 5)."\n";

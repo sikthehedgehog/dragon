@@ -171,7 +171,13 @@ PlaySoundTest:
     rts
 @NoBlankID:
     
-    clr.b   (CurrentSFX)                ; Play sound effect
+    cmp.b   #SOUNDTEST_SFX, d7          ; Play background music
+    bhs.s   @NotBGM
+    jsr     (PlayBGM).w
+@NotBGM:
+    
+    sub.b   #SOUNDTEST_SFX-1, d7        ; Play sound effect
+    clr.b   (CurrentSFX)
     jsr     (PlaySFX).w
     
     rts                                 ; End of subroutine

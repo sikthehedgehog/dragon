@@ -4,12 +4,31 @@ input "src-data/ingame/hud.png"
 layout sprite
 tiles 0 0 2 2
 tiles 2 0 2 2
+tiles 0 6 2 2
 tiles 4 1 1 1
 tiles 0 2 10 2
+tiles 8 6 2 2
 tiles 1 4 8 2
 tiles 0 4 1 2
 tiles 9 4 1 2
+tiles 2 6 4 2
 tiles 5 0 5 2
+
+input "src-data/ingame/magic.png"
+tiles 0 0 2 2
+tiles 2 0 2 2
+
+input "src-data/ingame/transform.png"
+tiles 0 0 3 3
+tiles 3 0 4 4
+tiles 7 0 4 4
+
+input "src-data/ingame/red_potion.png"
+tiles 0 0 3 3
+input "src-data/ingame/yellow_potion.png"
+tiles 0 0 3 3
+input "src-data/ingame/cross.png"
+tiles 0 0 3 3
 
 input "src-data/ingame/door_closed.png"
 tiles 0 0 4 4
@@ -20,3 +39,11 @@ tiles 0 4 4 3
 
 input "src-data/ingame/platform.png"
 tiles 0 0 4 2
+input "src-data/ingame/derbis.png"
+tiles 0 0 2 2
+
+input "src-data/ingame/angel_1.png"
+tiles 0 0 4 3
+tiles 0 3 3 2
+input "src-data/ingame/angel_2.png"
+tiles 0 3 3 2

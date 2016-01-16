@@ -6,6 +6,8 @@
 JoyHold:            rs.b 1          ; Joypad buttons being held down
 JoyPress:           rs.b 1          ; Joypad buttons that just got pressed
 
+RandSeed:           rs.w 1          ; Seed for the RNG
+
 HBlank:             rs.b $80        ; Where the hblank handler resides
 DMABuf:             rs.w $200       ; Buffer for DMA commands
 DMABufEnd:          rs.l 1          ; End address of the above buffer
@@ -13,6 +15,10 @@ VBlankFlag:         rs.b 1          ; Set when vblank starts
 NumSprites:         rs.b 1          ; Sprites drawn so far
 SpriteBuf:          rs.w 4*80       ; Sprite table buffer
 PaletteBuf:         rs.w 4*$10      ; Palette buffer
+HScrollABuf:        rs.w 224        ; Hscroll buffer for plane A
+HScrollBBuf:        rs.w 224        ; Hscroll buffer for plane B
+VScrollABuf:        rs.w 20         ; Vscroll buffer for plane A
+VScrollBBuf:        rs.w 20         ; Vscroll buffer for plane B
 WantsFade:          rs.b 1          ; Set this to fade in the next frame
 BlinkFlag:          rs.b 1          ; Toggled every *real* frame
 
@@ -37,6 +43,11 @@ Stage:              rs.b 1          ; Current stage
 Cheats:             rs.b 1          ; Enabled cheats
                     rs.b 1
 
+   if DEBUG_HUD
+LastUsage:          rs.b 1          ; Last CPU usage (by HV counter value)
+                    rs.b 1
+   endc
+
 LocalRAM:           rs.b 0          ; Where screen-specific data starts
 
 ;****************************************************************************
@@ -56,6 +67,7 @@ CameraLeft:         rs.w 1          ; Left limit of the camera
 CameraRight:        rs.w 1          ; Right limit of the camera
 CameraTop:          rs.w 1          ; Top limit of the camera
 CameraBottom:       rs.w 1          ; Bottom limit of the camera
+QuakeTimer:         rs.w 1          ; How long does the quake last?
 
 MapWidth:           rs.b 1          ; Width of the map in tiles
 MapHeight:          rs.b 1          ; Height of the map in tiles
@@ -67,6 +79,8 @@ CollAddr:           rs.l 1          ; Pointer to collision map
 ColBuffer:          rs.w $10*$08    ; Buffer for drawing a column
 RowBuffer:          rs.w $10*$10    ; Buffer for drawing a row
 
+ParallaxInit:       rs.l 1          ; Subroutine used to set up the parallax
+ParallaxFunc:       rs.l 1          ; Subroutine used to update the parallax
 WaterHeight:        rs.w 1          ; Height of the water ($7FFF = no water)
 
 PlayerX:            rs.w 1          ; Merlina's horizontal position
@@ -77,8 +91,10 @@ PlayerFlags:        rs.b 1          ; Status flags (see PF_*)
 PlayerPose:         rs.b 1          ; Merlina's last pose (see PA_*)
 PlayerHealth:       rs.b 1          ; Health points left (0..3)
 PlayerAttack:       rs.b 1          ; Frames left from attacking
+PlayerMagic:        rs.b 1          ; Frames left from using magic
 PlayerFlash:        rs.b 1          ; Invulnerability frames left
-MagicMeter:         rs.b 1          ; How much magic has been recharged
+
+OldPosition:        rs.l 8          ; Where the player has been lately
 
 PlayerMapping:      rs.l 1          ; Merlina's current sprite mapping
 PlayerGfxAddr:      rs.l 1          ; Merlina's current tiles (address)
@@ -86,7 +102,14 @@ PlayerGfxSize:      rs.w 1          ; Merlina's current tiles (size)
 PlayerAnimLen:      rs.w 1          ; Time left until animation updates
 PlayerAnimNext:     rs.l 1          ; Next frame in the animation
 
+MagicMeter:         rs.b 1          ; How much magic has been recharged
+NextMagicSlot:      rs.b 1          ; Which slot to use next for magic hitbox
+MagicBounds:        rs.w 4*4        ; Magic hitboxes' boundaries
+Supermagic:         rs.w 1          ; How much time left with supermagic
+HealthBlink:        rs.w 1          ; To make the health meter blink
+
 ObjList:            rs.b OBJ_SIZE*MAX_OBJ ; Object list
+FreeRAM:            rs.b 0          ; Free space for more decompression
 
 ;****************************************************************************
 ; Variables used in menus
@@ -110,30 +133,64 @@ SoundTestBuf:       rs.b 6          ; Sound test ID string buffer
                     
                     rs.b 1          ; Blank tile
 VramPlayer:         rs.b 50         ; Merlina's sprite
-VramTileset:        rs.b 63         ; Tileset graphics
+VramTileset:        rs.b 104        ; Tileset graphics
 VramCandle:         rs.b 2*2        ; Candle fire
 VramChain:          rs.b 2*2        ; Platform chains
-VramHUDHealth:      rs.b 4*2        ; HUD health
+VramHUDHealth:      rs.b 4*3        ; HUD health
 VramHUDCross:       rs.b 1          ; HUD cross (the "×")
 VramHUDNumber:      rs.b 10*2       ; HUD digits
-VramHUDBar:         rs.b 10*2       ; HUD energy bar
+VramHUDQuestion:    rs.b 2          ; HUD question mark ("?")
+VramHUDPercent:     rs.b 2          ; HUD percent sign ("%")
+VramHUDBar:         rs.b 14*2       ; HUD energy bar
 VramHUDPause:       rs.b 5*2        ; "PAUSE"
+VramMagic:          rs.b 2*2*2      ; Magic sparkles
+VramTransform:      rs.b 9+16+16    ; Magic transformation puff
+VramRedPotion:      rs.b 3*3        ; Red potion
+VramYellowPotion:   rs.b 3*3        ; Yellow potion
+VramCross:          rs.b 3*3        ; Cross
 VramDoorClose:      rs.b 28         ; Closed door
 VramDoorOpen:       rs.b 28         ; Opened door
 VramPlatform:       rs.b 4*2        ; Platform
+VramDerbis:         rs.b 2*2        ; Derbis rocks
+VramAngel:          rs.b 12+6+6     ; Rescued souls
 VramSpikeball:      rs.b 16         ; Spikeballs
+VramLink:           rs.b 2*2        ; Spikeball chain links
+VramBaseLink:       rs.b 2*2        ; Spikeball chain base
+VramPivot:          rs.b 2*4        ; Spikeball pivot
 VramGhost:          rs.b 12+8*2+20  ; Ghosts
 VramSpider:         rs.b 15+17      ; Spiders
 VramSpiderRope:     rs.b 4          ; Spider rope
 
+StageVRAM:          rs.b 0          ; Stage-specific graphics
 VusageIngame:       rs.b 0
 
+;----------------------------------------------------------------------------
+
+                    rsset StageVRAM
+VramCogwheel:       rs.b 4*4        ; Cogwheel base
+VramCog:            rs.b 3*3*9      ; Cogwheel cogs
+
+;----------------------------------------------------------------------------
+
+                    rsset StageVRAM
+VramFog:            rs.b 7          ; Fog outdoors
+
+;----------------------------------------------------------------------------
+
+                    rsset StageVRAM
+VramDoppleganger:   rs.b 50         ; Dopplganger Merlina
+
+;----------------------------------------------------------------------------
+
+                    rsset StageVRAM
+VramLavaBurst:      rs.b 4*4        ; Bursting lava
+
 ;****************************************************************************
-; Tile IDs for graphics in menus
+; Tile IDs for graphics in menus (and title screen)
 ;****************************************************************************
 
                     rsreset
                     rs.b 1          ; Blank tile
-VramFont:           rs.b 36*2       ; Font for the text
+VramFont:           rs.b 41*2       ; Font for the text
 VramMenuBG:         rs.b 8          ; Menu background
-
+VramTitleLogo:      rs.b 0          ; Game name in the title screen

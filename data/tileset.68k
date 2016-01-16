@@ -170,4 +170,73 @@ TilesetMappings:
     dc.w    @H+$2000, @T+$200C, @H+$2003, @T+$200C      ; Upwards chains
     dc.w    @H+$2001, @T+$200D, @H+$2002, @T+$200D      ; (right half)
     dc.w    @H+$2000, @T+$200C, @H+$2003, @T+$200C
+    
+    dc.w    @T+$A03F, @T+$A03F, @T+$A03F, @T+$A03F      ; Tile $1D
+    dc.w    @T+$A03F, @T+$A03F, @T+$A03F, @T+$A03F      ; Pitch black
+    dc.w    @T+$A03F, @T+$A03F, @T+$A03F, @T+$A03F
+    dc.w    @T+$A03F, @T+$A03F, @T+$A03F, @T+$A03F
+    
+    dc.w    @T+$A03F, @T+$A03F, @T+$A03F, @T+$A03F      ; Tile $1E
+    dc.w    @T+$A03F, @T+$A03F, @T+$A03F, @T+$A03F      ; Barely lit ceiling
+    dc.w    @T+$A040, @T+$A041, @T+$A042, @T+$A043
+    dc.w    @T+$A044, @T+$A045, @T+$A046, @T+$A047
+    
+    dc.w    @T+$A048, @T+$A049, @T+$A04A, @T+$A04B      ; Tile $1F
+    dc.w    @T+$A04C, @T+$A04D, @T+$A04E, @T+$A04F      ; Barely lit floor
+    dc.w    @T+$A03F, @T+$A03F, @T+$A03F, @T+$A03F
+    dc.w    @T+$A03F, @T+$A03F, @T+$A03F, @T+$A03F
+    
+    dc.w    @T+$2000, @T+$2001, @T+$2002, @T+$2003      ; Tile $20
+    dc.w    @T+$2004, @T+$2005, @T+$2006, @T+$2007      ; Outdoors background
+    dc.w    @T+$2002, @T+$2003, @T+$2000, @T+$2001
+    dc.w    @T+$2006, @T+$2007, @T+$2004, @T+$2005
+    
+    dc.w    @T+$2050, @T+$2051, @T+$2050, @T+$2051      ; Tile $21
+    dc.w    @T+$2052, @T+$2053, @T+$2853, @T+$2052      ; Outdoors floor
+    dc.w    @T+$2002, @T+$2054, @T+$2854, @T+$2001
+    dc.w    @T+$2006, @T+$2007, @T+$2004, @T+$2005
+    
+    dc.w    @T+$2055, @T+$2055, @T+$2055, @T+$2055      ; Tile $22
+    dc.w    @T+$2055, @T+$2055, @T+$2055, @T+$2055      ; Mirror
+    dc.w    @T+$2055, @T+$2055, @T+$2055, @T+$2055      ; (plain)
+    dc.w    @T+$2055, @T+$2055, @T+$2055, @T+$2055
 
+    dc.w    @T+$2055, @T+$2055, @T+$2056, @T+$2055      ; Tile $23
+    dc.w    @T+$2055, @T+$2055, @T+$2056, @T+$2055      ; Mirror border
+    dc.w    @T+$2055, @T+$2055, @T+$2056, @T+$2055      ; (plain)
+    dc.w    @T+$2055, @T+$2055, @T+$2056, @T+$2055
+    
+    dc.w    @T+$200C, @T+$2057, @T+$2015, @T+$2015      ; Tile $24
+    dc.w    @T+$200D, @T+$2058, @T+$2015, @T+$2015      ; Light beam (left)
+    dc.w    @T+$200C, @T+$2057, @T+$2015, @T+$2015
+    dc.w    @T+$200D, @T+$2058, @T+$2015, @T+$2015
+    
+    dc.w    @T+$2015, @T+$2015, @T+$2857, @T+$200D      ; Tile $25
+    dc.w    @T+$2015, @T+$2015, @T+$2858, @T+$200C      ; Light beam (right)
+    dc.w    @T+$2015, @T+$2015, @T+$2857, @T+$200D
+    dc.w    @T+$2015, @T+$2015, @T+$2858, @T+$200C
+    
+    dc.w    @T+$2059, @T+$205A, @T+$285A, @T+$2859      ; Tile $26
+    dc.w    @T+$2059, @T+$205A, @T+$285A, @T+$2859      ; BG pillar
+    dc.w    @T+$2059, @T+$205A, @T+$285A, @T+$2859
+    dc.w    @T+$2059, @T+$205A, @T+$285A, @T+$2859
+    
+    dc.w    @T+$205B, @T+$205B, @T+$205B, @T+$205B      ; Tile $27
+    dc.w    @T+$205F, @T+$205C, @T+$205F, @T+$205C      ; Wooden table
+    dc.w    @T+$2060, @T+$205D, @T+$2060, @T+$205D      ; (no sides)
+    dc.w    @T+$2061, @T+$205E, @T+$2061, @T+$205E
+    
+    dc.w    @T+$2062, @T+$205B, @T+$205B, @T+$205B      ; Tile $28
+    dc.w    @T+$2063, @T+$205C, @T+$205F, @T+$205C      ; Wooden table
+    dc.w    @T+$2063, @T+$205D, @T+$2060, @T+$205D      ; (left side)
+    dc.w    @T+$2064, @T+$205E, @T+$2061, @T+$205E
+    
+    dc.w    @T+$205B, @T+$205B, @T+$205B, @T+$2065      ; Tile $29
+    dc.w    @T+$205F, @T+$205C, @T+$205F, @T+$2066      ; Wooden table
+    dc.w    @T+$2060, @T+$205D, @T+$2060, @T+$2066      ; (right side)
+    dc.w    @T+$2061, @T+$205E, @T+$2061, @T+$2067
+    
+    dc.w    @T+$2062, @T+$205B, @T+$205B, @T+$2065      ; Tile $2A
+    dc.w    @T+$2063, @T+$205C, @T+$205F, @T+$2066      ; Wooden table
+    dc.w    @T+$2063, @T+$205D, @T+$2060, @T+$2066      ; (both sides)
+    dc.w    @T+$2064, @T+$205E, @T+$2061, @T+$2067

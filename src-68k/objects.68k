@@ -27,7 +27,7 @@ OBJ_BOXY2:      rs.w 1      ; Hitbox bottom side (relative)
 
 OBJ_TIMER:      rs.w 1      ; Generic timer
 OBJ_HEALTH:     rs.b 1      ; Health points left
-                rs.b 1
+OBJ_DATA:       rs.b 1      ; For miscellaneous data
 
 OBJ_SIZE:       rs.b 0      ; Size of an object entry
 
@@ -39,6 +39,7 @@ OBJ_SIZE:       rs.b 0      ; Size of an object entry
                 rsreset
 OF_DIR:         rs.b 1      ; Which direction it's looking at
 OF_ACTIVE:      rs.b 1      ; This object is in active mode
+OF_DISABLED:    rs.b 1      ; This object is not working
 
 ;****************************************************************************
 ; OBJTYPE_*
@@ -48,13 +49,33 @@ OF_ACTIVE:      rs.b 1      ; This object is in active mode
                     rsreset
                     rs.b 1      ; No object
 OBJTYPE_SLOPE:      rs.b 1      ; Slope
+OBJTYPE_RPOTION:    rs.b 1      ; Red potion
+OBJTYPE_YPOTION:    rs.b 1      ; Yellow potion
+OBJTYPE_CROSS:      rs.b 1      ; Cross
+OBJTYPE_MAGICHITBOX:rs.b 1      ; Magic hitbox
+OBJTYPE_MAGICSTAR:  rs.b 1      ; Magic star
+OBJTYPE_MAGICPUFF:  rs.b 1      ; Transformation puff
+OBJTYPE_DERBIS      rs.b 1      ; Derbis rock
 OBJTYPE_DOOR:       rs.b 1      ; Door
 OBJTYPE_UPLATFORM:  rs.b 1      ; Upwards platform
 OBJTYPE_DPLATFORM:  rs.b 1      ; Downwards platform
+OBJTYPE_CCWPLATFORM:rs.b 1      ; CCW rotating platform
+OBJTYPE_CWPLATFORM: rs.b 1      ; CW rotating platform
 OBJTYPE_PLATSPAWN:  rs.b 1      ; Platform spawner
 OBJTYPE_SPIKEBALL:  rs.b 1      ; Spikeball
+OBJTYPE_STRAYBALL:  rs.b 1      ; Stray spikeball
+OBJTYPE_SWINGBALL:  rs.b 1      ; Pendulum swinging spikeball
+OBJTYPE_HSWINGBALL: rs.b 1      ; Horizontally swinging spikeball
 OBJTYPE_GHOST:      rs.b 1      ; Ghost
 OBJTYPE_SPIDER:     rs.b 1      ; Spider
+OBJTYPE_CHAINBASE:  rs.b 1      ; Base of a chain
+OBJTYPE_HCHAIN:     rs.b 1      ; Chunk of horizontal chain
+OBJTYPE_VCHAIN:     rs.b 1      ; Chunk of vertical chain
+OBJTYPE_STRAYLINK:  rs.b 1      ; Stray link
+OBJTYPE_ANGEL:      rs.b 1      ; Rescued soul
+OBJTYPE_REFLECTION: rs.b 1      ; Merlina reflection
+OBJTYPE_COGWHEEL:   rs.b 1      ; Cogwheel
+OBJTYPE_LAVABURST:  rs.b 1      ; Lava bursting from the floor
 
 ;****************************************************************************
 ; ClearObjects
@@ -125,13 +146,33 @@ AddObject:
 @Func:
     dc.l    @Null
     dc.l    @Null                       ; OBJTYPE_SLOPE
+    dc.l    InitPotion                  ; OBJTYPE_RPOTION
+    dc.l    InitPotion                  ; OBJTYPE_YPOTION
+    dc.l    InitPotion                  ; OBJTYPE_CROSS
+    dc.l    InitMagicHitbox             ; OBJTYPE_MAGICHITBOX
+    dc.l    @Null                       ; OBJTYPE_MAGICSTAR
+    dc.l    @Null                       ; OBJTYPE_MAGICPUFF
+    dc.l    @Null                       ; OBJTYPE_DERBIS
     dc.l    InitDoor                    ; OBJTYPE_DOOR
     dc.l    @Null                       ; OBJTYPE_UPLATFORM
     dc.l    @Null                       ; OBJTYPE_DPLATFORM
+    dc.l    InitRotatingPlatform        ; OBJTYPE_CCWPLATFORM
+    dc.l    InitRotatingPlatform        ; OBJTYPE_CWPLATFORM
     dc.l    InitPlatformSpawner         ; OBJTYPE_PLATSPAWN
     dc.l    InitSpikeball               ; OBJTYPE_SPIKEBALL
+    dc.l    InitStraySpikeball          ; OBJTYPE_STRAYBALL
+    dc.l    InitSwingingSpikeball       ; OBJTYPE_SWINGBALL
+    dc.l    InitSwingingSpikeball       ; OBJTYPE_HSWINGBALL
     dc.l    InitGhost                   ; OBJTYPE_GHOST
     dc.l    InitSpider                  ; OBJTYPE_SPIDER
+    dc.l    @Null                       ; OBJTYPE_CHAINBASE
+    dc.l    @Null                       ; OBJTYPE_HCHAIN
+    dc.l    @Null                       ; OBJTYPE_VCHAIN
+    dc.l    InitStrayLink               ; OBJTYPE_STRAYLINK
+    dc.l    InitAngel                   ; OBJTYPE_ANGEL
+    dc.l    @Null                       ; OBJTYPE_REFLECTION
+    dc.l    InitCogwheel                ; OBJTYPE_COGWHEEL
+    dc.l    InitLavaBurst               ; OBJTYPE_LAVABURST
 
 ;****************************************************************************
 ; DestroySelf
@@ -164,13 +205,33 @@ RunAllObjects:
 @Table:
     dc.l    @Null
     dc.l    RunSlope                    ; OBJTYPE_SLOPE
+    dc.l    RunRedPotion                ; OBJTYPE_RPOTION
+    dc.l    RunYellowPotion             ; OBJTYPE_YPOTION
+    dc.l    RunCross                    ; OBJTYPE_CROSS
+    dc.l    RunMagicHitbox              ; OBJTYPE_MAGICHITBOX
+    dc.l    RunMagicStar                ; OBJTYPE_MAGICSTAR
+    dc.l    RunMagicPuff                ; OBJTYPE_MAGICPUFF
+    dc.l    RunMagicStar                ; OBJTYPE_DERBIS
     dc.l    RunDoor                     ; OBJTYPE_DOOR
     dc.l    RunPlatformUpwards          ; OBJTYPE_UPLATFORM
     dc.l    RunPlatformDownwards        ; OBJTYPE_DPLATFORM
+    dc.l    RunRotatingPlatform         ; OBJTYPE_CCWPLATFORM
+    dc.l    RunRotatingPlatform         ; OBJTYPE_CWPLATFORM
     dc.l    RunPlatformSpawner          ; OBJTYPE_PLATSPAWN
     dc.l    RunSpikeball                ; OBJTYPE_SPIKEBALL
+    dc.l    RunStraySpikeball           ; OBJTYPE_STRAYBALL
+    dc.l    RunSwingingSpikeball        ; OBJTYPE_SWINGBALL
+    dc.l    RunHorSwingSpikeball        ; OBJTYPE_HSWINGBALL
     dc.l    RunGhost                    ; OBJTYPE_GHOST
     dc.l    RunSpider                   ; OBJTYPE_SPIDER
+    dc.l    @Null                       ; OBJTYPE_CHAINBASE
+    dc.l    @Null                       ; OBJTYPE_HCHAIN
+    dc.l    @Null                       ; OBJTYPE_VCHAIN
+    dc.l    RunStrayLink                ; OBJTYPE_STRAYLINK
+    dc.l    RunAngel                    ; OBJTYPE_ANGEL
+    dc.l    @Null                       ; OBJTYPE_REFLECTION
+    dc.l    RunCogwheel                 ; OBJTYPE_COGWHEEL
+    dc.l    RunLavaBurst                ; OBJTYPE_LAVABURST
 
 ;****************************************************************************
 ; DrawAllObjects
@@ -180,8 +241,17 @@ RunAllObjects:
 ;****************************************************************************
 
 DrawAllObjects:
+    if      DEBUG_DRAWUSAGE
+    move.w  #$8C00, ($C00004)
+    endc
+    
     lea     @Table(pc), a6
     bsr     LoopAllObjects
+    
+    if      DEBUG_DRAWUSAGE
+    move.w  #$8C81, ($C00004)
+    endc
+    
 @Null:
     rts
 
@@ -190,13 +260,33 @@ DrawAllObjects:
 @Table:
     dc.l    @Null
     dc.l    @Null                       ; OBJTYPE_SLOPE
+    dc.l    DrawPotion                  ; OBJTYPE_RPOTION
+    dc.l    DrawPotion                  ; OBJTYPE_YPOTION
+    dc.l    DrawPotion                  ; OBJTYPE_CROSS
+    dc.l    @Null                       ; OBJTYPE_MAGICHITBOX
+    dc.l    DrawMagicStar               ; OBJTYPE_MAGICSTAR
+    dc.l    DrawMagicPuff               ; OBJTYPE_MAGICPUFF
+    dc.l    DrawDerbis                  ; OBJTYPE_DERBIS
     dc.l    DrawDoor                    ; OBJTYPE_DOOR
     dc.l    DrawPlatform                ; OBJTYPE_UPLATFORM
     dc.l    DrawPlatform                ; OBJTYPE_DPLATFORM
+    dc.l    DrawRotatingPlatform        ; OBJTYPE_CCWPLATFORM
+    dc.l    DrawRotatingPlatform        ; OBJTYPE_CWPLATFORM
     dc.l    @Null                       ; OBJTYPE_PLATSPAWN
     dc.l    DrawSpikeball               ; OBJTYPE_SPIKEBALL
+    dc.l    DrawSpikeball               ; OBJTYPE_STRAYBALL
+    dc.l    DrawSwingingSpikeball       ; OBJTYPE_SWINGBALL
+    dc.l    DrawHorSwingSpikeball       ; OBJTYPE_HSWINGBALL
     dc.l    DrawGhost                   ; OBJTYPE_GHOST
     dc.l    DrawSpider                  ; OBJTYPE_SPIDER
+    dc.l    DrawBaseLink                ; OBJTYPE_CHAINBASE
+    dc.l    DrawHorChain                ; OBJTYPE_HCHAIN
+    dc.l    DrawVerChain                ; OBJTYPE_VCHAIN
+    dc.l    DrawStrayLink               ; OBJTYPE_STRAYLINK
+    dc.l    DrawAngel                   ; OBJTYPE_ANGEL
+    dc.l    DrawReflection              ; OBJTYPE_REFLECTION
+    dc.l    DrawCogwheel                ; OBJTYPE_COGWHEEL
+    dc.l    DrawLavaBurst               ; OBJTYPE_LAVABURST
 
 ;****************************************************************************
 ; LoopAllObjects

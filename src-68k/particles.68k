@@ -1,0 +1,82 @@
+;****************************************************************************
+; DrawDerbis
+; Draws a derbis rock.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawDerbis:
+    cmp.w   #$18, OBJ_TIMER(a0)         ; Flash when we're about to disappear
+    blo.s   @NoFlash
+    tst.b   (BlinkFlag)
+    beq.s   @NoFlash
+    rts
+@NoFlash:
+    
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    subq.w  #8, d0
+    subq.w  #8, d1
+    
+    move.w  (Anim), d7                  ; Determine which way the rock spins
+    tst.w   OBJ_XSPEED(a0)
+    bgt.s   @NoFlip
+    not.w   d7
+@NoFlip:
+    
+    lsr.w   #1, d7                      ; Determine sprite to use
+    and.w   #$03<<1, d7
+    lea     @AnimTable(pc), a6
+    move.w  (a6,d7.w), d2
+    
+    moveq   #%0101, d3                  ; Draw rock
+    jsr     (AddSprite).w
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@AnimTable:
+    dc.w    $A000+VramDerbis
+    dc.w    $A800+VramDerbis
+    dc.w    $B800+VramDerbis
+    dc.w    $B000+VramDerbis
+
+;****************************************************************************
+; ThrowDerbisUp
+; Throws a bunch of derbis upwards.
+;----------------------------------------------------------------------------
+; input d7.w ... Base X coordinate
+; input d6.w ... Base Y coordinate
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+ThrowDerbisUp:
+    sub.w   #$18, d7                    ; Shift to the leftmost rock
+    moveq   #7-1, d5                    ; Go through all rocks
+@Loop:
+    movem.l d5-d7, -(sp)                ; Spawn a new rock
+    moveq   #OBJTYPE_DERBIS, d5
+    bsr     AddObject
+    
+    jsr     (Rand).w                    ; Set horizontal speed
+    and.w   #$3FF, d7
+    sub.w   #$200, d7
+    move.w  d7, OBJ_XSPEED(a6)
+    
+    jsr     (Rand).w                    ; Set vertical speed
+    and.w   #$1FF, d7
+    add.w   #$200, d7
+    neg.w   d7
+    move.w  d7, OBJ_YSPEED(a6)
+    movem.l (sp)+, d5-d7
+    
+    addq.w  #8, d7                      ; Go for next rock
+    dbf     d5, @Loop
+    
+    rts                                 ; End of subroutine

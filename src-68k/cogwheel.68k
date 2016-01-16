@@ -1,0 +1,178 @@
+;****************************************************************************
+; This setting determines whether the cogwheels spin smoothly or not. If they
+; don't spin smoothly then it looks like a hand-drawn animation :)
+;****************************************************************************
+
+SMOOTH_COGWHEEL: equ 1
+
+;****************************************************************************
+; InitCogwheel
+; Initializes a cogwheel.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitCogwheel:
+    move.w  #-$1C, OBJ_BOXX1(a6)        ; Set up hitbox
+    move.w  #-$1C, OBJ_BOXY1(a6)
+    move.w  #$1B, OBJ_BOXX2(a6)
+    move.w  #$1B, OBJ_BOXY2(a6)
+    
+    btst.b  #OF_DIR, OBJ_FLAGS(a6)      ; Make cogwheels going in opposite
+    beq.s   @NoCorrection                 ; directions out of sync
+    if      SMOOTH_COGWHEEL
+    move.w  #$10, OBJ_TIMER(a6)
+    else
+    move.w  #$17, OBJ_TIMER(a6)
+    endc
+@NoCorrection:
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunCogwheel
+; Executes the behavior of a cogwheel.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunCogwheel:
+    move.l  a0, a6                      ; The player touched us? (ouch!)
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NotHurting
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    bsr     HurtPlayer
+@NotHurting:
+    
+    move.w  OBJ_TIMER(a0), d7           ; Keep spinning
+    addq.b  #2, d7
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)
+    beq.s   @SpinCCW
+    subq.b  #4, d7
+@SpinCCW:
+    move.w  d7, OBJ_TIMER(a0)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawCogwheel
+; Draws a cogwheel.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawCogwheel:
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    cmp.w   #-$60, d1                   ; 12 sprites take a while to process
+    ble.s   @Skip
+    cmp.w   #320+$30, d1
+    bge.s   @Skip
+    cmp.w   #-$60, d0
+    ble.s   @Skip
+    cmp.w   #320+$30, d0
+    bge.s   @Skip
+
+;----------------------------------------------------------------------------
+
+    moveq   #%11010, d3                 ; All cogs are the same size
+    
+    lea     (Sines), a1                 ; Go through all cogs
+    lea     (Cosines), a2
+    lea     @CogTable(pc), a3
+    moveq   #8-1, d4
+    move.w  OBJ_TIMER(a0), d5
+@Loop:
+    if      SMOOTH_COGWHEEL             ; Truncate angle
+    and.w   #$FF, d5
+    else
+    and.w   #$F8, d5
+    endc
+    
+    move.w  d5, d7                      ; Determine cog sprite
+    if      SMOOTH_COGWHEEL
+    addq.w  #4, d7
+    endc
+    lsr.w   #2, d7
+    and.w   #$1F<<1, d7
+    move.w  (a3,d7.w), d2
+    
+    move.w  d5, d7                      ; Determine offset from center
+    add.w   d7, d7
+    move.w  (a1,d7.w), d6
+    move.w  (a2,d7.w), d7
+    neg.w   d6
+    asr.w   #3, d7
+    asr.w   #3, d6
+    
+    move.w  d0, -(sp)                   ; Draw cog
+    move.w  d1, -(sp)
+    sub.w   #12, d0
+    sub.w   #12, d1
+    add.w   d7, d0
+    add.w   d6, d1
+    jsr     (AddSprite).w
+    move.w  (sp)+, d1
+    move.w  (sp)+, d0
+    
+    add.w   #$20, d5                    ; Next cog
+    dbf     d4, @Loop
+
+;----------------------------------------------------------------------------
+
+    move.w  #$2000+VramCogwheel, d2     ; Draw base of the cogwheel
+    lea     (SprCogwheel), a6
+    jsr     (AddMetasprite).w
+    
+@Skip:
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@CogTable:
+    dc.w    $2000+VramCog+9*0
+    dc.w    $2000+VramCog+9*1
+    dc.w    $2000+VramCog+9*2
+    dc.w    $2000+VramCog+9*3
+    dc.w    $2000+VramCog+9*4
+    dc.w    $2000+VramCog+9*5
+    dc.w    $2000+VramCog+9*6
+    dc.w    $2000+VramCog+9*7
+
+    dc.w    $2000+VramCog+9*8
+    dc.w    $2800+VramCog+9*7
+    dc.w    $2800+VramCog+9*6
+    dc.w    $2800+VramCog+9*5
+    dc.w    $2800+VramCog+9*4
+    dc.w    $2800+VramCog+9*3
+    dc.w    $2800+VramCog+9*2
+    dc.w    $2800+VramCog+9*1
+
+    dc.w    $2800+VramCog+9*0
+    dc.w    $3800+VramCog+9*1
+    dc.w    $3800+VramCog+9*2
+    dc.w    $3800+VramCog+9*3
+    dc.w    $3800+VramCog+9*4
+    dc.w    $3800+VramCog+9*5
+    dc.w    $3800+VramCog+9*6
+    dc.w    $3800+VramCog+9*7
+
+    dc.w    $3000+VramCog+9*8
+    dc.w    $3000+VramCog+9*7
+    dc.w    $3000+VramCog+9*6
+    dc.w    $3000+VramCog+9*5
+    dc.w    $3000+VramCog+9*4
+    dc.w    $3000+VramCog+9*3
+    dc.w    $3000+VramCog+9*2
+    dc.w    $3000+VramCog+9*1

@@ -12,6 +12,14 @@ InstrumentList:
     Echo_ListEntry  InstrSquareWave     ; $05 [FM] Square wave
     Echo_ListEntry  InstrPunch          ; $06 [PCM] Punch
     Echo_ListEntry  InstrChurchOrgan    ; $07 [FM] Church organ
+    Echo_ListEntry  InstrDistGuitar     ; $08 [FM] Distortion guitar
+    Echo_ListEntry  InstrDistBass       ; $09 [FM] Distortion bass
+    Echo_ListEntry  InstrSynthBass      ; $0A [FM] Synth bass
+    Echo_ListEntry  InstrBell           ; $0B [FM] Bell
+    Echo_ListEntry  InstrBrass          ; $0C [FM] Brass
+    Echo_ListEntry  InstrSweet          ; $0D [FM] Sweet bell/piano
+    Echo_ListEntry  InstrCrush          ; $0E [FM] Crush SFX
+    Echo_ListEntry  InstrExplosion      ; $0F [PCM] Explosion
     Echo_ListEnd
 
 ;****************************************************************************
@@ -23,12 +31,20 @@ InstrSineWave:      incbin  "data/sound/sine.eif"
 InstrSawtoothWave:  incbin  "data/sound/sawtooth.eif"
 InstrSquareWave:    incbin  "data/sound/square.eif"
 InstrChurchOrgan:   incbin  "data/sound/church.eif"
+InstrDistGuitar:    incbin  "data/sound/dguitar.eif"
+InstrDistBass:      incbin  "data/sound/dbass.eif"
+InstrSynthBass:     incbin  "data/sound/synbass.eif"
+InstrBell:          incbin  "data/sound/bell.eif"
+InstrBrass:         incbin  "data/sound/brass.eif"
+InstrSweet:         incbin  "data/sound/sweet.eif"
+InstrCrush:         incbin  "data/sound/crush.eif"
 
 InstrFlatPSG:       hex FE00FF
 
 InstrKickDrum:      incbin  "data/sound/kick.ewf"
 InstrSnareDrum:     incbin  "data/sound/snare.ewf"
 InstrPunch:         incbin  "data/sound/punch.ewf"
+InstrExplosion:     incbin  "data/sound/explosion.ewf"
 
     even
 
@@ -44,7 +60,10 @@ BGM_\name: rs.b 1
     dc.l    BgmData_\name
     endm
     
-;    @Entry  Ingame
+    if      HAS_MUSIC
+    @Entry  Ingame
+    @Entry  Dragon
+    endc
 
 NUM_BGM:    rs.b 0
 
@@ -63,7 +82,14 @@ SFX_\name: rs.b 1
     @Entry  Jump
     @Entry  Swim
     @Entry  Attack
+    @Entry  Magic
+    @Entry  Transform
     @Entry  Hit
+    @Entry  Hurt
+    @Entry  Demolish
+    @Entry  Health
+    @Entry  Supermagic
+    @Entry  1up
 
 NUM_SFX:    rs.b 0
 
@@ -74,7 +100,7 @@ NUM_SFX:    rs.b 0
 
                     rsreset
                     rs.b 1              ; Empty ID
-;SOUNDTEST_BGM:      rs.b NUM_BGM-1      ; Where BGM IDs start
+SOUNDTEST_BGM:      rs.b NUM_BGM-1      ; Where BGM IDs start
 SOUNDTEST_SFX:      rs.b NUM_SFX-1      ; Where SFX IDs start
 SOUNDTEST_MAX:      rs.b 0              ; No more sounds here
 
@@ -83,11 +109,21 @@ SOUNDTEST_MAX:      rs.b 0              ; No more sounds here
 ; Data for all the music and sound effects.
 ;****************************************************************************
 
-;BgmData_Ingame:     incbin  "data/music/ingame.esf"
+                    if HAS_MUSIC
+BgmData_Ingame:     incbin  "data/music/ingame.esf"
+BgmData_Dragon:     incbin  "data/music/dragon.esf"
+                    endc
 
 SfxData_Jump:       include "data/sfx/jump.68k"
 SfxData_Swim:       include "data/sfx/swim.68k"
 SfxData_Attack:     include "data/sfx/attack.68k"
+SfxData_Magic:      include "data/sfx/magic.68k"
+SfxData_Transform:  include "data/sfx/transform.68k"
+SfxData_Hurt:       include "data/sfx/hurt.68k"
 SfxData_Hit:        include "data/sfx/hit.68k"
+SfxData_Demolish:   include "data/sfx/demolish.68k"
+SfxData_Health:     include "data/sfx/health.68k"
+SfxData_Supermagic: include "data/sfx/supermagic.68k"
+SfxData_1up:        include "data/sfx/1up.68k"
 
     even

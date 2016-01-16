@@ -24,6 +24,11 @@
     dc.l    PalTileset
     dc.l    PalMerlinaUnderwater
     dc.l    PalTilesetUnderwater
+
+    dc.l    0
+    dc.w    0
+    dc.l    InitNoParallax
+    dc.l    UpdateNoParallax
     dc.w    $00E0
 
     dc.w    OBJTYPE_DOOR|$00<<8, $00B0, $00B0
