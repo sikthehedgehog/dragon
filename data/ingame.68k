@@ -1,4 +1,19 @@
 ;****************************************************************************
+; SchemeList
+; Possible list of control schemes, one byte per button
+; In order: A button, B button, C button, padding
+; 0 = magic, 1 = attack, 2 = jump
+;****************************************************************************
+
+SchemeList:
+    dc.b    0, 1, 2, $FF
+    dc.b    0, 2, 1, $FF
+    dc.b    1, 0, 2, $FF
+    dc.b    1, 2, 0, $FF
+    dc.b    2, 0, 1, $FF
+    dc.b    2, 1, 0, $FF
+
+;****************************************************************************
 ; GfxIngame
 ; Common graphics used in-game.
 ;****************************************************************************

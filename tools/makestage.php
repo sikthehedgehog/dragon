@@ -22,7 +22,8 @@
                       0x03, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
                       0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01,
                       0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
-                      0x02, 0x02, 0x02);
+                      0x02, 0x02, 0x02, 0x01, 0x03, 0x03, 0x03, 0x03,
+                      0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01);
    
    $objlist = "";
    $objnames = Array("OBJTYPE_GHOST",
@@ -42,7 +43,9 @@
                      "OBJTYPE_CROSS",
                      "OBJTYPE_LAVABURST",
                      "OBJTYPE_COGWHEEL",
-                     "OBJTYPE_HSWINGBALL");
+                     "OBJTYPE_HSWINGBALL",
+                     "OBJTYPE_END",
+                     "OBJTYPE_PIRANHA");
    
    $in = explode("\n", file_get_contents($argv[1]));
    
@@ -100,7 +103,8 @@
             array_push($tilemap, $id);
             array_push($collmap, $coll);
             
-            if ($water == -1 && $colltypes[$id] == 0x03)
+            if ($water == -1 && ($colltypes[$id] == 0x03 ||
+            ($colltypes[$id] >= 0x2B && $colltypes[$id] <= 0x2F)))
                $water = $y;
             if ($id == 0x20 || $id == 0x21)
                $outdoors = true;
@@ -128,6 +132,7 @@
                break;
                
             case "OBJTYPE_DOOR":
+            case "OBJTYPE_END":
                $target = substr(strstr($line, "name=\""), 6);
                if ($target !== FALSE) {
                   $target = explode("\"", $target);
@@ -140,6 +145,11 @@
             case "OBJTYPE_SPIDER":
                $fall = (int)(substr(strstr($line, "name=\""), 6));
                $flags = "" + ($fall / 4);
+               break;
+            
+            case "OBJTYPE_PIRANHA":
+               $dir = (int)(substr(strstr($line, "name=\""), 6));
+               $flags = "" + $dir;
                break;
             
             case "OBJTYPE_DPLATFORM":
@@ -227,6 +237,11 @@
       }
    }
    
+   if ($argv[1] == (strstr($argv[1], "lava_2") !== false))
+      $objlist = $objlist."    dc.w    OBJTYPE_RISINGLAVA|0<<8, 0, \$".
+      sprintf("%04X", $height * 0x20)."+1\n";
+   if ($argv[1] == (strstr($argv[1], "lava_3") !== false))
+      $objlist = $objlist."    dc.w    OBJTYPE_LAVAFLOOD|0<<8, -\$10, \$40\n";
    if ($argv[1] == (strstr($argv[1], "mirror_1") !== false))
       $objlist = $objlist."    dc.w    OBJTYPE_REFLECTION|0<<8, 0, 0\n";
    if ($argv[1] == (strstr($argv[1], "mirror_2") !== false))
@@ -280,7 +295,12 @@
    if ($lava) {
       $pal[2] = "PalLava";
       $pal[3] = "PalFrozenLava";
-      $parallax = "LavaParallax";
+      $extragfx = "GfxLava";
+      $extrasize = 4*4 + 4*2 + 4*4 + 4*4;
+      if (strstr($argv[1], "lava_2") !== false)
+         $parallax = "RisingLavaParallax";
+      if (strstr($argv[1], "lava_3") !== false)
+         $parallax = "LavaFloodParallax";
    }
    
    $out = $out."    dc.l    ".$pal[0]."\n";

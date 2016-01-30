@@ -54,6 +54,14 @@ tiles 0 0 1 1
 tiles 0 2 1 2
 tiles 3 0 1 1
 tiles 3 2 1 2
+input "src-data/tileset/tile_31.png"
+tiles 3 0 1 2
+input "src-data/tileset/tile_34.png"
+tiles 2 0 2 4
+input "src-data/tileset/tile_35.png"
+tiles 0 0 2 4
+input "src-data/tileset/tile_36.png"
+tiles 0 0 2 2
 
 output "data/tileset/candle.4bpp"
 input "src-data/tileset/candle.png"

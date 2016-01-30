@@ -1,4 +1,21 @@
 ;****************************************************************************
+; TOPT_*
+; IDs for each option in the title screen.
+;****************************************************************************
+
+                    rsreset
+TOPT_START:         rs.b 1      ; Start game
+TOPT_OPTIONS:       rs.b 1      ; Options
+NUM_TITLEOPT:       rs.b 0
+
+;****************************************************************************
+; Use this to determine from which row the options are listed
+; No TITLEOPT_X since the code will center the options instead!
+;****************************************************************************
+
+TITLEOPT_Y:         equ 21-NUM_TITLEOPT
+
+;****************************************************************************
 ; TitleScreen
 ; Shows up the title screen.
 ;----------------------------------------------------------------------------
@@ -8,6 +25,7 @@
 TitleScreen:
     jsr     (ResetVideo).w              ; Reset video hardware status
     st.b    (WantsFade)                 ; We want to fade in
+    move.w  #$8B02, ($C00004)           ; We'll use hscroll per tile
     
     lea     (GfxTitleLogo), a6          ; Decompress the graphics
     lea     (LocalRAM), a5
@@ -25,7 +43,10 @@ TitleScreen:
     bsr     LoadFont                    ; We want this too
     
     if      SHOW_COPYRIGHT              ; Draw copyright string
-    moveq   #38-15, d7
+    lea     (StrCopyright), a6
+    jsr     (GetStrLen).w
+    neg.w   d7
+    add.w   #38, d7
     moveq   #27-2, d6
     moveq   #0, d5
     lea     (StrCopyright), a6
@@ -33,15 +54,56 @@ TitleScreen:
     endc
     
     lea     (PalMenuLo), a0             ; Load the palettes
-    move.l  (PalMenuHi), a1
+    lea     (PalMenuHi), a1
     lea     (PalTitleLogo), a2
     move.l  #0, a3
     jsr     (SetAllPalettes).w
+    
+    lea     (TitleMenuLabels), a0       ; Align options to the center
+    lea     ($C00000), a1
+    moveq   #NUM_TITLEOPT-1, d0
+    move.w  #$8F20, 4(a1)
+    SetVRAMAddr $F800+(TITLEOPT_Y*$20), 4(a1)
+@AlignOptions:
+    move.l  (a0)+, a6
+    jsr     (GetStrLen).w
+    add.w   d7, d7
+    add.w   d7, d7
+    neg.w   d7
+    add.w   #160, d7
+    move.w  d7, (a1)
+    move.w  d7, (a1)
+    dbf     d0, @AlignOptions
+    move.w  #$8F02, 4(a1)
+    
+    clr.b   (CurrentOption)             ; Select first option by default
 
 ;----------------------------------------------------------------------------
 
 @MainLoop:
-    btst.b  #7, (JoyPress)              ; Selected something?
+    bsr     DrawTitleMenu               ; Update menu
+    
+    move.b  (JoyPress), d0              ; What was pressed
+    move.b  (CurrentOption), d1         ; Selected option
+    
+    btst.l  #1, d0                      ; Next option?
+    beq.s   @NoDown
+    addq.b  #1, d1
+    cmp.b   #NUM_TITLEOPT, d1
+    bne.s   @NoDown
+    moveq   #0, d1
+@NoDown:
+    
+    btst.l  #0, d0                      ; Previous option?
+    beq.s   @NoUp
+    subq.b  #1, d1
+    bpl.s   @NoUp
+    moveq   #NUM_TITLEOPT-1, d1
+@NoUp:
+    
+    move.b  d1, (CurrentOption)         ; Update the selection
+    
+    btst.l  #7, d0                      ; Selected something?
     bne.s   @Quit
     
     jsr     (NextFrame).w               ; Wait for next frame
@@ -51,4 +113,53 @@ TitleScreen:
 
 @Quit:
     jsr     (FadeOut).w                 ; Shut off screen
-    bra     StartGame                   ; For now...
+    
+    moveq   #0, d7                      ; Go to whatever was selected
+    move.b  (CurrentOption), d7
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     @FuncList(pc), a6
+    move.l  (a6,d7.w), a6
+    jmp     (a6)
+    
+@FuncList:
+    dc.l    StartGame
+    dc.l    OptionsMenu
+
+;****************************************************************************
+; DrawTitleMenu
+; Draws the title screen menu.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+DrawTitleMenu:
+    move.w  #TITLEOPT_Y, d1             ; Initial position
+    move.b  (CurrentOption), d2         ; What's the selected option?
+    
+    lea     TitleMenuLabels(pc), a0     ; Scan all options
+    moveq   #NUM_TITLEOPT-1, d0
+@Loop:
+    tst.b   d2                          ; Determine palette for this option
+    seq.b   d5                            ; (highlight selected option)
+    and.b   #1, d5
+    
+    move.l  (a0)+, a6                   ; Draw option
+    moveq   #0, d7
+    move.w  d1, d6
+    jsr     (DrawText).w
+    
+    addq.w  #2, d1                      ; Go for next option
+    subq.b  #1, d2
+    dbf     d0, @Loop
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; TitleMenuLabels
+; Labels for all the options in the title screen.
+;****************************************************************************
+
+TitleMenuLabels:
+    dc.l    StrStartGame
+    dc.l    StrOptions

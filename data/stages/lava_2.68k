@@ -45,12 +45,13 @@
     dc.l    PalLava
     dc.l    PalFrozenLava
 
-    dc.l    0
-    dc.w    0
-    dc.l    InitLavaParallax
-    dc.l    UpdateLavaParallax
+    dc.l    GfxLava
+    dc.w    56
+    dc.l    InitRisingLavaParallax
+    dc.l    UpdateRisingLavaParallax
     dc.w    $7FFF
 
     dc.w    OBJTYPE_DOOR|$00<<8, $0090, $01D0
-    dc.w    OBJTYPE_DOOR|STAGE_LAVA3<<8, $01E0, $0090
+    dc.w    OBJTYPE_DOOR|STAGE_LAVA2B<<8, $01E0, $0090
+    dc.w    OBJTYPE_RISINGLAVA|0<<8, 0, $0240+1
     dc.w    $0000

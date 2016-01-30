@@ -1,4 +1,14 @@
 ;****************************************************************************
+; LavaRiseSpeed, LavaFloodSpeed
+; Speed at which lava moves for each difficulty
+;****************************************************************************
+
+LavaRiseSpeed:
+    dc.w    $80, $C0, $100
+LavaFloodSpeed:
+    dc.w    $180, $1E0, $240
+
+;****************************************************************************
 ; InitLavaBurst
 ; Initializes the collision box of bursting lava.
 ;----------------------------------------------------------------------------
@@ -123,3 +133,161 @@ DrawLavaBurst:
     jsr     (AddMetasprite).w
     
     rts                                 ; End of subroutine
+
+;****************************************************************************
+; InitRisingLava
+; Initializes the collision box of rising lava.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitRisingLava:
+    move.w  #0, OBJ_BOXX1(a6)           ; Set up collision box
+    move.w  #0, OBJ_BOXY1(a6)
+    move.w  #$3FFF, OBJ_BOXX2(a6)
+    move.w  #$3FFF, OBJ_BOXY2(a6)
+    
+    move.w  OBJ_Y(a6), d7               ; Just in case...
+    move.w  d7, (LavaPos)
+    sub.w   (CameraY), d7
+    sub.w   #$10, d7
+    move.w  d7, (LavaScreenPos)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunRisingLava
+; Executes the behavior for rising lava.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunRisingLava:
+    moveq   #0, d7                      ; How quick to rise?
+    move.b  (Difficulty), d7
+    add.w   d7, d7
+    lea     LavaRiseSpeed(pc), a6
+    move.w  (a6,d7.w), d7
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    
+    move.w  OBJ_Y(a0), d0               ; Make lava rise
+    sub.w   d7, d0
+    move.w  d0, OBJ_Y(a0)
+    sub.w   #$10, d0
+    move.w  d0, (LavaPos)
+    
+    move.l  a0, a6                      ; Hurt player when she touches lava
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NoCollision
+    move.w  (PlayerX), d7
+    move.w  OBJ_Y(a0), d6
+    bsr     HurtPlayer
+@NoCollision:
+    
+    move.w  (PlayerY), d7               ; Being submerged in lava is
+    sub.w   OBJ_Y(a0), d7                 ; instadeath (OUCH!!)
+    cmp.w   #$20, d7
+    blt.s   @NoInstadeath
+    bsr     KillPlayer
+@NoInstadeath:
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; InitLavaFlood
+; Initializes the collision box of the lava flood.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitLavaFlood:
+    move.w  #-$3FFF, OBJ_BOXX1(a6)      ; Set up collision box
+    move.w  #0, OBJ_BOXY1(a6)
+    move.w  #-1, OBJ_BOXX2(a6)
+    move.w  #$3F, OBJ_BOXY2(a6)
+    
+    move.w  OBJ_X(a6), (LavaPos)        ; Just in case...
+    clr.w   (LavaScreenPos)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunLavaFlood
+; Executes the behavior for the lava flood.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunLavaFlood:
+    moveq   #0, d7                      ; How quick to flood?
+    move.b  (Difficulty), d7
+    add.w   d7, d7
+    lea     LavaFloodSpeed(pc), a6
+    move.w  (a6,d7.w), d7
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    
+    move.w  OBJ_X(a0), d0               ; Lava is flooding!
+    add.w   d7, d0
+    move.w  d0, OBJ_X(a0)
+    move.w  d0, (LavaPos)
+    
+    move.l  a0, a6                      ; Caught up to the player?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NoAttack
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    bsr     HurtPlayer
+@NoAttack:
+    
+    move.w  OBJ_X(a0), d7               ; Flooded her in? (OUCH!)
+    sub.w   (PlayerX), d7
+    ble.s   @NoKill
+    bsr     KillPlayer
+@NoKill:
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawLavaFlood
+; Draws the sprite end for the lava flood.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawLavaFlood:
+    move.w  OBJ_X(a0), d0               ; Determine coordinates on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  (Anim), d7                  ; Determine sprite to use
+    and.w   #$03<<2, d7
+    lea     @AnimTable(pc), a6
+    move.l  (a6,d7.w), a6
+    
+    move.w  #$C000+VramLavaFlood, d2    ; Draw the sprite
+    jsr     (AddMetasprite).w
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@AnimTable:
+    dc.l    SprLavaFlood_1
+    dc.l    SprLavaFlood_2
+    dc.l    SprLavaFlood_3
+    dc.l    SprLavaFlood_4

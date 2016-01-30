@@ -7,6 +7,7 @@ gfx() { ./tools/mdtiler $1 ; }
 slz() { ./tools/slz $1 $2 ; }
 eif() { ./tools/tfi2eif $1 $2 ; }
 ewf() { ./tools/pcm2ewf $1 $2 ; }
+#esf() { php ~/azurasun/tools/makeesf.php $1/*.exf $2 ; }
 stage() { php tools/makestage.php $1 $2 ; }
 
 stage src-data/stages/entrance_1.tmx data/stages/entrance_1.68k
@@ -18,6 +19,7 @@ stage src-data/stages/basement_2.tmx data/stages/basement_2.68k
 stage src-data/stages/basement_3.tmx data/stages/basement_3.68k
 stage src-data/stages/basement_4.tmx data/stages/basement_4.68k
 stage src-data/stages/basement_5.tmx data/stages/basement_5.68k
+stage src-data/stages/basement_5a.tmx data/stages/basement_5a.68k
 stage src-data/stages/basement_5b.tmx data/stages/basement_5b.68k
 stage src-data/stages/hall_1.tmx data/stages/hall_1.68k
 stage src-data/stages/hall_2.tmx data/stages/hall_2.68k
@@ -26,15 +28,25 @@ stage src-data/stages/hall_4.tmx data/stages/hall_4.68k
 stage src-data/stages/hall_4b.tmx data/stages/hall_4b.68k
 stage src-data/stages/hall_5.tmx data/stages/hall_5.68k
 stage src-data/stages/hall_outside.tmx data/stages/hall_outside.68k
-stage src-data/stages/mirror_1.tmx data/stages/mirror_1.68k
-stage src-data/stages/mirror_2.tmx data/stages/mirror_2.68k
+stage src-data/stages/elevator_1.tmx data/stages/elevator_1.68k
+stage src-data/stages/elevator_2.tmx data/stages/elevator_2.68k
 stage src-data/stages/lava_1.tmx data/stages/lava_1.68k
 stage src-data/stages/lava_2.tmx data/stages/lava_2.68k
+stage src-data/stages/lava_2b.tmx data/stages/lava_2b.68k
 stage src-data/stages/lava_3.tmx data/stages/lava_3.68k
 stage src-data/stages/lava_4.tmx data/stages/lava_4.68k
 stage src-data/stages/shrine_1.tmx data/stages/shrine_1.68k
 stage src-data/stages/shrine_2.tmx data/stages/shrine_2.68k
 stage src-data/stages/shrine_3.tmx data/stages/shrine_3.68k
+stage src-data/stages/mirror_1.tmx data/stages/mirror_1.68k
+stage src-data/stages/mirror_2.tmx data/stages/mirror_2.68k
+stage src-data/stages/dragon_tower_1.tmx data/stages/dragon_tower_1.68k
+stage src-data/stages/dragon_tower_2.tmx data/stages/dragon_tower_2.68k
+stage src-data/stages/dragon_tower_3.tmx data/stages/dragon_tower_3.68k
+stage src-data/stages/dragon_tower_4.tmx data/stages/dragon_tower_4.68k
+stage src-data/stages/dragon_tower_5.tmx data/stages/dragon_tower_5.68k
+stage src-data/stages/dragon_tower_6.tmx data/stages/dragon_tower_6.68k
+stage src-data/stages/dragon_tower_7.tmx data/stages/dragon_tower_7.68k
 stage src-data/stages/final_boss.tmx data/stages/final_boss.68k
 
 gfx src-data/merlina/gfxbuild
@@ -73,6 +85,8 @@ eif src-data/sound/sweet.tfi data/sound/sweet.eif
 eif src-data/sound/crush.tfi data/sound/crush.eif
 ewf src-data/sound/punch.pcm data/sound/punch.ewf
 ewf src-data/sound/explosion.pcm data/sound/explosion.ewf
+#esf src-data/music/ingame data/music/ingame.esf
+#esf src-data/music/dragon data/music/dragon.esf
 
 rm -f "$GAMENAME"
 asm buildme.68k tmp.bin

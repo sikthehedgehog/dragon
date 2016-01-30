@@ -10,7 +10,7 @@ This is the source code to Dragon's Castle. One of the big things from this code
 
 You can get a prebuilt ROM by downloading the `witch.bin` file (make sure to choose "raw view" so the browser downloads it!).
 
-Currently the controls are hardcoded. They're:
+The default controls (can be changed from the Options menu) are:
 
 * **D-pad:** move
 * **A button:** magic
@@ -21,6 +21,14 @@ Currently the controls are hardcoded. They're:
 Jump and attack are self-explanatory. Magic is a different kind of attack which gives you more points but it's a bit more risky to use. Currently magic doesn't work on every enemy (this will improve as development progresses).
 
 You can reset the game by pressing A+B+C while paused.
+
+### Options menu
+
+* **Difficulty:** affects the behavior of some hazards.
+* **Sound test:** lets you listen to the sounds in the game.
+* **Controls:** changes the button mappings.
+
+Note that the difficulty setting currently isn't respected by everything that should do it ;)
 
 ## Building the ROM
 
@@ -90,7 +98,7 @@ This menu shows up before you start playing and lets you tweak several values:
 * **Starting stage:** lets you choose which room you want to start at.
 * **Invincibility:** makes you invincible against enemies (you can still die by falling in pits).
 * **Infinite lives:** keeps your lives counter permanently maxed out.
-* **Sound test:** self-explanatory.
+* **Sound test:** same as in Options menu.
 
 Note that the starting stage is currently *not* capped, so make sure to not select a value that isn't a valid room! (or the game will most likely crash)
 
@@ -128,17 +136,20 @@ The minimum size for a level is 10×7 tiles (the size of the screen) and the max
 
 The player will spawn wherever you place a Merlina object. Don't place more than one Merlina or results will be undefined!
 
-### Doors
+### Doors and end blocks
 
 You can make a door just by placing the relevant object. This alone will create a closed door. To make an open door (one that goes to another room), you should change its name to "`STAGE_`" followed by the room's name (e.g. "`STAGE_BASEMENT2`" takes you to the second basement room). Make sure the stage exists in the ROM! (otherwise keep the door closed until it exists)
 
-**Limitation:** You can't make a door that goes back to the first room (this will result in a closed door instead).
+End blocks work similarly: place an end block object, then set the target stage in its name. The player will be sent to that stage whenever she collides with the block.
+
+**Limitation:** You can't make a door that goes back to the first room (this will result in a closed door instead). This limitation doesn't apply to end blocks.
 
 ### Tweaking objects
 
 Several other objects can have their behavior altered through their name (like the doors above). By general rule, you should give them names whenever possible. These objects are:
 
 * Spiders tell how far they can fall through their name. Enter the distance in pixels (e.g. 88 = fall down up to 88 pixels).
+* Piranhas will start facing right when their name is 0 and left when their name is 1.
 * Spinning spikeballs can have their initial angle defined in their name. Enter a number between 0 and 255.
 * Cogwheels will spin counterclockwise if their name is 0 or clockwise if their name is 1.
 
@@ -149,6 +160,7 @@ The converter will just copy custom tiles as-is. However, it needs to know what 
 * **`$00`:** no collision
 * **`$01`:** solid (e.g. wall)
 * **`$02`:** one-way floor
+* **`$03`:** underwater
 * **`$FE`:** slope (downhill to the left)
 * **`$FF`:** slope (downhill to the right)
 

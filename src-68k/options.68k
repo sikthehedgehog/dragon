@@ -26,6 +26,11 @@ OptionsMenu:
     dc.l    DecSoundTest
     dc.l    PlaySoundTest
     
+    dc.l    DrawControls                ; Controls
+    dc.l    IncControls
+    dc.l    DecControls
+    dc.l    0
+    
     dc.l    DrawExitOptions             ; Exit
     dc.l    0
     dc.l    0
@@ -88,6 +93,96 @@ DecDifficulty:
 @NoOverflow:
     move.b  d7, (Difficulty)
     rts
+
+;****************************************************************************
+; IncControls, DecControls
+; Change the control scheme, respectively.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+IncControls:
+    move.b  (ControlSet), d7
+    addq.b  #1, d7
+    cmp.b   #5, d7
+    bls.s   @NoOverflow
+    moveq   #0, d7
+@NoOverflow:
+    move.b  d7, (ControlSet)
+    rts
+
+;----------------------------------------------------------------------------
+
+DecControls:
+    move.b  (ControlSet), d7
+    subq.b  #1, d7
+    bge.s   @NoOverflow
+    moveq   #5, d7
+@NoOverflow:
+    move.b  d7, (ControlSet)
+    rts
+
+;****************************************************************************
+; DrawControls
+; Draws the current control scheme.
+;----------------------------------------------------------------------------
+; output a6.l ... Option label (string)
+; output a5.l ... Option value (string)
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4
+;****************************************************************************
+
+DrawControls:
+    move.l  #$20202020, d6              ; Clear the buffer first
+    moveq   #3-1, d7
+    lea     (ControlsBuf), a5
+@Clear:
+    move.l  d6, (a5)+
+    move.l  d6, (a5)+
+    move.l  d6, (a5)+
+    move.l  d6, (a5)+
+    dbf     d7, @Clear
+    
+    move.w  #"A.", (ControlsBuf+$00)    ; Add string headers
+    move.w  #"B.", (ControlsBuf+$10)
+    move.w  #"C.", (ControlsBuf+$20)
+    
+    move.b  #$0A, (ControlsBuf+$0F)     ; Add string terminators
+    move.b  #$0A, (ControlsBuf+$1F)
+    move.b  #$00, (ControlsBuf+$2F)
+    
+    moveq   #0, d7                      ; Get control scheme list
+    move.b  (ControlSet), d7
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     (SchemeList), a4
+    lea     (a4,d7.w), a4
+    
+    lea     (ControlsBuf+$02), a5       ; Draw all actions
+    moveq   #3-1, d6
+@Loop:
+    moveq   #0, d7
+    move.b  (a4)+, d7
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     @Labels(pc), a6
+    move.l  (a6,d7.w), a6
+    move.l  a5, -(sp)
+    jsr     (CopyStrNoNull).w
+    move.l  (sp)+, a5
+    lea     $10(a5), a5
+    dbf     d6, @Loop
+    
+    lea     (StrControls), a6           ; Get label
+    lea     (ControlsBuf), a5           ; Get scheme
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Labels:
+    dc.l    StrMagic
+    dc.l    StrAttack
+    dc.l    StrJump
 
 ;****************************************************************************
 ; DrawSoundTest

@@ -68,3 +68,40 @@ DrawDoor:
     jsr     (AddMetasprite).w
     
     rts                                 ; End of subroutine
+
+;****************************************************************************
+; InitEnd
+; Initializes an instaend block's collision box.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitEnd:
+    move.w  #-$10, OBJ_BOXX1(a6)
+    move.w  #-$10, OBJ_BOXY1(a6)
+    move.w  #$0F, OBJ_BOXX2(a6)
+    move.w  #$0F, OBJ_BOXY2(a6)
+    rts
+
+;****************************************************************************
+; RunEnd
+; Executes the behavior for an instaend block.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunEnd:
+    move.l  a0, a6                      ; Check if the player reached us
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NotEntering
+    
+    move.b  OBJ_FLAGS(a0), d7           ; Go to the stage this block leads
+    bra     SwitchStage
+    
+@NotEntering:
+    rts                                 ; End of subroutine

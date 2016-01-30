@@ -19,9 +19,20 @@ StartGame:
     clr.l   (Score)                     ; Initial score
     clr.b   (Stage)                     ; Initial stage
     
-    move.b  #5, (JumpButton)            ; Hardcoded for now
-    move.b  #4, (AttackButton)
-    move.b  #6, (MagicButton)
+    moveq   #0, d7                      ; Get control scheme
+    move.b  (ControlSet), d7
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     (SchemeList), a0
+    lea     (a0,d7.w), a0
+    
+    lea     (MagicButton), a6           ; Map scheme to buttons
+    move.b  (a0)+, d7
+    move.b  #6, (a6,d7.w)
+    move.b  (a0)+, d7
+    move.b  #4, (a6,d7.w)
+    move.b  (a0)+, d7
+    move.b  #5, (a6,d7.w)
     
     if      DEBUG_MENU                  ; Invoke the debug menu if enabled
     bsr     DebugMenu
@@ -56,7 +67,7 @@ InGame:
     lea     (GfxTileset), a6            ; Load tileset graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramTileset*$20, 104*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramTileset*$20, 128*$20, ($C00004)
     
     lea     (GfxIngame), a6             ; Load common graphics
     lea     (LocalRAM), a5
@@ -66,7 +77,7 @@ InGame:
     lea     (GfxEnemies), a6            ; Load enemy graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramSpikeball*$20, 116*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramSpikeball*$20, 168*$20, ($C00004)
     
     move.b  #%0, (GameState)            ; Initialize game state
     bsr     InitStage                   ; Set up current stage

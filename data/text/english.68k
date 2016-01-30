@@ -1,8 +1,13 @@
 ;****************************************************************************
-; Options menu text
+; Title screen
 ;****************************************************************************
 
+StrStartGame:           dc.b "START GAME",0
 StrOptions:             dc.b "OPTIONS",0
+
+;****************************************************************************
+; Options menu text
+;****************************************************************************
 
 StrDifficulty:          dc.b "DIFFICULTY",0
 StrEasy:                dc.b "EASY  ",0
@@ -10,9 +15,9 @@ StrNormal:              dc.b "NORMAL",0
 StrHard:                dc.b "HARD  ",0
 
 StrControls:            dc.b "CONTROLS",0
-StrMagic:               dc.b "MAGIC ",0
+StrMagic:               dc.b "MAGIC",0
 StrAttack:              dc.b "ATTACK",0
-StrJump:                dc.b "JUMP  ",0
+StrJump:                dc.b "JUMP",0
 
 StrSoundTest:           dc.b "SOUND TEST",0
 StrExit:                dc.b "EXIT",0

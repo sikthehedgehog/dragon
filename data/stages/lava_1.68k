@@ -25,10 +25,10 @@
     dc.l    PalLava
     dc.l    PalFrozenLava
 
-    dc.l    0
-    dc.w    0
-    dc.l    InitLavaParallax
-    dc.l    UpdateLavaParallax
+    dc.l    GfxLava
+    dc.w    56
+    dc.l    InitNoParallax
+    dc.l    UpdateNoParallax
     dc.w    $7FFF
 
     dc.w    OBJTYPE_DOOR|$00<<8, $0050, $0070

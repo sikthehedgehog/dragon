@@ -240,3 +240,63 @@ TilesetMappings:
     dc.w    @T+$2063, @T+$205C, @T+$205F, @T+$2066      ; Wooden table
     dc.w    @T+$2063, @T+$205D, @T+$2060, @T+$2066      ; (both sides)
     dc.w    @T+$2064, @T+$205E, @T+$2061, @T+$2067
+    
+    dc.w    @T+$6026, @T+$6027, @T+$6827, @T+$6826      ; Tile $2B
+    dc.w    @T+$6028, @T+$6029, @T+$6829, @T+$6828      ; Upright barrel
+    dc.w    @T+$7028, @T+$7029, @T+$7829, @T+$7828      ; (underwater)
+    dc.w    @T+$7026, @T+$7027, @T+$7827, @T+$7826
+    
+    dc.w    @T+$602A, @T+$602B, @T+$682B, @T+$682A      ; Tile $2C
+    dc.w    @T+$602C, @T+$602D, @T+$682D, @T+$682C      ; Sideways barrel
+    dc.w    @T+$602E, @T+$602F, @T+$682F, @T+$682E      ; (full)
+    dc.w    @T+$6030, @T+$6031, @T+$6831, @T+$6830      ; (underwater)
+    
+    dc.w    @T+$600C, @T+$600D, @T+$602A, @T+$602B      ; Tile $2D
+    dc.w    @T+$600D, @T+$600C, @T+$602C, @T+$602D      ; Sideways barrel
+    dc.w    @T+$600C, @T+$600D, @T+$602E, @T+$602F      ; (left half)
+    dc.w    @T+$600D, @T+$600C, @T+$6030, @T+$6031      ; (underwater)
+    
+    dc.w    @T+$682B, @T+$682A, @T+$602A, @T+$602B      ; Tile $2E
+    dc.w    @T+$682D, @T+$682C, @T+$602C, @T+$602D      ; Sideways barrels
+    dc.w    @T+$682F, @T+$682E, @T+$602E, @T+$602F      ; (both sides)
+    dc.w    @T+$6831, @T+$6830, @T+$6030, @T+$6031      ; (underwater)
+    
+    dc.w    @T+$682B, @T+$682A, @T+$600C, @T+$600D      ; Tile $2F
+    dc.w    @T+$682D, @T+$682C, @T+$600D, @T+$600C      ; Sideways barrel
+    dc.w    @T+$682F, @T+$682E, @T+$600C, @T+$600D      ; (right half)
+    dc.w    @T+$6831, @T+$6830, @T+$600D, @T+$600C      ; (underwater)
+    
+    dc.w    @T+$A008, @T+$A009, @T+$203F, @T+$203F      ; Tile $30
+    dc.w    @T+$A00A, @T+$A00B, @T+$203F, @T+$203F      ; Left door
+    dc.w    @T+$A002, @T+$A003, @T+$203F, @T+$203F      ; (left half)
+    dc.w    @T+$A006, @T+$A007, @T+$203F, @T+$203F
+    
+    dc.w    @T+$203F, @T+$203F, @T+$203F, @T+$2068      ; Tile $31
+    dc.w    @T+$203F, @T+$203F, @T+$203F, @T+$2069      ; Left door
+    dc.w    @T+$203F, @T+$203F, @T+$203F, @T+$2068      ; (right half)
+    dc.w    @T+$203F, @T+$203F, @T+$203F, @T+$2069
+    
+    dc.w    @T+$2068, @T+$203F, @T+$203F, @T+$203F      ; Tile $32
+    dc.w    @T+$2069, @T+$203F, @T+$203F, @T+$203F      ; Right door
+    dc.w    @T+$2068, @T+$203F, @T+$203F, @T+$203F      ; (left half)
+    dc.w    @T+$2069, @T+$203F, @T+$203F, @T+$203F
+    
+    dc.w    @T+$203F, @T+$203F, @T+$A008, @T+$A009      ; Tile $33
+    dc.w    @T+$203F, @T+$203F, @T+$A00A, @T+$A00B      ; Right door
+    dc.w    @T+$203F, @T+$203F, @T+$A000, @T+$A001      ; (right half)
+    dc.w    @T+$203F, @T+$203F, @T+$A004, @T+$A005
+    
+    dc.w    @T+$A000, @T+$A001, @T+$A06A, @T+$A06B      ; Tile $34
+    dc.w    @T+$A004, @T+$A005, @T+$A06C, @T+$A06D      ; Tower right side
+    dc.w    @T+$A002, @T+$A003, @T+$A06E, @T+$A06F
+    dc.w    @T+$A006, @T+$A007, @T+$A070, @T+$A071
+    
+    dc.w    @T+$A072, @T+$A073, @T+$A002, @T+$A003      ; Tile $35
+    dc.w    @T+$A074, @T+$A075, @T+$A006, @T+$A007      ; Tower left side
+    dc.w    @T+$A076, @T+$A077, @T+$A000, @T+$A001
+    dc.w    @T+$A078, @T+$A079, @T+$A004, @T+$A005
+    
+    dc.w    @T+$A07A, @T+$A07B, @T+$A07A, @T+$A07B      ; Tile $36
+    dc.w    @T+$A07C, @T+$A07D, @T+$A07C, @T+$A07D      ; Stone bridge
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C

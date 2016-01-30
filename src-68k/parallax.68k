@@ -24,7 +24,77 @@ UpdateNoParallax:
     
     move.l  (DMABufEnd), a6             ; Set up DMA to load the scrolling
     DMA2VRAM HScrollABuf, $F800, 2, (a6)+
+    DMA2VRAM HScrollBBuf, $F802, 2, (a6)+
     DMA2VSRAM VScrollABuf, $0000, 2, (a6)+
+    DMA2VSRAM VScrollBBuf, $0002, 2, (a6)+
+    move.l  a6, (DMABufEnd)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; UpdatePerCellParallax
+; Like UpdateNoParallax, but when hscroll is set to per-cell.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+UpdatePerCellParallax:
+    lea     (HScrollABuf), a6           ; Update horizontal position
+    move.w  (CameraX), d7
+    neg.w   d7
+    moveq   #28/4-1, d6
+@HLoop:
+    move.w  d7, (a6)+
+    move.w  d7, (a6)+
+    move.w  d7, (a6)+
+    move.w  d7, (a6)+
+    dbf     d6, @HLoop
+    
+    move.w  (CameraY), (VScrollABuf)    ; Update vertical position
+    
+    move.l  (DMABufEnd), a6             ; Set up DMA to load the scrolling
+    move.w  #$8F20, (a6)+
+    DMA2VRAM HScrollABuf, $F800, 2*28, (a6)+
+    DMA2VRAM HScrollBBuf, $F802, 2*28, (a6)+
+    move.w  #$8F02, (a6)+
+    DMA2VSRAM VScrollABuf, $0000, 2, (a6)+
+    DMA2VSRAM VScrollBBuf, $0002, 2, (a6)+
+    move.l  a6, (DMABufEnd)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; UpdatePerLineParallax
+; Like UpdateNoParallax, but when hscroll is set to per-line.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+UpdatePerLineParallax:
+    lea     (HScrollABuf), a6           ; Update horizontal position
+    move.w  (CameraX), d7
+    neg.w   d7
+    moveq   #224/8-1, d6
+@HLoop:
+    move.w  d7, (a6)+
+    move.w  d7, (a6)+
+    move.w  d7, (a6)+
+    move.w  d7, (a6)+
+    move.w  d7, (a6)+
+    move.w  d7, (a6)+
+    move.w  d7, (a6)+
+    move.w  d7, (a6)+
+    dbf     d6, @HLoop
+    
+    move.w  (CameraY), (VScrollABuf)    ; Update vertical position
+    
+    move.l  (DMABufEnd), a6             ; Set up DMA to load the scrolling
+    move.w  #$8F04, (a6)+
+    DMA2VRAM HScrollABuf, $F800, 2*224, (a6)+
+    DMA2VRAM HScrollBBuf, $F802, 2*224, (a6)+
+    move.w  #$8F02, (a6)+
+    DMA2VSRAM VScrollABuf, $0000, 2, (a6)+
+    DMA2VSRAM VScrollBBuf, $0002, 2, (a6)+
     move.l  a6, (DMABufEnd)
     
     rts                                 ; End of subroutine
@@ -64,35 +134,296 @@ UpdateFogParallax:
     move.w  d7, (HScrollBBuf)
     move.w  d6, (VScrollBBuf)
     
-    move.l  (DMABufEnd), a6             ; Set up DMA to load the scrolling
-    DMA2VRAM HScrollBBuf, $F802, 2, (a6)+
-    DMA2VSRAM VScrollBBuf, $0002, 2, (a6)+
-    move.l  a6, (DMABufEnd)
-    
     bra     UpdateNoParallax            ; Update camera as usual
 
 ;****************************************************************************
-; InitLavaParallax
-; Initialization when there's lava in the room.
+; InitRisingLavaParallax
+; Initialization for the rising lava tilemap code.
 ;----------------------------------------------------------------------------
 ; breaks: all
 ;****************************************************************************
 
-InitLavaParallax:
-    lea     (GfxLava), a6               ; Decompress graphics
-    lea     (FreeRAM), a5
-    jsr     (DecompressSLZ).w
-    DMA2VRAM FreeRAM, VramLavaBurst*$20, 16*$20, ($C00004)
+InitRisingLavaParallax:
+    move.w  #$8B03, ($C00004)           ; We want linescrolling (so we can
+                                          ; animate the lava's inside)
+    
+    lea     @Pattern(pc), a0            ; Unroll the lava pattern rows into
+    lea     (LavaPattern), a6             ; RAM (which will make it easier to
+    moveq   #(2+8)*2-1, d7                ; get them DMA'd and not have us
+@FillPattern:                             ; worry about 128KB boundaries)
+    move.l  (a0)+, d0
+    move.l  (a0)+, d1
+    rept    $40/4
+    move.l  d0, (a6)+
+    move.l  d1, (a6)+
+    endr
+    dbf     d7, @FillPattern
     
     rts                                 ; End of subroutine
 
+;----------------------------------------------------------------------------
+
+@Pattern:
+    dc.w    $C000+VramRisingLava, $C001+VramRisingLava
+    dc.w    $C002+VramRisingLava, $C003+VramRisingLava
+    dc.w    $C004+VramRisingLava, $C005+VramRisingLava
+    dc.w    $C006+VramRisingLava, $C007+VramRisingLava
+    dcb.w   8, $0000
+    
+    dcb.w   4, $0000
+    dc.w    $C008+VramRisingLava, $C009+VramRisingLava
+    dc.w    $C00A+VramRisingLava, $C00B+VramRisingLava
+    dcb.w   4, $0000
+    dc.w    $C00C+VramRisingLava, $C00D+VramRisingLava
+    dc.w    $C00E+VramRisingLava, $C00F+VramRisingLava
+    dcb.w   4, $0000
+    dc.w    $C010+VramRisingLava, $C011+VramRisingLava
+    dc.w    $C012+VramRisingLava, $C013+VramRisingLava
+    dcb.w   4, $0000
+    dc.w    $C014+VramRisingLava, $C015+VramRisingLava
+    dc.w    $C016+VramRisingLava, $C017+VramRisingLava
+    dcb.w   4, $0000
+    dc.w    $C809+VramRisingLava, $C808+VramRisingLava
+    dc.w    $C80B+VramRisingLava, $C80A+VramRisingLava
+    dcb.w   4, $0000
+    dc.w    $C80D+VramRisingLava, $C80C+VramRisingLava
+    dc.w    $C80F+VramRisingLava, $C80E+VramRisingLava
+    dcb.w   4, $0000
+    dc.w    $C811+VramRisingLava, $C810+VramRisingLava
+    dc.w    $C813+VramRisingLava, $C812+VramRisingLava
+    dcb.w   4, $0000
+    dc.w    $C815+VramRisingLava, $C814+VramRisingLava
+    dc.w    $C817+VramRisingLava, $C816+VramRisingLava
+
 ;****************************************************************************
-; UpdateLavaParallax
-; Update function for the rooms with lava.
+; UpdateRisingLavaParallax
+; Update function for the rising lava tilemap code.
 ;----------------------------------------------------------------------------
 ; breaks: all
 ;****************************************************************************
 
-UpdateLavaParallax:
-    bra     UpdateNoParallax            ; Update camera as usual
+UpdateRisingLavaParallax:
+    move.w  (Anim), d7                  ; Animate the top of the lava
+    and.w   #$07<<2, d7
+    lsl.w   #8-2, d7
+    lea     (LavaTopPattern), a6
+    lea     (a6,d7.w), a6
+    move.l  a6, d7
+    move.l  (DMABufEnd), a6
+    DMA2VRAM_S d7, $E000, $40*2*2, a6
+    move.l  a6, (DMABufEnd)
+    
+    move.w  (LavaPos), d0               ; Determine height of lava on screen
+    sub.w   (CameraY), d0
+    
+    cmp.w   #-32, d0                    ; Ensure lava doesn't go outbounds
+    bge.s   @NotTooHigh                   ; on screen
+    and.w   #$0F, d0
+    sub.w   #$20, d0
+@NotTooHigh:
+    cmp.w   #224, d0
+    ble.s   @NotTooLow
+    move.w  #224, d0
+@NotTooLow:
+    
+    move.w  (LavaScreenPos), d6         ; Check if we need to write a new
+    move.w  d0, (LavaScreenPos)           ; row?
+    move.w  d0, d7
+    and.w   #$FFF0, d6
+    and.w   #$FFF0, d7
+    cmp.w   d6, d7
+    beq     @NoRowUpdate
+    bgt     @RemoveRow
+    
+    lsr.w   #4, d7                      ; Which row to draw?
+    neg.w   d7
+    add.w   #14, d7
+    
+    lsl.w   #8, d7                      ; Draw the row!
+    add.w   #$E000, d7
+    move.l  (DMABufEnd), a6
+    DMA2VRAM_D LavaPattern, d7, $40*2*2, a6
+    move.l  a6, (DMABufEnd)
+    bra.s   @NoRowUpdate
+    
+@RemoveRow:
+    lsr.w   #4, d7                      ; Which row to erase?
+    neg.w   d7
+    add.w   #14+1, d7
+    
+    lsl.w   #8, d7                      ; Erase the row!
+    add.w   #$E000, d7
+    move.l  (DMABufEnd), a6
+    DMA2VRAM_D LavaNoPattern, d7, $40*2*2, a6
+    move.l  a6, (DMABufEnd)
+    
+@NoRowUpdate:
+    neg.w   d0                          ; Store height
+    move.w  d0, (VScrollBBuf)
+    
+    move.w  (CameraX), d0               ; Determine horizontal scrolling
+    neg.w   d0                            ; used by the lava
+    move.w  d0, d1
+    add.w   #$10, d1
+    
+    lea     (HScrollBBuf), a6           ; Set hscroll for the top of the lava
+    move.w  #224-1, d7
+    move.w  (LavaScreenPos), d6
+    add.w   #$10, d6
+    blt.s   @NoHLoop1
+@HLoop1:
+    move.w  d0, (a6)+
+    subq.w  #1, d7
+    dbf     d6, @HLoop1
+@NoHLoop1:
+    
+    tst.w   d7                          ; Do waviness for the lava inside
+    blt.s   @NoHLoop2
+    move.w  d6, d4
+    lsl.w   #2, d6
+    add.w   (Anim), d6
+    lsl.w   #2+1, d6
+    lea     (Sines), a5
+    btst.l  #3, d4
+    bne.s   @NoPreshift
+    exg.l   d0, d1
+@NoPreshift:
+    addq.w  #1, d4
+@HLoop2:
+    and.w   #$FF<<1, d6
+    move.w  (a5,d6.w), d5
+    asr.w   #6, d5
+    add.w   d0, d5
+    move.w  d5, (a6)+
+    sub.w   #$10<<1, d6
+    subq.w  #1, d4
+    and.w   #$07, d4
+    bne.s   @NoShift
+    exg.l   d0, d1
+@NoShift:
+    dbf     d7, @HLoop2
+@NoHLoop2:
+    
+    bra     UpdatePerLineParallax       ; Update camera as usual
 
+;****************************************************************************
+; InitLavaFloodParallax
+; Initialization for the lava flood tilemap code.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+InitLavaFloodParallax:
+    lea     @Pattern(pc), a0            ; Unroll the lava pattern rows into
+    lea     (LavaPattern), a6             ; RAM (which will make it easier to
+    moveq   #4-1, d7                      ; get them DMA'd and not have us
+@FillPattern:                             ; worry about 128KB boundaries)
+    move.l  (a0)+, d0
+    move.l  (a0)+, d1
+    move.l  d0, (a6)+
+    move.l  d1, (a6)+
+    move.l  d0, (a6)+
+    move.l  d1, (a6)+
+    dbf     d7, @FillPattern
+    
+    moveq   #0, d0
+    moveq   #4-1, d7
+    lea     (LavaNoPattern), a6
+@FillNoPattern:
+    move.l  d0, (a6)+
+    move.l  d0, (a6)+
+    move.l  d0, (a6)+
+    move.l  d0, (a6)+
+    dbf     d7, @FillNoPattern
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Pattern:
+    dc.w    $C000+VramRisingLava, $C004+VramRisingLava
+    dc.w    $C801+VramRisingLava, $C805+VramRisingLava
+    dc.w    $C001+VramRisingLava, $C005+VramRisingLava
+    dc.w    $C800+VramRisingLava, $C804+VramRisingLava
+    dc.w    $C002+VramRisingLava, $C006+VramRisingLava
+    dc.w    $C803+VramRisingLava, $C807+VramRisingLava
+    dc.w    $C003+VramRisingLava, $C007+VramRisingLava
+    dc.w    $C802+VramRisingLava, $C806+VramRisingLava
+
+;****************************************************************************
+; UpdateLavaFloodParallax
+; Update function for the lava flood tilemap code.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+UpdateLavaFloodParallax:
+    move.w  (LavaPos), d0               ; Determine position on screen
+    sub.w   (CameraX), d0
+    bge.s   @NotTooLeft
+    moveq   #0, d0
+@NotTooLeft:
+    cmp.w   #352, d0
+    blt.s   @NotTooRight
+    and.w   #$1F, d0
+    add.w   #352, d0
+@NotTooRight:
+    move.w  d0, (HscrollBBuf)
+    add.w   #$20, d0
+    move.w  (CameraY), d7
+    neg.w   d7
+    move.w  d7, (VScrollBBuf)
+    
+    move.w  (LavaScreenPos), d1         ; Check if we have to update the
+    move.w  d0, (LavaScreenPos)           ; lava body (the tilemap)
+    and.w   #$FFE0, d1
+    and.w   #$FFE0, d0
+    cmp.w   d1, d0
+    beq     @NoUpdate
+    ble     @Erase
+    
+@Draw:
+    lsr.w   #2, d0                      ; Determine addresses of columns
+    not.w   d0                            ; to draw
+    and.w   #$3F<<1, d0
+    add.w   #$E400, d0
+    move.w  d0, d1
+    move.w  d0, d2
+    move.w  d0, d3
+    addq.w  #2, d1
+    addq.w  #4, d2
+    addq.w  #6, d3
+    
+    move.l  (DMABufEnd), a6             ; Get it drawn on the tilemap
+    move.w  #$8F80, (a6)+
+    DMA2VRAM_D LavaPattern+$00, d0, 8*2, a6
+    DMA2VRAM_D LavaPattern+$10, d1, 8*2, a6
+    DMA2VRAM_D LavaPattern+$20, d2, 8*2, a6
+    DMA2VRAM_D LavaPattern+$30, d3, 8*2, a6
+    move.w  #$8F02, (a6)+
+    move.l  a6, (DMABufEnd)
+    bra     @NoUpdate
+    
+@Erase:
+    lsr.w   #2, d1                      ; Determine addresses of columns
+    not.w   d1                            ; to erase
+    and.w   #$3F<<1, d1
+    add.w   #$E400, d1
+    move.w  d1, d0
+    move.w  d1, d2
+    move.w  d1, d3
+    addq.w  #2, d1
+    addq.w  #4, d2
+    addq.w  #6, d3
+    
+    move.l  (DMABufEnd), a6             ; Get it erased on the tilemap
+    move.w  #$8F80, (a6)+
+    DMA2VRAM_D LavaNoPattern+$00, d0, 8*2, a6
+    DMA2VRAM_D LavaNoPattern+$10, d1, 8*2, a6
+    DMA2VRAM_D LavaNoPattern+$20, d2, 8*2, a6
+    DMA2VRAM_D LavaNoPattern+$30, d3, 8*2, a6
+    move.w  #$8F02, (a6)+
+    move.l  a6, (DMABufEnd)
+    
+@NoUpdate:
+    bra     UpdateNoParallax            ; Update camera as usual

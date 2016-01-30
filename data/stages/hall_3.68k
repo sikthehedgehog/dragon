@@ -30,7 +30,7 @@
     dc.w    $7FFF
 
     dc.w    OBJTYPE_DOOR|$00<<8, $0090, $0070
-    dc.w    OBJTYPE_DOOR|STAGE_HALL5<<8, $0350, $0070
+    dc.w    OBJTYPE_DOOR|STAGE_HALL4<<8, $0350, $0070
     dc.w    OBJTYPE_CHAINBASE|$00<<8, $0130, $0028
     dc.w    OBJTYPE_SWINGBALL|0<<8, $0130, $0028
     dc.w    OBJTYPE_CHAINBASE|$00<<8, $01F0, $0028

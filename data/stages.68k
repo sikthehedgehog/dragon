@@ -24,6 +24,7 @@ StageData_Basement2:        include "data/stages/basement_2.68k"
 StageData_Basement3:        include "data/stages/basement_3.68k"
 StageData_Basement4:        include "data/stages/basement_4.68k"
 StageData_Basement5:        include "data/stages/basement_5.68k"
+StageData_Basement5A:       include "data/stages/basement_5a.68k"
 StageData_Basement5B:       include "data/stages/basement_5b.68k"
 
 StageData_Hall1:            include "data/stages/hall_1.68k"
@@ -34,11 +35,12 @@ StageData_Hall4B:           include "data/stages/hall_4b.68k"
 StageData_Hall5:            include "data/stages/hall_5.68k"
 StageData_HallOut:          include "data/stages/hall_outside.68k"
 
-StageData_Mirror1:          include "data/stages/mirror_1.68k"
-StageData_Mirror2:          include "data/stages/mirror_2.68k"
+StageData_Elevator1:        include "data/stages/elevator_1.68k"
+StageData_Elevator2:        include "data/stages/elevator_2.68k"
 
 StageData_Lava1:            include "data/stages/lava_1.68k"
 StageData_Lava2:            include "data/stages/lava_2.68k"
+StageData_Lava2B:           include "data/stages/lava_2b.68k"
 StageData_Lava3:            include "data/stages/lava_3.68k"
 StageData_Lava4:            include "data/stages/lava_4.68k"
 
@@ -46,6 +48,16 @@ StageData_Shrine1:          include "data/stages/shrine_1.68k"
 StageData_Shrine2:          include "data/stages/shrine_2.68k"
 StageData_Shrine3:          include "data/stages/shrine_3.68k"
 
+StageData_Mirror1:          include "data/stages/mirror_1.68k"
+StageData_Mirror2:          include "data/stages/mirror_2.68k"
+
+StageData_DragonTower7:     include "data/stages/dragon_tower_7.68k"
+StageData_DragonTower6:     include "data/stages/dragon_tower_6.68k"
+StageData_DragonTower5:     include "data/stages/dragon_tower_5.68k"
+StageData_DragonTower4:     include "data/stages/dragon_tower_4.68k"
+StageData_DragonTower3:     include "data/stages/dragon_tower_3.68k"
+StageData_DragonTower2:     include "data/stages/dragon_tower_2.68k"
+StageData_DragonTower1:     include "data/stages/dragon_tower_1.68k"
 StageData_FinalBoss:        include "data/stages/final_boss.68k"
 
 ;****************************************************************************
@@ -71,6 +83,7 @@ STAGE_\name: rs.b 1
     @Entry      Basement3
     @Entry      Basement4
     @Entry      Basement5
+    @Entry      Basement5A
     @Entry      Basement5B
     
     @Entry      Hall1
@@ -81,11 +94,12 @@ STAGE_\name: rs.b 1
     @Entry      Hall5
     @Entry      HallOut
     
-    @Entry      Mirror1
-    @Entry      Mirror2
+    @Entry      Elevator1
+    @Entry      Elevator2
     
     @Entry      Lava1
     @Entry      Lava2
+    @Entry      Lava2B
     @Entry      Lava3
     @Entry      Lava4
     
@@ -93,6 +107,16 @@ STAGE_\name: rs.b 1
     @Entry      Shrine2
     @Entry      Shrine3
     
+    @Entry      Mirror1
+    @Entry      Mirror2
+    
+    @Entry      DragonTower7
+    @Entry      DragonTower6
+    @Entry      DragonTower5
+    @Entry      DragonTower4
+    @Entry      DragonTower3
+    @Entry      DragonTower2
+    @Entry      DragonTower1
     @Entry      FinalBoss
     
-    inform 0, "Number of stages: %d", __RS
+    inform 0, "Number of stages: %d (%d.%d%s)", __RS, __RS*100/255, __RS*1000/255%10, "%"

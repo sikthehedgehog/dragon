@@ -1,0 +1,375 @@
+;****************************************************************************
+; Some parameters for tweaking the piranhas
+;****************************************************************************
+
+PIRANHA_SWIM:       equ $80             ; Swimming speed
+PIRANHA_BITESPEED:  equ $200            ; How fast piranhas go when biting
+PIRANHA_BITEDISTX:  equ $40             ; How far piranhas can see (hor.)
+PIRANHA_BITEDISTY:  equ $20             ; How far piranhas can see (ver.)
+
+PIRANHA_X1:         equ -$10            ; Left boundary of collision box
+PIRANHA_Y1:         equ -$0C            ; Top boundary of collision box
+PIRANHA_X2:         equ $0F             ; Right boundary of collision box
+PIRANHA_Y2:         equ $0B             ; Bottom boundary of collision box
+
+FISH_SPEED:         equ $55             ; Speed of the tiny fishes
+FISH_X1:            equ -$0A            ; Left boundary of fish box
+FISH_X2:            equ $09             ; Right boundary of fish box
+
+;****************************************************************************
+; InitPiranha
+; Initializes a piranha's collision box.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitPiranha:
+    move.w  #PIRANHA_X1, OBJ_BOXX1(a6)
+    move.w  #PIRANHA_Y1, OBJ_BOXY1(a6)
+    move.w  #PIRANHA_X2, OBJ_BOXX2(a6)
+    move.w  #PIRANHA_Y2, OBJ_BOXY2(a6)
+    rts
+
+;****************************************************************************
+; RunPiranha
+; Executes the behavior for a piranha.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunPiranha:
+    tst.b   OBJ_HEALTH(a0)              ; Still alive?
+    bne.s   @Alive
+    
+    move.w  OBJ_YSPEED(a0), d7          ; Keep falling
+    add.w   #ACCEL_FALL, d7
+    move.w  d7, OBJ_YSPEED(a0)
+    cmp.w   #JUMP_FORCE, d7
+    bge     DestroySelf
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, OBJ_Y(a0)
+    
+    move.w  OBJ_XSPEED(a0), d7          ; Falling sideways
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, OBJ_X(a0)
+    
+    rts                                 ; End of subroutine
+@Alive:
+
+;----------------------------------------------------------------------------
+
+    move.w  OBJ_X(a0), d0               ; Current status
+    move.w  OBJ_Y(a0), d1
+    move.b  OBJ_FLAGS(a0), d2
+    
+    tst.w   OBJ_TIMER(a0)               ; Getting ready to dash?
+    beq.s   @Moving
+    subq.w  #1, OBJ_TIMER(a0)
+    bra     @GettingReady
+@Moving:
+    
+    move.w  #PIRANHA_SWIM, d3           ; How fast are we going?
+    btst.l  #OF_ACTIVE, d2
+    beq.s   @JustSwimming
+    move.w  #PIRANHA_BITESPEED, d3
+@JustSwimming:
+    
+    btst.l  #OF_DIR, d2                 ; Which way?
+    beq.s   *+4
+    neg.w   d3
+    
+    add.w   (Subpixel), d3              ; Apply momentum
+    asr.w   #8, d3
+    beq.s   @SameDir
+    blt.s   @SwimLeft
+    
+@SwimRight:
+    move.w  d0, d7
+    move.w  d1, d6
+    add.w   d3, d7
+    add.w   #PIRANHA_X2, d7
+    bsr     TileAt
+    cmp.b   #COLL_WATER, d6
+    beq.s   @SameDir
+    bset.l  #OF_DIR, d2
+    bclr.l  #OF_ACTIVE, d2
+    clr.w   d3
+    bra.s   @SameDir
+    
+@SwimLeft:
+    move.w  d0, d7
+    move.w  d1, d6
+    add.w   d3, d7
+    add.w   #PIRANHA_X1, d7
+    bsr     TileAt
+    cmp.b   #COLL_WATER, d6
+    beq.s   @SameDir
+    bclr.l  #OF_DIR, d2
+    bclr.l  #OF_ACTIVE, d2
+    clr.w   d3
+    
+@SameDir:
+    add.w   d3, d0                      ; Apply speed
+    
+@GettingReady:
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Caught by magic?
+    bsr     CollidesMagic
+    tst.w   d7
+    beq.s   @NoTransform
+    
+    move.l  #SCORE_MAGIC, d7            ; Bonus
+    jsr     (AddScore).w
+    moveq   #SFX_TRANSFORM, d7
+    jsr     (PlaySFX).w
+    
+    move.w  d0, d7                      ; Transform!
+    move.w  d1, d6
+    move.b  d2, d5
+    lsl.w   #8, d5
+    move.b  #OBJTYPE_MAGICPUFF, d5
+    bsr     AddObject
+    move.b  #OBJTYPE_FISH, OBJ_DATA(a6)
+    
+    bra     DestroySelf                 ; Poof!
+@NoTransform:
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Attacked by broom?
+    bsr     CollidesAttack
+    tst.w   d7
+    beq.s   @NotKilled
+    
+    move.l  #SCORE_BROOM, d7            ; Bonus
+    bsr     AddScore
+    moveq   #SFX_HIT, d7
+    jsr     (PlaySFX).w
+    
+    move.l  a0, a6                      ; Bounce
+    bsr     FacePlayer
+    
+    move.w  #MAX_SPEED, d6
+    btst.l  #OF_DIR, d7
+    bne.s   *+4
+    neg.w   d6
+    move.w  d6, OBJ_XSPEED(a0)
+    move.w  #-JUMP_FORCE/2, OBJ_YSPEED(a0)
+    
+    clr.b   OBJ_HEALTH(a0)              ; Ouch!
+    rts
+@NotKilled:
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Managed to bite the player?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NotBiting
+    move.w  d0, d7
+    move.w  d1, d6
+    bsr     HurtPlayer
+@NotBiting:
+
+;----------------------------------------------------------------------------
+
+    btst.l  #OF_ACTIVE, d2              ; Er...
+    bne.s   @Forgive
+    btst.b  #PF_HURT, (PlayerFlags)     ; Mercy time
+    bne.s   @Forgive
+    
+    move.w  (PlayerX), d7               ; Is player close enough?
+    sub.w   d0, d7
+    btst.l  #OF_DIR, d2
+    beq.s   *+4
+    neg.w   d7
+    tst.w   d7
+    blt.s   @Forgive
+    cmp.w   #PIRANHA_BITEDISTX, d7
+    bgt.s   @Forgive
+    
+    move.w  (PlayerY), d7               ; Both ways...
+    sub.w   d1, d7
+    cmp.w   #PIRANHA_BITEDISTY, d7
+    bgt.s   @Forgive
+    cmp.w   #-PIRANHA_BITEDISTY, d7
+    blt.s   @Forgive
+    
+    moveq   #0, d7                      ; Get ready to bite!
+    move.b  (Difficulty), d7
+    add.w   d7, d7
+    lea     @WaitDuration(pc), a6
+    move.w  (a6,d7.w), OBJ_TIMER(a0)
+    bset.l  #OF_ACTIVE, d2
+@Forgive:
+
+;----------------------------------------------------------------------------
+
+    move.w  d0, OBJ_X(a0)               ; Update status
+    move.w  d1, OBJ_Y(a0)
+    move.b  d2, OBJ_FLAGS(a0)
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@WaitDuration:
+    dc.w    $20, $18, $10
+
+;****************************************************************************
+; DrawPiranha
+; Draws a piranha.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawPiranha:
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    tst.b   OBJ_HEALTH(a0)              ; Dead?
+    bne.s   @Alive
+    lea     (SprPiranha_Attack1), a6
+    tst.b   (BlinkFlag)
+    bne.s   @Skip
+    bra.s   @AnimSet
+@Alive:
+    
+    tst.w   OBJ_TIMER(a0)               ; Getting ready to attack?
+    beq.s   @NotReadying
+    lea     (SprPiranha_Attack1), a6
+    bra.s   @AnimSet
+@NotReadying:
+    
+    btst.b  #OF_ACTIVE, OBJ_FLAGS(a0)   ; Biting?
+    beq.s   @NotBiting
+    move.w  (Anim), d7
+    and.w   #$01<<2, d7
+    lea     @BiteAnim(pc), a6
+    move.l  (a6,d7.w), a6
+    bra.s   @AnimSet
+@NotBiting:
+    
+    move.w  (Anim), d7                  ; Get mapping to use
+    and.w   #$07<<2, d7
+    lea     @SwimAnim(pc), a6
+    move.l  (a6,d7.w), a6
+@AnimSet:
+    
+    move.w  #VramPiranha, d2            ; Figure out direction
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)
+    beq.s   @NoFlip
+    bset.l  #11, d2
+@NoFlip:
+    
+    jsr     (AddMetasprite).w           ; Draw piranha
+    
+@Skip:
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@SwimAnim:
+    dc.l    SprPiranha_1
+    dc.l    SprPiranha_2
+    dc.l    SprPiranha_3
+    dc.l    SprPiranha_4
+    dc.l    SprPiranha_4
+    dc.l    SprPiranha_3
+    dc.l    SprPiranha_2
+    dc.l    SprPiranha_1
+
+@BiteAnim:
+    dc.l    SprPiranha_Attack2
+    dc.l    SprPiranha_Attack3
+
+;****************************************************************************
+; RunFish
+; Executes the behavior for a tiny fish.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunFish:
+    move.w  OBJ_X(a0), d0               ; Current status
+    move.w  OBJ_Y(a0), d1
+    move.b  OBJ_FLAGS(a0), d2
+    
+    move.w  #FISH_SPEED, d3             ; Which way we're going?
+    btst.l  #OF_DIR, d2
+    beq.s   *+4
+    neg.w   d3
+    add.w   (Subpixel), d3
+    asr.w   #8, d3
+    beq.s   @DoneMoving
+    blt.s   @MovingLeft
+    
+@MovingRight:                           ; Collision to the right
+    add.w   d3, d0
+    move.w  d0, d7
+    move.w  d1, d6
+    add.w   #FISH_X2, d7
+    bsr     TileAt
+    cmp.b   #COLL_WATER, d6
+    beq.s   @DoneMoving
+    bset.l  #OF_DIR, d2
+    bra.s   @DoneMoving
+    
+@MovingLeft:                            ; Collision to the left
+    add.w   d3, d0
+    move.w  d0, d7
+    move.w  d1, d6
+    add.w   #FISH_X1, d7
+    bsr     TileAt
+    cmp.b   #COLL_WATER, d6
+    beq.s   @DoneMoving
+    bclr.l  #OF_DIR, d2
+    
+@DoneMoving:
+    move.w  d0, OBJ_X(a0)               ; Update status
+    move.w  d1, OBJ_Y(a0)
+    move.b  d2, OBJ_FLAGS(a0)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawFish
+; Draws a tiny fish.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawFish:
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  #$2000+VramFish, d2         ; Determine direction
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)
+    beq.s   @NoFlip
+    bset.l  #11, d2
+@NoFlip:
+    
+    sub.w   #12, d0                     ; Draw fish
+    subq.w  #8, d1
+    moveq   #%1001, d3
+    jsr     (AddSprite).w
+    
+    rts                                 ; End of subroutine

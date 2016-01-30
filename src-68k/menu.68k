@@ -37,13 +37,13 @@ DoMenu:
     add.w   d7, d7                        ; because I'm that nitpicky)
     neg.w   d7
     add.w   #160, d7
-    SetVRAMAddr $F840, ($C00004)
-    move.w  d7, ($C00000)
     SetVRAMAddr $F860, ($C00004)
+    move.w  d7, ($C00000)
+    SetVRAMAddr $F880, ($C00004)
     move.w  d7, ($C00000)
     
     moveq   #0, d7                      ; Draw menu title
-    moveq   #2, d6
+    moveq   #3, d6
     moveq   #0, d5
     bsr     DrawText
     
@@ -157,7 +157,7 @@ LoadFont:
 
 DrawMenu:
     move.l  (MenuData), a0              ; Get the menu structure
-    moveq   #6, d0                      ; Get position of first entry
+    moveq   #7, d0                      ; Get position of first entry
     move.b  (CurrentOption), d1         ; Get current selection
     moveq   #0, d2                      ; ...and go through all IDs
     
@@ -239,15 +239,31 @@ DrawMenuBG:
 ; DrawText
 ; Draws a nul-terminated ASCII string on screen.
 ;----------------------------------------------------------------------------
-; input d7.w ... X coordinate (0..39)
-; input d6.w ... Y coordinate (0..27)
-; input d5.w ... Palette to use (0..1)
-; input a6.l ... String to draw
+; input d7.w .... X coordinate (0..39)
+; input d6.w .... Y coordinate (0..27)
+; input d5.b .... Palette to use (0..1)
+; input a6.l .... String to draw
 ;----------------------------------------------------------------------------
-; breaks: d5-d7, a4-a6
+; output a6.l ... Right after string ended
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a5
 ;****************************************************************************
 
 DrawText:
+    movem.l d5-d7, -(sp)
+    bsr.s   @DoIt
+    movem.l (sp)+, d5-d7
+    tst.b   -1(a6)
+    bne.s   @NextLine
+    rts
+
+@NextLine:
+    addq.w  #2, d6
+    bra.s   DrawText
+
+;----------------------------------------------------------------------------
+
+@DoIt:
     lea     (TextLookup), a5            ; ASCII look-up table
     lea     ($C00000), a4               ; VDP data port
     
@@ -258,7 +274,7 @@ DrawText:
     swap    d7
     or.l    #$40000003, d7
     
-    tst.w   d5                          ; Determine base tile for the font
+    tst.b   d5                          ; Determine base tile for the font
     sne.b   d5                            ; (and the palette to use)
     ext.w   d5
     and.w   #$2000, d5
@@ -278,6 +294,8 @@ DrawText:
 @Loop:
     moveq   #0, d6                      ; Get next letter
     move.b  (a6)+, d6
+    beq.s   @End
+    cmp.b   #$0A, d6
     beq.s   @End
     
     sub.b   #$20, d6                    ; Draw tile for this letter

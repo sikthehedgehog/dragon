@@ -58,7 +58,7 @@
   <object gid="69" x="80" y="960"/>
   <object gid="69" x="176" y="961"/>
   <object gid="69" x="209" y="961"/>
-  <object name="STAGE_BASEMENT5B" gid="66" x="127" y="942"/>
+  <object name="STAGE_BASEMENT5A" gid="66" x="127" y="942"/>
   <object name="0" gid="82" x="128" y="341"/>
   <object name="128" gid="82" x="126" y="278"/>
   <object name="0" gid="82" x="127" y="213"/>

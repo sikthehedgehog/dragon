@@ -19,7 +19,7 @@
  </layer>
  <objectgroup name="Capa de Objetos 1" width="32" height="7">
   <object gid="66" x="49" y="202"/>
-  <object gid="66" x="912" y="201"/>
+  <object name="STAGE_DRAGONTOWER7" gid="66" x="912" y="201"/>
   <object gid="67" x="49" y="202"/>
  </objectgroup>
 </map>

@@ -30,6 +30,6 @@
     dc.w    $7FFF
 
     dc.w    OBJTYPE_DOOR|$00<<8, $0050, $00B0
-    dc.w    OBJTYPE_DOOR|$00<<8, $03B0, $00B0
+    dc.w    OBJTYPE_DOOR|STAGE_DRAGONTOWER7<<8, $03B0, $00B0
     dc.w    OBJTYPE_REFLECTION|1<<8, 0, 0
     dc.w    $0000

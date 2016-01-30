@@ -11,6 +11,14 @@ STRAY_XFORCE:       equ $280            ; Speed at which stray spikeballs
 STRAY_YFORCE:       equ $300              ; get thrown away
 
 ;****************************************************************************
+; SpikeSpinning
+; Spinning speed for the spikeballs for each difficulty.
+;****************************************************************************
+
+SpikeSpinning:
+    dc.w    $180, $200, $300
+
+;****************************************************************************
 ; InitSpikeball
 ; Initializes a spikeball's collision box.
 ;----------------------------------------------------------------------------
@@ -256,8 +264,16 @@ InitSwingingSpikeball:
 ;****************************************************************************
 
 RunSwingingSpikeball:
+    moveq   #0, d6                      ; How fast to spin?
+    move.b  (Difficulty), d6
+    add.w   d6, d6
+    lea     SpikeSpinning(pc), a6
+    move.w  (a6,d6.w), d6
+    add.w   (Subpixel), d6
+    asr.w   #8, d6
+    
     move.w  OBJ_TIMER(a0), d7           ; Swing the spikeball
-    addq.b  #2, d7
+    add.b   d6, d7
     move.w  d7, OBJ_TIMER(a0)
     
     add.w   d7, d7                      ; Determine new position of the
@@ -427,8 +443,16 @@ RunHorSwingSpikeball:
     rts
 @StillThere:
     
+    moveq   #0, d6                      ; How fast to spin?
+    move.b  (Difficulty), d6
+    add.w   d6, d6
+    lea     SpikeSpinning(pc), a6
+    move.w  (a6,d6.w), d6
+    add.w   (Subpixel), d6
+    asr.w   #8, d6
+    
     move.w  OBJ_TIMER(a0), d7           ; Swing the spikeball
-    addq.b  #2, d7
+    add.b   d6, d7
     move.w  d7, OBJ_TIMER(a0)
     
     add.w   d7, d7                      ; Determine distance of the

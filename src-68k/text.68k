@@ -20,3 +20,34 @@ GetStrLen:
 @Done:
     move.l  (sp)+, a6                   ; Restore this pointer
     rts                                 ; End of subroutine
+
+;****************************************************************************
+; CopyStr
+; Copies a string elsewhere.
+;----------------------------------------------------------------------------
+; input a6.l .... Source pointer
+; input a5.l .... Destination pointer
+;****************************************************************************
+
+CopyStr:
+@Loop:
+    move.b  (a6)+, (a5)+
+    bne.s   @Loop
+    rts
+
+;****************************************************************************
+; CopyStrNoNull
+; Copies a string elsewhere without the nul terminator
+;----------------------------------------------------------------------------
+; input a6.l .... Source pointer
+; input a5.l .... Destination pointer
+;****************************************************************************
+
+CopyStrNoNull:
+@Loop:
+    tst.b   (a6)
+    beq.s   @End
+    move.b  (a6)+, (a5)+
+    bra.s   @Loop
+@End:
+    rts

@@ -30,7 +30,7 @@
  </layer>
  <objectgroup name="Capa de Objetos 1" width="20" height="18">
   <object gid="66" x="113" y="490"/>
-  <object name="STAGE_LAVA3" gid="66" x="448" y="170"/>
+  <object name="STAGE_LAVA2B" gid="66" x="448" y="170"/>
   <object gid="67" x="111" y="488"/>
  </objectgroup>
 </map>

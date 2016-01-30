@@ -2,11 +2,26 @@
 ; Some parameters for tweaking the ghosts
 ;****************************************************************************
 
-GHOST_ACCEL:        equ $10             ; Acceleration speed
-GHOST_SPEED:        equ $200            ; Maximum speed
 GHOST_FADE:         equ $20             ; How long it takes to fade in
 GHOST_DIST:         equ $60             ; Distance at which it appears
 GHOST_DEATH:        equ 30              ; Time it takes for a ghost to die
+
+GHOST_HIDDEN:       equ 1               ; Should be hidden while inactive?
+
+GHOST_X1:           equ -$0C            ; Left boundary of collision box
+GHOST_Y1:           equ -$0C            ; Top boundary of collision box
+GHOST_X2:           equ $0B             ; Right boundary of collision box
+GHOST_Y2:           equ $0B             ; Bottom boundary of collision box
+
+;****************************************************************************
+; GhostAccel, GhostSpeed
+; Acceleration rate and maximum speed for the ghosts for each difficulty
+;****************************************************************************
+
+GhostAccel:
+    dc.w    $08, $10, $18
+GhostSpeed:
+    dc.w    $180, $200, $280
 
 ;****************************************************************************
 ; InitGhost
@@ -18,10 +33,10 @@ GHOST_DEATH:        equ 30              ; Time it takes for a ghost to die
 ;****************************************************************************
 
 InitGhost:
-    move.w  #-$0C, OBJ_BOXX1(a6)
-    move.w  #-$0C, OBJ_BOXY1(a6)
-    move.w  #$0B, OBJ_BOXX2(a6)
-    move.w  #$0B, OBJ_BOXY2(a6)
+    move.w  #GHOST_X1, OBJ_BOXX1(a6)
+    move.w  #GHOST_Y1, OBJ_BOXY1(a6)
+    move.w  #GHOST_X2, OBJ_BOXX2(a6)
+    move.w  #GHOST_Y2, OBJ_BOXY2(a6)
     rts
 
 ;****************************************************************************
@@ -38,12 +53,17 @@ RunGhost:
     beq     @Dead
     move.w  OBJ_TIMER(a0), d7
     beq     @Waiting
+    if      GHOST_HIDDEN
     cmp.w   #GHOST_FADE, d7
     bhs     @Chasing
     
     addq.w  #1, d7                      ; Still fading in, keep waiting
     move.w  d7, OBJ_TIMER(a0)
     rts
+    
+    else                                ; If we don't hide, just chase
+    bra     @Chasing                      ; directly instead of waiting
+    endc
 
 ;----------------------------------------------------------------------------
 
@@ -98,30 +118,39 @@ RunGhost:
     move.w  OBJ_YSPEED(a0), d3
     move.b  OBJ_FLAGS(a0), d4
     
-    move.w  #GHOST_ACCEL, d7            ; Where to go horizontally?
+    moveq   #0, d7                      ; Get acceleration and maximum speed
+    move.b  (Difficulty), d7
+    add.w   d7, d7
+    lea     GhostAccel(pc), a6
+    move.w  (a6,d7.w), d6
+    lea     GhostSpeed(pc), a6
+    move.w  (a6,d7.w), d5
+    
+    move.w  d6, d7                      ; Where to go horizontally?
     cmp.w   (PlayerX), d0
     ble.s   *+4
     neg.w   d7
     add.w   d7, d2
     
-    move.w  #GHOST_ACCEL, d7            ; Where to go vertically?
+    move.w  d6, d7                      ; Where to go vertically?
     cmp.w   (PlayerY), d1
     ble.s   *+4
     neg.w   d7
     add.w   d7, d3
     
-    cmp.w   #GHOST_SPEED, d2            ; Place in a speed cap
-    ble.s   *+6
-    move.w  #GHOST_SPEED, d2
-    cmp.w   #-GHOST_SPEED, d2
-    bge.s   *+6
-    move.w  #-GHOST_SPEED, d2
-    cmp.w   #GHOST_SPEED, d3
-    ble.s   *+6
-    move.w  #GHOST_SPEED, d3
-    cmp.w   #-GHOST_SPEED, d3
-    bge.s   *+6
-    move.w  #-GHOST_SPEED, d3
+    cmp.w   d5, d2                      ; Place in a speed cap
+    ble.s   *+4
+    move.w  d5, d2
+    cmp.w   d5, d3
+    ble.s   *+4
+    move.w  d5, d3
+    neg.w   d5
+    cmp.w   d5, d2
+    bge.s   *+4
+    move.w  d5, d2
+    cmp.w   d5, d3
+    bge.s   *+4
+    move.w  d5, d3
     
     move.w  d2, d7                      ; Apply momentum
     move.w  d3, d6
@@ -239,6 +268,7 @@ DrawGhost:
     rts
     
 @StillAlive:
+    if      GHOST_HIDDEN
     move.w  OBJ_TIMER(a0), d7           ; Check if we're fading or waiting
     beq.s   @Hidden
     cmp.w   #GHOST_FADE, d7
@@ -246,6 +276,7 @@ DrawGhost:
     
     tst.b   (BlinkFlag)                 ; Blink while fading
     beq.s   @Hidden
+    endc
     
 @Chasing:
     move.w  #$A000+VramGhost, d2        ; Determine base tile ID
