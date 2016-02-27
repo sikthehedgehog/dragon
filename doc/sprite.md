@@ -1,5 +1,32 @@
 # Drawing sprites
 
+## Drawing sprites
+
+First you should call `ClearSprites` at the beginning of the frame. This will reset the sprite table:
+
+        jsr     (ClearSprites).w
+
+Then you can start calling `AddSprite` for every sprite you want to add. It takes the following arguments (d6, d7 and a6 become clobbered):
+
+* `d0.w` = X coordinate (left side)
+* `d1.w` = Y coordinate (top side)
+* `d2.w` = tile and flags
+* `d3.b` = sprite size
+
+For example:
+
+        move.w  (ThisSpriteX), d0     ; X coordinate
+        move.w  (ThisSpriteY), d1     ; Y coordinate
+        move.w  #VramThisSprite, d2   ; Tile and flags
+        moveq   #%0101, d3            ; Sprite size
+        jsr     (AddSprite).w
+
+The sprites will be updated on screen when the next frame starts.
+
+### Sprite limits
+
+There can be up to 80 sprites on screen. `AddSprite` will automatically take care of this: if there are going to be too many sprites, it simply drops the excess ones (this will mean some things will vanish but at least it won't crash the game when things get chaotic). Also sprites that are off screen will be removed, and won't count towards this limit.
+
 ## Metasprites
 
 Metasprites are large graphics made out of multiple sprites (if you see anything larger than 32×32, chances are it's a metasprite).
@@ -21,10 +48,10 @@ The lone `$8000` at the end indicates the end of the metasprite.
 
 Drawing a metasprite is similar to drawing a sprite. You need to call `AddMetasprite` with the following arguments (d5-d7 and a4-a6 will be clobbered):
 
-* d0 = X coordinate
-* d1 = Y coordinate
-* d2 = tiles and flags
-* a6 = address of metasprite mapping
+* `d0.w` = X coordinate
+* `d1.w` = Y coordinate
+* `d2.w` = tiles and flags
+* `a6.l` = address of metasprite mapping
 
 Silly example to give an idea:
 
