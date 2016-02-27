@@ -2,16 +2,23 @@
 
 ## How to play sounds
 
-This section describes how to make your code play sounds. Note that playing sounds doesn't take effect until the next frame starts (when the sound engine status is updated).
-
-### Playing sound effects
-
 To play a sound effect, you need to call `PlaySFX`, passing the sound effect ID in d7 (the list of sound effects is at the bottom). No other registers are changed, and note that the sound effect will only play if a higher priority one isn't playing.
 
         moveq   #SFX_JUMP, d7
         jsr     (PlaySFX).w
 
 Sound effect priority is determined by the ID value (higher IDs take priority). Make sure that more important sound effects get higher ID values.
+
+## Adding sounds
+
+First you need to settle on a name, e.g. `boop`. Then:
+
+* Make the sound effect stream. Either generate the ESF file directly or use the ESF assembly macros (the files in `data/sfx/` use the latter method, if you want to see how it works).
+* Go into `data/sfx.68k`, then look near the end for `SfxData_*` lines. Add your own line (replacing * with the name e.g. `SfxData_Boop`) and use it to include the stream (use `incbin` for an ESF file or `include` for an assembly file)
+* Scroll up to the label that says `SfxList:`, then scroll down to the list of `@Entry` lines. Add your own line using the name you've chosen (e.g. `@Entry Boop`).
+    * And remember that its position determines its ID value and hence its priority. Find an appropiate location based on how important is the sound effect!
+
+After this is done you should be able to refer to the sound effect by its constant, e.g. `SFX_BOOP`.
 
 ## Sound effect list
 
