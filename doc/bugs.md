@@ -14,6 +14,8 @@
 
 * There's an annoying tendency to get glued against a wall when your back is on it and you're falling (this happens a lot if you turn around close to the wall, thanks to inertia). Given how often this throws you against a hazard, this one is worth fixing.
 
+* The hitbox for the magic dust is ridiculous, you can even hit enemies *from behind you*. Needs to be seriously fixed.
+
 * Jumping off a slope makes Merlina go down a few pixels first. More often than not you can't even *tell* this, but I wonder if it'll ever backfire elsewhere.
 
 * Sometimes Merlina snaps to the ceiling when jumping into it. While again usually not noticeable, it implies some collision code is using the wrong values somewhere.
