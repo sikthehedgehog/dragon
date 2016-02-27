@@ -1,4 +1,4 @@
-# Sound in Dragon's Castle
+# Playing sounds
 
 ## How to play sounds
 
