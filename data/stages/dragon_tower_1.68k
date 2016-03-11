@@ -1,3 +1,7 @@
+    if      DEBUG_MENU
+    dc.b    "DRAGON TOWER 1  "
+    endc
+
     dc.b    10, 28
 
     dc.b    $03,$00,$00,$00,$00,$00,$00,$00,$00,$02

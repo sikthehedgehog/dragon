@@ -6,7 +6,7 @@
 LavaRiseSpeed:
     dc.w    $80, $C0, $100
 LavaFloodSpeed:
-    dc.w    $180, $1E0, $240
+    dc.w    $200, $240, $280
 
 ;****************************************************************************
 ; InitLavaBurst
@@ -291,3 +291,20 @@ DrawLavaFlood:
     dc.l    SprLavaFlood_2
     dc.l    SprLavaFlood_3
     dc.l    SprLavaFlood_4
+
+;****************************************************************************
+; InitLavaBreak
+; Sets up the lava bursting from the wall at the end of the chase.
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitLavaBreak:
+    bsr     TriggerQuake                ; Start with a quake
+    moveq   #SFX_DEMOLISH, d7
+    jsr     (PlaySFX).w
+    move.w  OBJ_X(a6), d7
+    move.w  OBJ_Y(a6), d6
+    bsr     ThrowDerbisAway
+    
+    rts                                 ; End of subroutine

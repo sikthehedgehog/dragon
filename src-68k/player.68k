@@ -44,6 +44,7 @@ PA_CROUCH:          rs.b 1          ; Merlina is crouching
 PA_ATTACK:          rs.b 1          ; Merlina is attacking
 PA_MAGIC:           rs.b 1          ; Merlina is using magic
 PA_HURT:            rs.b 1          ; Merlina is recoiling
+PA_DEAD:            rs.b 1          ; Merlina is dead :(
 PA_SWIM:            rs.b 1          ; Merlina is swimming
 
 ;****************************************************************************
@@ -58,11 +59,11 @@ InitPlayer:
     clr.w   (PlayerYSpeed)
     
     clr.b   (PlayerFlags)               ; Default state
-    move.b  #3, (PlayerHealth)          ; Start with full health
     clr.b   (PlayerAttack)              ; Not attacking yet
     clr.b   (PlayerMagic)               ; Not using magic yet
     clr.b   (PlayerFlash)               ; Not invulnerable yet
     clr.b   (MagicMeter)                ; Magic has been depleted
+    clr.b   (DeathTimer)                ; In case of death
     
     moveq   #0, d7                      ; Reset magic hitboxes
     moveq   #-1, d6
@@ -78,7 +79,6 @@ InitPlayer:
     clr.b   (NextMagicSlot)
     
     clr.w   (HealthBlink)               ; Don't blink the hearts
-    clr.w   (Supermagic)                ; No supermagic yet
     
     move.b  #-1, (PlayerPose)           ; Force an animation change
     rts                                 ; End of subroutine
@@ -136,6 +136,19 @@ RunPlayer:
     bclr.l  #PF_HURT, d4
     bra     @Recoiled
 @NotRecoiling:
+    
+    tst.b   (PlayerHealth)              ; Dead? D:
+    bne.s   @StillAlive
+    move.b  (Stage), d7
+    move.b  (DeathTimer), d6
+    addq.b  #1, d6
+    move.b  d6, (DeathTimer)
+    cmp.b   #90, d6
+    bhs     SwitchStage
+    clr.b   (PlayerFlash)
+    moveq   #PA_DEAD, d7
+    bra     @SkipToAnimSet
+@StillAlive:
     
     tst.b   (PlayerFlash)               ; Still flashing?
     beq.s   @NotFlashing
@@ -512,6 +525,7 @@ RunPlayer:
     moveq   #PA_HURT, d7
 @NoHurtAnim:
     
+@SkipToAnimSet:
     cmp.b   (PlayerPose), d7            ; Did the animation change? (we need
     beq.s   @SamePose                     ; to start the new one if so)
     move.b  d7, (PlayerPose)
@@ -545,6 +559,7 @@ RunPlayer:
     dc.l    AnimMerlina_Attack          ; PA_ATTACK
     dc.l    AnimMerlina_Magic           ; PA_MAGIC
     dc.l    AnimMerlina_Hurt            ; PA_HURT
+    dc.l    AnimMerlina_Dead            ; PA_DEAD
     dc.l    AnimMerlina_Swim            ; PA_SWIM
 
 ;****************************************************************************
@@ -730,6 +745,8 @@ HurtPlayer:
     bne     @CantHurt
     tst.b   (PlayerFlash)
     bne     @CantHurt
+    tst.b   (PlayerHealth)
+    beq     @CantHurt
     btst.b  #CH_MUTEKI, (Cheats)
     bne     @CantHurt
     

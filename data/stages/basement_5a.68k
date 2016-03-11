@@ -1,3 +1,7 @@
+    if      DEBUG_MENU
+    dc.b    "BASEMENT 5A     "
+    endc
+
     dc.b    10, 32
 
     dc.b    $01,$03,$10,$10,$10,$10,$10,$10,$02,$01

@@ -38,6 +38,7 @@ AttackButton:       rs.b 1          ; Button used for attacking
 JumpButton:         rs.b 1          ; Button used for jumping
 
 Score:              rs.l 1          ; Current score (BCD)
+NextLife:           rs.l 1          ; Score when next 1up is awarded (BCD)
 Lives:              rs.b 1          ; How many lives are left (BCD)
 Stage:              rs.b 1          ; Current stage
 Cheats:             rs.b 1          ; Enabled cheats
@@ -47,6 +48,15 @@ Cheats:             rs.b 1          ; Enabled cheats
 LastUsage:          rs.b 1          ; Last CPU usage (by HV counter value)
                     rs.b 1
    endc
+
+;----------------------------------------------------------------------------
+; These need to be preserved across rooms but that breaks local variables so
+; this stuff is here instead
+;----------------------------------------------------------------------------
+
+Supermagic:         rs.w 1          ; How much time left with supermagic
+PlayerHealth:       rs.b 1          ; Health points left (0..3)
+                    rs.b 1
 
 LocalRAM:           rs.b 0          ; Where screen-specific data starts
 
@@ -89,10 +99,10 @@ PlayerXSpeed:       rs.w 1          ; Merlina's horizontal momentum
 PlayerYSpeed:       rs.w 1          ; Merlina's vertical momentum
 PlayerFlags:        rs.b 1          ; Status flags (see PF_*)
 PlayerPose:         rs.b 1          ; Merlina's last pose (see PA_*)
-PlayerHealth:       rs.b 1          ; Health points left (0..3)
 PlayerAttack:       rs.b 1          ; Frames left from attacking
 PlayerMagic:        rs.b 1          ; Frames left from using magic
 PlayerFlash:        rs.b 1          ; Invulnerability frames left
+DeathTimer:         rs.b 1          ; Timer used to delay respawning
 
 OldPosition:        rs.l 8          ; Where the player has been lately
 
@@ -105,7 +115,6 @@ PlayerAnimNext:     rs.l 1          ; Next frame in the animation
 MagicMeter:         rs.b 1          ; How much magic has been recharged
 NextMagicSlot:      rs.b 1          ; Which slot to use next for magic hitbox
 MagicBounds:        rs.w 4*4        ; Magic hitboxes' boundaries
-Supermagic:         rs.w 1          ; How much time left with supermagic
 HealthBlink:        rs.w 1          ; To make the health meter blink
 
 ObjList:            rs.b OBJ_SIZE*MAX_OBJ ; Object list
@@ -137,7 +146,11 @@ QuitMenu:           rs.b 1          ; Set to quit the menu
 
 ControlsBuf:        rs.b $10*3      ; Controls string buffer
 SoundTestBuf:       rs.b 6          ; Sound test ID string buffer
-                                      ; ...why 6 bytes long?
+                                      ; ...why 6 bytes long and not 4?
+
+                    if DEBUG_MENU
+StageNameBuf:       rs.b 22         ; Stage name string buffer
+                    endc
 
 ;****************************************************************************
 ; Tile IDs for graphics in-game
@@ -147,7 +160,7 @@ SoundTestBuf:       rs.b 6          ; Sound test ID string buffer
                     
                     rs.b 1          ; Blank tile
 VramPlayer:         rs.b 50         ; Merlina's sprite
-VramTileset:        rs.b 128        ; Tileset graphics
+VramTileset:        rs.b 150        ; Tileset graphics
 VramCandle:         rs.b 2*2        ; Candle fire
 VramChain:          rs.b 2*2        ; Platform chains
 VramHUDHealth:      rs.b 4*3        ; HUD health

@@ -1,3 +1,7 @@
+    if      DEBUG_MENU
+    dc.b    "FINAL BOSS      "
+    endc
+
     dc.b    30, 7
 
     dc.b    $01,$01,$34,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E

@@ -52,7 +52,7 @@
   <object name="0" gid="81" x="752" y="748"/>
   <object name="1" gid="81" x="719" y="94"/>
   <object name="0" gid="81" x="334" y="95"/>
-  <object gid="66" x="881" y="269"/>
+  <object name="STAGE_ELEVATOR3" gid="66" x="881" y="269"/>
   <object gid="74" x="161" y="276"/>
  </objectgroup>
 </map>

@@ -1,0 +1,10 @@
+;****************************************************************************
+; GameOver
+; Main loop for the game over screen.
+;----------------------------------------------------------------------------
+; notes: doesn't return (use BRA/JMP instead of BSR/JSR)
+;****************************************************************************
+
+GameOver:
+    bra     TitleScreen                 ; Currently not implemented, let's
+                                          ; just reboot the game for now

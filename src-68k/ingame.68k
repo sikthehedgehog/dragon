@@ -18,6 +18,15 @@ StartGame:
     move.b  #$03, (Lives)               ; Initial amount of lives
     clr.l   (Score)                     ; Initial score
     clr.b   (Stage)                     ; Initial stage
+    move.b  #3, (PlayerHealth)          ; Start with full health
+    clr.w   (Supermagic)                ; No supermagic yet
+    
+    moveq   #0, d6                      ; Determine when first 1up is awarded
+    move.b  (Difficulty), d6
+    add.w   d6, d6
+    add.w   d6, d6
+    lea     (ExtraLifeList), a6
+    move.l  (a6,d6.w), (NextLife)
     
     moveq   #0, d7                      ; Get control scheme
     move.b  (ControlSet), d7
@@ -56,6 +65,15 @@ StartGame:
 ;****************************************************************************
 
 InGame:
+    tst.b   (PlayerHealth)              ; Respawning? (i.e. lost a life)
+    bne.s   @NotRespawning
+    move.b  #3, (PlayerHealth)
+    bsr     RemoveLife
+    
+    tst.b   (Lives)                     ; Game over? D:
+    beq     GameOver
+@NotRespawning:
+    
     bclr.b  #CH_FREEMOVE, (Cheats)      ; Because for some reason this breaks
                                           ; everything when loading a level,
                                           ; there isn't much reason to keep
@@ -67,7 +85,7 @@ InGame:
     lea     (GfxTileset), a6            ; Load tileset graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramTileset*$20, 128*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramTileset*$20, 150*$20, ($C00004)
     
     lea     (GfxIngame), a6             ; Load common graphics
     lea     (LocalRAM), a5
@@ -89,6 +107,8 @@ InGame:
     btst.b  #7, (JoyPress)              ; Press Start to toggle pause
     beq.s   @NoPauseToggle
     bchg.b  #GS_PAUSED, (GameState)
+    moveq   #SFX_PAUSE, d7
+    jsr     (PlaySFX).w
 @NoPauseToggle:
     
     btst.b  #GS_PAUSED, (GameState)     ; Execute game logic
@@ -193,6 +213,38 @@ AddScore:
     
     ror.l   #8, d6                      ; Put digits back into place
     move.l  d6, (Score)                 ; Store updated score
+    
+    move.l  (NextLife), d7              ; Award an 1up?
+    cmp.l   d7, d6
+    blo.s   @No1up
+    
+    moveq   #0, d6                      ; Calculate when next life is awarded
+    move.b  (Difficulty), d6
+    add.w   d6, d6
+    add.w   d6, d6
+    lea     (ExtraLifeList), a6
+    move.l  (a6,d6.w), d6
+    
+    and.b   #$00, ccr                   ; Again, I wish BCD worked on long...
+    abcd.b  d7, d6                        ; Note that on overflow this will
+    ror.l   #8, d7                        ; set the value to $FFFFFFFF (an
+    ror.l   #8, d6                        ; invalid BCD value) The comparison
+    abcd.b  d7, d6                        ; doesn't care if the values are
+    ror.l   #8, d7                        ; BCD or not so this works (also
+    ror.l   #8, d6                        ; how did you get to this point,
+    abcd.b  d7, d6                        ; anyway?)
+    ror.l   #8, d7
+    ror.l   #8, d6
+    abcd.b  d7, d6
+    bcc.s   @No1upOverflow
+    moveq   #-1, d6
+@No1upOverflow:
+    ror.l   #8, d6
+    move.l  d6, (NextLife)
+    
+    bsr     AddLife                     ; Now award the life :)
+    
+@No1up:
     rts                                 ; End of subroutine
 
 ;****************************************************************************
@@ -217,4 +269,25 @@ AddLife:
 @NoOverflow:
     
     move.b  d7, (Lives)                 ; Store new lives count
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RemoveLife
+; Reduces lives by 1 :(
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+RemoveLife:
+    btst.b  #CH_LIVES, (Cheats)         ; Don't mess with infinite lives...
+    beq.s   @NoInfiniteLives
+    rts
+@NoInfiniteLives:
+    
+    move.b  (Lives), d7                 ; Reduce lives count by one
+    moveq   #$01, d6                      ; No overflow check because going
+    and.b   #$00, ccr                     ; to 0 will result in a game over
+    sbcd.b  d6, d7
+    move.b  d7, (Lives)
+    
     rts                                 ; End of subroutine

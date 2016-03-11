@@ -60,6 +60,38 @@ DrawStartStage:
     bsr     DrawSoundTest
     move.b  (sp)+, (SoundTest)
     
+    move.l  #$20202020, d7              ; Store stage number
+    move.l  d7, (StageNameBuf)
+    move.l  a5, a6
+    lea     (StageNameBuf), a5
+    jsr     (CopyStrNoNull).w
+    
+    lea     (StageNameBuf+4), a6        ; Does this stage even have a name?
+    move.l  d7, (a6)+
+    move.l  d7, (a6)+
+    move.l  d7, (a6)+
+    ;move.l  d7, (a6)+
+    moveq   #0, d7
+    move.b  d7, (a6)
+    move.b  (Stage), d7
+    cmp.b   #NUM_STAGES, d7
+    bhs.s   @NoStageName
+    
+    add.w   d7, d7                      ; Retrieve stage name
+    add.w   d7, d7
+    lea     (StageList), a6
+    move.l  (a6,d7.w), a6
+    ;lea     (StageNameBuf+4), a5
+    lea     (StageNameBuf), a5
+    move.l  (a6)+, (a5)+
+    move.l  (a6)+, (a5)+
+    move.l  (a6)+, (a5)+
+    move.l  (a6)+, (a5)+
+    ;clr.b   (StageNameBuf+20)
+    clr.b   (StageNameBuf+16)
+    
+@NoStageName:
+    lea     (StageNameBuf), a5          ; Get stage
     lea     (StrStartingStage), a6      ; Get label
     rts                                 ; End of subroutine
 

@@ -81,6 +81,7 @@ OBJTYPE_LAVAFLOOD:  rs.b 1      ; Lava flood
 OBJTYPE_REFLECTION: rs.b 1      ; Merlina reflection
 OBJTYPE_COGWHEEL:   rs.b 1      ; Cogwheel
 OBJTYPE_LAVABURST:  rs.b 1      ; Lava bursting from the floor
+OBJTYPE_LAVABREAK:  rs.b 1      ; Lava bursting from the wall at the end
 
 ;****************************************************************************
 ; ClearObjects
@@ -115,7 +116,7 @@ ClearObjects:
 AddObject:
     lea     (ObjList), a6               ; Look for an empty slot
 @Loop:
-    tst.b   (a6)
+    tst.b   OBJ_TYPE(a6)
     beq.s   @Found
     lea     OBJ_SIZE(a6), a6
     bra.s   @Loop
@@ -183,6 +184,7 @@ AddObject:
     dc.l    @Null                       ; OBJTYPE_REFLECTION
     dc.l    InitCogwheel                ; OBJTYPE_COGWHEEL
     dc.l    InitLavaBurst               ; OBJTYPE_LAVABURST
+    dc.l    InitLavaBreak               ; OBJTYPE_LAVABREAK
 
 ;****************************************************************************
 ; DestroySelf
@@ -247,6 +249,7 @@ RunAllObjects:
     dc.l    @Null                       ; OBJTYPE_REFLECTION
     dc.l    RunCogwheel                 ; OBJTYPE_COGWHEEL
     dc.l    RunLavaBurst                ; OBJTYPE_LAVABURST
+    dc.l    @Null                       ; OBJTYPE_LAVABREAK
 
 ;****************************************************************************
 ; DrawAllObjects
@@ -307,6 +310,7 @@ DrawAllObjects:
     dc.l    DrawReflection              ; OBJTYPE_REFLECTION
     dc.l    DrawCogwheel                ; OBJTYPE_COGWHEEL
     dc.l    DrawLavaBurst               ; OBJTYPE_LAVABURST
+    dc.l    @Null                       ; OBJTYPE_LAVABREAK
 
 ;****************************************************************************
 ; LoopAllObjects

@@ -19,6 +19,7 @@
     incgfx  GfxMerlina_Magic2, "data/merlina/magic_2.4bpp"
     incgfx  GfxMerlina_Magic3, "data/merlina/magic_3.4bpp"
     incgfx  GfxMerlina_Hurt, "data/merlina/hurt.4bpp"
+    incgfx  GfxMerlina_Dead, "data/merlina/dead.4bpp"
     incgfx  GfxMerlina_Swim1, "data/merlina/swim_1.4bpp"
     incgfx  GfxMerlina_Swim2, "data/merlina/swim_2.4bpp"
     incgfx  GfxMerlina_Swim3, "data/merlina/swim_3.4bpp"
@@ -125,6 +126,12 @@ SprMerlina_Hurt:
     dc.w    $00+4, -$08, 24, %0110
     dc.w    $8000
 
+SprMerlina_Dead:
+    dc.w    -$20+4, -$08, 0, %0110
+    dc.w    -$10+4, -$08, 6, %1111
+    dc.w    $10+4, -$00, 22, %0010
+    dc.w    $8000
+
 SprMerlina_Swim1:
 SprMerlina_Swim3:
     dc.w    -$18+4, -$20, 0, %1111
@@ -199,7 +206,10 @@ AnimMerlina_Magic:
     Frame   Magic3, 28, -1, AnimMerlina_Magic+$20
 
 AnimMerlina_Hurt:
-    Frame   Hurt, 30, AnimMerlina_Hurt
+    Frame   Hurt, 30, -1, AnimMerlina_Hurt
+
+AnimMerlina_Dead:
+    Frame   Dead, 25, -1, AnimMerlina_Dead
 
 AnimMerlina_Swim:
     Frame   Swim2, 35, 12

@@ -54,6 +54,7 @@ SCORE_ITEM:         equ $250        ; Getting an item
     include "src-68k/title.68k"         ; Title screen
     include "src-68k/options.68k"       ; Options menu
     include "src-68k/debug_menu.68k"    ; Debug menu
+    include "src-68k/game_over.68k"     ; Game over screen
     
     include "src-68k/ingame.68k"        ; In-game main loop
     include "src-68k/hud.68k"           ; Drawing the HUD
@@ -76,6 +77,8 @@ SCORE_ITEM:         equ $250        ; Getting an item
     include "src-68k/lava.68k"          ; Lava hazards
     
     include "src-68k/variables.68k"     ; Variable declarations
+
+    inform 0, "Program size: %d bytes (%d.%dKB)", *, (*)/1024, (*)*10/1024%10
 
 ;****************************************************************************
 ; Game graphics
@@ -109,4 +112,4 @@ SCORE_ITEM:         equ $250        ; Getting an item
 
     inform 0, "ROM size: %d bytes (%d.%dKB)", *, (*)/1024, (*)*10/1024%10
     inform 0, "RAM usage in-game: %d bytes (%d.%dKB)", (FreeRAM-$FF0000), (FreeRAM-$FF0000)/1024, (FreeRAM-$FF0000)*10/1024%10
-    inform 0, "VRAM usage in-game: %d tiles (%d.%d%s)", VusageIngame, VusageIngame*100/1536, VusageIngame*1000/1536%10, "%"
+    inform 0, "VRAM usage in-game: %d tiles (%d.%d%s)", VusageIngame, VusageIngame*100/1024, VusageIngame*1000/1024%10, "%"

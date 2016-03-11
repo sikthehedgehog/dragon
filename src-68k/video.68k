@@ -449,6 +449,7 @@ AddMetasprite:
 ;----------------------------------------------------------------------------
 ; Special flags:
 ;    size, bit 4 = treat as high priority (list override)
+;    size, bit 5 = treat as "superlow" priority (list override)
 ;----------------------------------------------------------------------------
 ; QUIRK: this subroutine assumes that the first sprite will always appear on
 ; top of everything else (it fails to sort that one). This is not a problem
@@ -460,6 +461,8 @@ SortSprites:
     moveq   #0, d0                      ; Last high priority sprite
     moveq   #0, d1                      ; Last low priority sprite
     moveq   #0, d2                      ; First low priority sprite
+    moveq   #0, d4                      ; Last superlow priority sprite
+    moveq   #0, d5                      ; First superlow priority sprite
     
     move.b  (NumSprites), d3            ; How many sprites are there?
     bne.s   @HasSprites
@@ -486,6 +489,24 @@ SortSprites:
     bra.s   @Ready
     
 @NoFirstLow:
+    btst.b  #5, 2(a6)                   ; Is it low or superlow?
+    beq.s   @JustLow
+    
+    tst.b   d5                          ; Is it the first superlow priority
+    bne.s   @NoFirstSuperlow              ; sprite?
+    move.b  d7, d5
+    move.b  d7, d4
+    bra.s   @Ready
+    
+@NoFirstSuperlow:
+    move.w  d4, d6                      ; Link this sprite to the previous
+    lsl.w   #3, d6                        ; superlow priority one
+    lea     (a0,d6.w), a5
+    move.b  d7, 3(a5)
+    move.b  d7, d4
+    bra.s   @Ready
+    
+@JustLow:
     move.w  d1, d6                      ; Link this sprite to the previous
     lsl.w   #3, d6                        ; low priority one
     lea     (a0,d6.w), a5
@@ -512,6 +533,13 @@ SortSprites:
     lsl.w   #3, d6
     lea     (a0,d6.w), a6
     move.b  d2, 3(a6)
+    
+    tst.b   d5                          ; Same with superlow priority sprites
+    beq.s   @NoLow
+    move.w  d1, d6
+    lsl.w   #3, d6
+    lea     (a0,d6.w), a6
+    move.b  d5, 3(a6)
     
 @NoLow:
     rts                                 ; End of subroutine

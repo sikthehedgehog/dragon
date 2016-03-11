@@ -1,3 +1,7 @@
+    if      DEBUG_MENU
+    dc.b    "ELEVATOR 2      "
+    endc
+
     dc.b    33, 28
 
     dc.b    $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01
@@ -96,6 +100,6 @@
     dc.w    OBJTYPE_COGWHEEL|0<<8, $0310, $02D0
     dc.w    OBJTYPE_COGWHEEL|1<<8, $02F0, $0040
     dc.w    OBJTYPE_COGWHEEL|0<<8, $0170, $0040
-    dc.w    OBJTYPE_DOOR|$00<<8, $0390, $00F0
+    dc.w    OBJTYPE_DOOR|STAGE_ELEVATOR3<<8, $0390, $00F0
     dc.w    OBJTYPE_RPOTION|$00<<8, $00C0, $00F0
     dc.w    $0000

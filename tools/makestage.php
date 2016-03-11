@@ -10,12 +10,16 @@
    $startx = 0x10;
    $starty = 0x10;
    
+   $tid = 0x01;
+   $oid = 0x41;
+   
    $anim = 0x0000;
    $water = -1;
    $cogwheel = false;
    $outdoors = false;
    $mirror = (strstr($argv[1], "mirror") !== false);
    $lava = (strstr($argv[1], "lava") !== false);
+   $bookshelf = false;
    
    $colltypes = Array(0x00, 0x01, 0x01, 0x01, 0x01, 0x02, 0x00, 0x00,
                       0x00, 0x00, 0xFF, 0x00, 0xFE, 0x00, 0x00, 0x00,
@@ -23,7 +27,9 @@
                       0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01,
                       0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
                       0x02, 0x02, 0x02, 0x01, 0x03, 0x03, 0x03, 0x03,
-                      0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01);
+                      0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00,
+                      0x02, 0x00, 0x00, 0x02, 0x00, 0x00, 0x02, 0x00,
+                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
    
    $objlist = "";
    $objnames = Array("OBJTYPE_GHOST",
@@ -57,6 +63,13 @@
          $width = (int)(substr(strstr($line, "width=\""), 7));
          $height = (int)(substr(strstr($line, "height=\""), 8));
       }
+      if (substr($line, 0, 8) == "<tileset") {
+         if (strstr($line, "name=\"tileset\"") !== FALSE)
+            $tid = (int)(substr(strstr($line, "firstgid=\""), 10));
+         if (strstr($line, "name=\"objset\"") !== FALSE)
+            $oid = (int)(substr(strstr($line, "firstgid=\""), 10));
+         continue;
+      }
       if ($line == "<data encoding=\"csv\">") {
          $inmap = TRUE;
          $y = 0;
@@ -80,7 +93,7 @@
          foreach($ids as &$id) {
             if ($id != (string)(int)($id)) continue;
             
-            $id = (int)($id) - 1;
+            $id = (int)($id) - $tid;
             $coll = $colltypes[$id];
             
             if ($id == 0x09)
@@ -108,6 +121,8 @@
                $water = $y;
             if ($id == 0x20 || $id == 0x21)
                $outdoors = true;
+            if ($id >= 0x37 && $id <= 0x3F)
+               $bookshelf = true;
             
             $x++;
          }
@@ -119,7 +134,7 @@
          $x = (int)(substr(strstr($line, "x=\""), 3));
          $y = (int)(substr(strstr($line, "y=\""), 3));
          
-         $name = $objnames[$type - 65];
+         $name = $objnames[$type - $oid];
          $x = ($x + 0x20 + 8) & 0xFFF0;
          $y = ($y - 0x20 + 8) & 0xFFF0;
          
@@ -246,9 +261,19 @@
       $objlist = $objlist."    dc.w    OBJTYPE_REFLECTION|0<<8, 0, 0\n";
    if ($argv[1] == (strstr($argv[1], "mirror_2") !== false))
       $objlist = $objlist."    dc.w    OBJTYPE_REFLECTION|1<<8, 0, 0\n";
+   if ($argv[1] == (strstr($argv[1], "lava_4") !== false))
+      $objlist = $objlist."    dc.w    OBJTYPE_LAVABREAK|0<<8, ".
+      sprintf("\$%04X", $startx).", ".sprintf("\$%04X", $starty)."\n";
    
+   $name = substr(basename($argv[1], ".tmx"), 0, 16);
+   $name = strtoupper($name);
+   $name = str_replace("_", " ", $name);
+   $name = sprintf("%-16s", $name);
    
-   $out = "";
+   $out = "    if      DEBUG_MENU\n";
+   $out = $out."    dc.b    \"".$name."\"\n";
+   $out = $out."    endc\n\n";
+   
    $out = $out."    dc.b    ".$width.", ".$height."\n";
    
    $out = $out."\n";
@@ -301,6 +326,9 @@
          $parallax = "RisingLavaParallax";
       if (strstr($argv[1], "lava_3") !== false)
          $parallax = "LavaFloodParallax";
+   }
+   if ($bookshelf) {
+      $pal[2] = "PalBookshelf";
    }
    
    $out = $out."    dc.l    ".$pal[0]."\n";

@@ -1,3 +1,7 @@
+    if      DEBUG_MENU
+    dc.b    "LAVA 3          "
+    endc
+
     dc.b    30, 7
 
     dc.b    $1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D

@@ -56,32 +56,6 @@ Once you sorted out the above, just run `build.sh` (make sure you run it from it
 * **`witch.bin`:** the ROM, ready to play
 * **`listing.txt`:** generated listing (useful for debugging)
 
-## Localization
-
-The game can be built in different languages. The ROM is hardcoded to a single language that can be selected from `buildme.68k` (make sure exactly *one* of these is set):
-
-* **`LANG_EN`:** English
-* **`LANG_ES`:** Spanish
-
-### Strings
-
-The game uses nul-terminated mostly-ASCII strings in a lot of places (e.g. menus). You can find the localizable strings in the `data/text` directory (one file for each language). Non-localizable strings (such as the copyright notice) are in `data/text.68k` itself instead.
-
-As I said, strings are mostly-ASCII. Besides being uppercase-only and only a few symbols being present, the following characters differ from ASCII:
-
-* `@` (`$40`) → `©`
-* `#` (`$23`) → `Ñ`
-
-### Game logo
-
-The name of the game itself is localizable (e.g. "El Castillo del Dragón" in Spanish), and this means the graphics for its name in the title screen need to change. This is done by having completely different graphics for each language, then having `data/title.68k` choose one when the ROM is being built.
-
-Places you need to touch:
-
-* The relvant mdtiler script (`src-data/title/gfxbuild`)
-* The file including the graphics (`data/title.68k`)
-* The build script (`build.sh`)
-
 ## Debugging tools
 
 You can enable or disable some debugging features when you build the ROM. These features can be turned on or off by modifying `buildme.68k`.
@@ -100,7 +74,7 @@ This menu shows up before you start playing and lets you tweak several values:
 * **Infinite lives:** keeps your lives counter permanently maxed out.
 * **Sound test:** same as in Options menu.
 
-Note that the starting stage is currently *not* capped, so make sure to not select a value that isn't a valid room! (or the game will most likely crash)
+Note that the starting stage is currently *not* capped, so make sure to not select a value that isn't a valid room! (or the game will most likely crash) You can quickly increase or decrease the stage by holding A (this will make the D-pad to move in steps of 10 stages).
 
 ### Debug controls
 
@@ -182,9 +156,19 @@ The converter will detect special features in the stages depending on what it fi
 
 * If there's one of the bluish tiles used when going in the walls outside the castle, it'll enable the fog parallax and load the fog palettes.
 
+* If there are bookshelf tiles (`$37` to `$3F`), it'll load the bookshelf palette. (those books need more colors than normally available mmkay?)
+
 * The levels with the `lava` filenames will load the lava graphics and palettes.
 
+    * Levels with `lava_2` and `lava_3` in their filenames will load parallax code for the rising lava and flooding lava, respectively (as lava is drawn using plane B).
+    
+    * Meanwhile `lava_4` causes the explosion where Merlina spawns.
+
 * The levels with the `mirror` filenames will load the mirror palettes and create the reflection object.
+
+    * `mirror_2` will cause the reflection to be a boss. *(currently not implemented in-game)*
+
+To change what special features are used, you should edit the level converter (`tools/makestage.php`).
 
 ## Tweaking the game
 
@@ -192,7 +176,7 @@ The converter will detect special features in the stages depending on what it fi
 
 ### Copyright
 
-Look up for `StrCopyright` in the file `data/text.68k`. Remember to write "`@`" when you want to write "`©`" (e.g. "`@2016`"). Currently the text is hardcoded to 15 characters (it will misalign otherwise), this needs to be fixed :) (go change `src-68k/title.68k` meanwhile)
+Look up for `StrCopyright` in the file `data/text.68k`. Remember to write "`@`" when you want to write "`©`" (e.g. "`@2016`"). The copyright notice should automatically be aligned to the bottom right of the screen.
 
 If you want to remove the copyright notice in the title screen, go to `buildme.68k` and disable `SHOW_COPYRIGHT`.
 
@@ -244,61 +228,3 @@ The score awarded by different actions can be found in the list of constants at 
 * **`SCORE_MAGIC`:** defeating an enemy with a magic attack
 * **`SCORE_FREEZE`:** *(for multiplyer, currently not implemented)*
 * **`SCORE_ITEM`:** collecting an item
-
-## Game engine
-
-Some useful subroutines for you, unless otherwise stated assume they can modify `d5-d7` and `a4-a6` on return:
-
-* Player interaction
-
-    * **`CollidesPlayer`:** checks if an object collides with the player (it must have its hitbox defined). Pass the pointer to the object in `a6.l`. On return, check `d7.w`: it's non-zero if there's a collision, or zero otherwise.
-
-    * **`CollidesAttack`:** same as above, but checks for collision against the broom.
-
-    * **`CollidesMagic`:** same as above, but checks for collision against magic attacks.
-    
-    * **`HurtPlayer`:** hurts the player (e.g when an enemy touches her). Pass your coordinates in `d7.w` and `d6.w` (X and Y) so the game knows in which direction she should recoil. This subroutine takes into account when she's flashing and won't hurt her in that case (so feel free to call it continuously).
-    
-    * **`KillPlayer`:** immediately sets the player health to zero. Use this for instant kills.
-    
-    * **`FacePlayer`:** call this to make an object face the player. Pass the pointer to the object in `a6.l`.
-
-* Object creation
-
-    * **`AddObject`:** creates a new object. Pass the coordinates in `d7.w` and `d6.w` (X and Y), the object type in the low byte of `d5.w` and the flags in the high byte. It returns a pointer to the new object in `a6.l`, in case you want to mess with it further.
-
-    * **`DestroySelf`:** how you're meant to make an object self-destruct. Jump here using `bra` or `jmp` (i.e. *not* a subroutine jump) to get rid of the object.
-
-* Map collision
-
-    * **`TileAt`:** retrieves whatever tile is at certain location. Give the position in `d7.w` and `d6.w` (X and Y, measured in *pixels*). On return, `d7.w` will contain the graphic used, while `d6.w` will contain the collision type (e.g. `COLL_SOLID` for a wall).
-
-* Miscellaneous
-
-    * **`PlaySFX`:** plays a sound effect. The SFX ID goes in `d7.b`. (see `SFX_*` in `data/sound.68k` for a full list). No registers are modified. Note that a higher priority SFX (higher value) will always prevent a lower priority SFX from playing!
-
-    * **`Rand`:** returns a random 16-bit value in `d7.w`. *No other registers are changed.* Note that the RNG uses actual noise from the hardware so the values are *not* predictable.
-    
-    * **`Rand32`:** same as above, but generates a random 32-bit value in `d7.l`.
-
-## Known bugs
-
-Aside from the obvious *it's not done yet* kind of bugs:
-
-* Right now the game relies on asm68k which is a proprietary assembler, we need to find a free compatible replacement. The problem is that nearly all assemblers use their own syntax for anything beyond the basics...
-
-    * As far as I know, asmx should be mostly (if not fully) compatible (a few directives may need to be replaced). The problem is that last I checked asmx was notoriously buggy and can end up generating an incorrect binary!
-
-* The player physics are not fool-proof. Then again this is a 7.67MHz 16-bit processor, so what can we expect?
-
-* Sprite drawing routines are taking up a lot of time (a huge chunk of CPU time is spent in drawing objects o_O), this brought up problems in the vertical room with many platforms and the cogwheels as CPU time skyrocketed to up to 94% and I had to make the relevant objects explicitly check for screen boundaries.
-
-    * The problem is not `SortSprites` (that takes up a few scanlines), the bulk of the time is spent while `DrawAllObjects` (and whatever it calls) is running. You can even check this by enabling `DEBUG_DRAWUSAGE` from `buildme.68k` (this is only usable from some emulators and not real hardware though, beware!).
-
-    * Removing the boundary checks from `AddSprite` is not that useful because that'd only move the check to the objects themselves instead.
-
-### Non-bugs
-
-* When `DEBUG_CONTROLS` is on, you have to press A last when doing the A+B+C sequence during pause. This is not a problem for a release build (where this would be disabled) and it's the only way to allow both inputs to work simultaneously.
-
-* Often you may see garbage colors in the palette. This happens when the game doesn't need all the colors so it just lets the code load beyond what's actually used. When it doesn't use a palette row at all it just loads data from `$000000` (which is the 68000 vectors!).

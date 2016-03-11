@@ -44,13 +44,13 @@ PalTilesetOutside:
     dc.w    $648,$426,$204,$002,$ECC,$000,$000,$000
 
 ;****************************************************************************
-; PalMerlinaMirror
-; Palette for Merlina's reflection in the mirror (NOT the doppleganger).
+; PalBookshelf
+; Palette for the bookshelf.
 ;****************************************************************************
 
-PalMerlinaMirror:
-    dc.w    $000,$CEE,$ACE,$88C,$66A,$46E,$44C,$448
-    dc.w    $EEE,$EEE,$CCE,$AAC,$88A,$444,$4EE,$4CE
+PalBookshelf:
+    dc.w    $000,$06A,$048,$026,$004,$000,$20A,$006
+    dc.w    $A04,$600,$460,$220
 
 ;****************************************************************************
 ; PalLava
@@ -62,6 +62,15 @@ PalLava:
 
 PalFrozenLava:
     dc.w    $000, $C8A, $A68, $846, $624, $402
+
+;****************************************************************************
+; PalMerlinaMirror
+; Palette for Merlina's reflection in the mirror (NOT the doppleganger).
+;****************************************************************************
+
+PalMerlinaMirror:
+    dc.w    $000,$CEE,$ACE,$88C,$66A,$46E,$44C,$448
+    dc.w    $EEE,$EEE,$CCE,$AAC,$88A,$444,$4EE,$4CE
 
 ;****************************************************************************
 ; PalTitle*

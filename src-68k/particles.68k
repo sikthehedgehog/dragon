@@ -80,3 +80,40 @@ ThrowDerbisUp:
     dbf     d5, @Loop
     
     rts                                 ; End of subroutine
+
+;****************************************************************************
+; ThrowDerbisAway
+; Throws a bunch of derbis away from the origin.
+;----------------------------------------------------------------------------
+; input d7.w ... Base X coordinate
+; input d6.w ... Base Y coordinate
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+ThrowDerbisAway:
+    moveq   #12-1, d5                   ; Go through all rocks
+@Loop:
+    movem.l d5-d7, -(sp)                ; Spawn a new rock
+    moveq   #OBJTYPE_DERBIS, d5
+    bsr     AddObject
+    
+    jsr     (Rand).w                    ; Set horizontal speed
+    and.w   #$3FF, d7
+    sub.w   #$200, d7
+    move.w  d7, OBJ_XSPEED(a6)
+    asr.w   #5, d7
+    add.w   d7, OBJ_X(a6)
+    
+    jsr     (Rand).w                    ; Set vertical speed
+    and.w   #$3FF, d7
+    sub.w   #$400, d7
+    move.w  d7, OBJ_YSPEED(a6)
+    add.w   #$200, d7
+    asr.w   #5, d7
+    add.w   d7, OBJ_Y(a6)
+    
+    movem.l (sp)+, d5-d7                ; Go for nex rock
+    dbf     d5, @Loop
+    
+    rts                                 ; End of subroutine

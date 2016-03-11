@@ -1,8 +1,8 @@
 <?php
    $base = "src-data/tileset/";
-   $img = imagecreatetruecolor(0x20 * 0x08, 0x20 * 0x08);
+   $img = imagecreatetruecolor(0x20 * 0x08, 0x20 * 0x10);
    
-   for ($i = 0; $i < 0x40; $i++) {
+   for ($i = 0; $i < 0x80; $i++) {
       $x = $i & 0x07;
       $y = $i >> 3;
       $x <<= 5;

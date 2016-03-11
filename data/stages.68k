@@ -37,16 +37,23 @@ StageData_HallOut:          include "data/stages/hall_outside.68k"
 
 StageData_Elevator1:        include "data/stages/elevator_1.68k"
 StageData_Elevator2:        include "data/stages/elevator_2.68k"
+StageData_Elevator3:        include "data/stages/elevator_3.68k"
+StageData_Elevator4:        include "data/stages/elevator_4.68k"
+
+StageData_Shrine1:          include "data/stages/shrine_1.68k"
+StageData_Shrine2:          include "data/stages/shrine_2.68k"
+
+StageData_Library1:         include "data/stages/library_1.68k"
+StageData_Library2:         include "data/stages/library_2.68k"
+
+StageData_Prison1:          include "data/stages/prison_1.68k"
+StageData_Prison2:          include "data/stages/prison_2.68k"
 
 StageData_Lava1:            include "data/stages/lava_1.68k"
 StageData_Lava2:            include "data/stages/lava_2.68k"
 StageData_Lava2B:           include "data/stages/lava_2b.68k"
 StageData_Lava3:            include "data/stages/lava_3.68k"
 StageData_Lava4:            include "data/stages/lava_4.68k"
-
-StageData_Shrine1:          include "data/stages/shrine_1.68k"
-StageData_Shrine2:          include "data/stages/shrine_2.68k"
-StageData_Shrine3:          include "data/stages/shrine_3.68k"
 
 StageData_Mirror1:          include "data/stages/mirror_1.68k"
 StageData_Mirror2:          include "data/stages/mirror_2.68k"
@@ -96,16 +103,23 @@ STAGE_\name: rs.b 1
     
     @Entry      Elevator1
     @Entry      Elevator2
+    @Entry      Elevator3
+    @Entry      Elevator4
+    
+    @Entry      Shrine1
+    @Entry      Shrine2
+    
+    @Entry      Library1
+    @Entry      Library2
+    
+    @Entry      Prison1
+    @Entry      Prison2
     
     @Entry      Lava1
     @Entry      Lava2
     @Entry      Lava2B
     @Entry      Lava3
     @Entry      Lava4
-    
-    @Entry      Shrine1
-    @Entry      Shrine2
-    @Entry      Shrine3
     
     @Entry      Mirror1
     @Entry      Mirror2
@@ -119,4 +133,5 @@ STAGE_\name: rs.b 1
     @Entry      DragonTower1
     @Entry      FinalBoss
     
+NUM_STAGES:     rs.b 0
     inform 0, "Number of stages: %d (%d.%d%s)", __RS, __RS*100/255, __RS*1000/255%10, "%"

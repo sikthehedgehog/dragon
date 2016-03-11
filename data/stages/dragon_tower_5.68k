@@ -1,3 +1,7 @@
+    if      DEBUG_MENU
+    dc.b    "DRAGON TOWER 5  "
+    endc
+
     dc.b    20, 7
 
     dc.b    $1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D,$1D
