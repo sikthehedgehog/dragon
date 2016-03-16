@@ -29,7 +29,7 @@
                       0x02, 0x02, 0x02, 0x01, 0x03, 0x03, 0x03, 0x03,
                       0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00,
                       0x02, 0x00, 0x00, 0x02, 0x00, 0x00, 0x02, 0x00,
-                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
    
    $objlist = "";
    $objnames = Array("OBJTYPE_GHOST",
@@ -51,7 +51,8 @@
                      "OBJTYPE_COGWHEEL",
                      "OBJTYPE_HSWINGBALL",
                      "OBJTYPE_END",
-                     "OBJTYPE_PIRANHA");
+                     "OBJTYPE_PIRANHA",
+                     "OBJTYPE_KNIGHT");
    
    $in = explode("\n", file_get_contents($argv[1]));
    
@@ -163,6 +164,7 @@
                break;
             
             case "OBJTYPE_PIRANHA":
+            case "OBJTYPE_KNIGHT":
                $dir = (int)(substr(strstr($line, "name=\""), 6));
                $flags = "" + $dir;
                break;

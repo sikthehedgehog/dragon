@@ -43,6 +43,7 @@ StageData_Elevator4:        include "data/stages/elevator_4.68k"
 StageData_Shrine1:          include "data/stages/shrine_1.68k"
 StageData_Shrine2:          include "data/stages/shrine_2.68k"
 
+StageData_Library0:         include "data/stages/library_0.68k"
 StageData_Library1:         include "data/stages/library_1.68k"
 StageData_Library2:         include "data/stages/library_2.68k"
 
@@ -109,6 +110,7 @@ STAGE_\name: rs.b 1
     @Entry      Shrine1
     @Entry      Shrine2
     
+    @Entry      Library0
     @Entry      Library1
     @Entry      Library2
     

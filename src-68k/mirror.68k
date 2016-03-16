@@ -29,7 +29,25 @@ DrawReflection:
     sub.w   (CameraY), d1
     sub.w   #12, d0
     
+    moveq   #0, d3                      ; Ugly things going on later!
+    move.b  (NumSprites), d3
+    
     move.l  (PlayerMapping), a6         ; Draw the reflection
     jsr     (AddMetasprite).w
+    
+    moveq   #0, d4                      ; We're reusing Merlina's mappings to
+    move.b  (NumSprites), d4              ; ensure they always match, but
+    sub.b   d3, d4                        ; they don't have the superlow
+    subq.w  #1, d4                        ; priority bit set. So now we mess
+    blt.s   @NoFixNeeded                  ; directly with the sprite table to
+    lsl.w   #3, d3                        ; inject them... Scary.
+    lea     (SpriteBuf), a6               ; (superlow priority is needed to
+    lea     (a6,d3.w), a6                 ; make reflections appear under the
+    moveq   #%100000, d5                  ; doors, if you wonder)
+@FixPriority:
+    or.b    d5, 2(a6)
+    addq.w  #8, a6
+    dbf     d4, @FixPriority
+@NoFixNeeded:
     
     rts                                 ; End of subroutine

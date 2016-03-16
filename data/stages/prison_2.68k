@@ -53,4 +53,7 @@
 
     dc.w    OBJTYPE_DOOR|$00<<8, $0280, $00B0
     dc.w    OBJTYPE_DOOR|$00<<8, $00A0, $01B0
+    dc.w    OBJTYPE_KNIGHT|1<<8, $0230, $00B0
+    dc.w    OBJTYPE_KNIGHT|1<<8, $0210, $01B0
+    dc.w    OBJTYPE_KNIGHT|0<<8, $0110, $0130
     dc.w    $0000

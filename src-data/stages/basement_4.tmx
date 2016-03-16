@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" width="48" height="19" tilewidth="32" tileheight="32">
  <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32">
-  <image source="../tileset/tileset.png" width="256" height="256"/>
+  <image source="../tileset/tileset.png" width="256" height="512"/>
  </tileset>
- <tileset firstgid="65" name="objset" tilewidth="64" tileheight="64">
+ <tileset firstgid="129" name="objset" tilewidth="64" tileheight="64">
   <image source="../tileset/objset.png" trans="000000" width="512" height="512"/>
  </tileset>
  <layer name="Capa de Patrones 1" width="48" height="19">
@@ -30,30 +30,30 @@
 </data>
  </layer>
  <objectgroup name="Capa de Objetos 1" width="48" height="19">
-  <object gid="67" x="176" y="558"/>
-  <object gid="66" x="175" y="558"/>
-  <object gid="69" x="303" y="429"/>
-  <object gid="69" x="337" y="335"/>
-  <object gid="69" x="338" y="543"/>
-  <object name="88" gid="68" x="529" y="114"/>
-  <object gid="69" x="656" y="335"/>
-  <object gid="69" x="688" y="431"/>
-  <object gid="69" x="656" y="544"/>
-  <object name="STAGE_BASEMENT5" gid="66" x="1343" y="206"/>
-  <object gid="69" x="1024" y="465"/>
-  <object gid="69" x="1089" y="400"/>
-  <object gid="69" x="1153" y="335"/>
-  <object gid="72" x="625" y="336"/>
-  <object gid="72" x="719" y="432"/>
-  <object gid="72" x="625" y="544"/>
-  <object gid="73" x="1023" y="494"/>
-  <object gid="73" x="1089" y="431"/>
-  <object gid="73" x="1153" y="367"/>
-  <object gid="72" x="272" y="430"/>
-  <object gid="72" x="368" y="544"/>
-  <object gid="72" x="368" y="334"/>
-  <object gid="74" x="1105" y="148"/>
-  <object gid="75" x="94" y="212"/>
-  <object name="0" gid="84" x="719" y="521"/>
+  <object gid="131" x="176" y="558"/>
+  <object gid="130" x="175" y="558"/>
+  <object gid="133" x="303" y="429"/>
+  <object gid="133" x="337" y="335"/>
+  <object gid="133" x="338" y="543"/>
+  <object name="88" gid="132" x="529" y="114"/>
+  <object gid="133" x="656" y="335"/>
+  <object gid="133" x="688" y="431"/>
+  <object gid="133" x="656" y="544"/>
+  <object name="STAGE_BASEMENT5" gid="130" x="1343" y="206"/>
+  <object gid="133" x="1024" y="465"/>
+  <object gid="133" x="1089" y="400"/>
+  <object gid="133" x="1153" y="335"/>
+  <object gid="136" x="625" y="336"/>
+  <object gid="136" x="719" y="432"/>
+  <object gid="136" x="625" y="544"/>
+  <object gid="137" x="1023" y="494"/>
+  <object gid="137" x="1089" y="431"/>
+  <object gid="137" x="1153" y="367"/>
+  <object gid="136" x="272" y="430"/>
+  <object gid="136" x="368" y="544"/>
+  <object gid="136" x="368" y="334"/>
+  <object gid="138" x="96" y="212"/>
+  <object gid="139" x="1105" y="147"/>
+  <object name="0" gid="148" x="719" y="521"/>
  </objectgroup>
 </map>

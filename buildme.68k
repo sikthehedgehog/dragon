@@ -72,6 +72,7 @@ SCORE_ITEM:         equ $250        ; Getting an item
     include "src-68k/ghost.68k"         ; Ghost behavior
     include "src-68k/spider.68k"        ; Spider behavior
     include "src-68k/piranha.68k"       ; Piranha behavior
+    include "src-68k/knight.68k"        ; Knight behavior
     include "src-68k/mirror.68k"        ; Merlina doppleganger
     include "src-68k/cogwheel.68k"      ; Cogwheels
     include "src-68k/lava.68k"          ; Lava hazards

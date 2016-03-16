@@ -70,6 +70,7 @@ OBJTYPE_HSWINGBALL: rs.b 1      ; Horizontally swinging spikeball
 OBJTYPE_GHOST:      rs.b 1      ; Ghost
 OBJTYPE_SPIDER:     rs.b 1      ; Spider
 OBJTYPE_PIRANHA:    rs.b 1      ; Piranha
+OBJTYPE_KNIGHT:     rs.b 1      ; Undead knight
 OBJTYPE_CHAINBASE:  rs.b 1      ; Base of a chain
 OBJTYPE_HCHAIN:     rs.b 1      ; Chunk of horizontal chain
 OBJTYPE_VCHAIN:     rs.b 1      ; Chunk of vertical chain
@@ -173,6 +174,7 @@ AddObject:
     dc.l    InitGhost                   ; OBJTYPE_GHOST
     dc.l    InitSpider                  ; OBJTYPE_SPIDER
     dc.l    InitPiranha                 ; OBJTYPE_PIRANHA
+    dc.l    InitKnight                  ; OBJTYPE_KNIGHT
     dc.l    @Null                       ; OBJTYPE_CHAINBASE
     dc.l    @Null                       ; OBJTYPE_HCHAIN
     dc.l    @Null                       ; OBJTYPE_VCHAIN
@@ -238,6 +240,7 @@ RunAllObjects:
     dc.l    RunGhost                    ; OBJTYPE_GHOST
     dc.l    RunSpider                   ; OBJTYPE_SPIDER
     dc.l    RunPiranha                  ; OBJTYPE_PIRANHA
+    dc.l    RunKnight                   ; OBJTYPE_KNIGHT
     dc.l    @Null                       ; OBJTYPE_CHAINBASE
     dc.l    @Null                       ; OBJTYPE_HCHAIN
     dc.l    @Null                       ; OBJTYPE_VCHAIN
@@ -299,6 +302,7 @@ DrawAllObjects:
     dc.l    DrawGhost                   ; OBJTYPE_GHOST
     dc.l    DrawSpider                  ; OBJTYPE_SPIDER
     dc.l    DrawPiranha                 ; OBJTYPE_PIRANHA
+    dc.l    DrawKnight                  ; OBJTYPE_KNIGHT
     dc.l    DrawBaseLink                ; OBJTYPE_CHAINBASE
     dc.l    DrawHorChain                ; OBJTYPE_HCHAIN
     dc.l    DrawVerChain                ; OBJTYPE_VCHAIN
@@ -341,4 +345,136 @@ LoopAllObjects:
     lea     OBJ_SIZE(a0), a0
     dbf     d7, @Loop
     
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; AdvanceObject
+; Makes an object advance horizontally based on its current speed, taking
+; collision against the map into account.
+;----------------------------------------------------------------------------
+; input a6.l .... Pointer to object
+;----------------------------------------------------------------------------
+; output d7.w ... 0 if no collision, 1 if collision
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+AdvanceObject:
+    move.w  OBJ_XSPEED(a6), d7          ; Determine momentum
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    beq.s   @Idle
+    bmi.s   @Left
+
+;----------------------------------------------------------------------------
+
+@Right:
+    move.w  d7, -(sp)                   ; Check if there's room to move to
+    add.w   OBJ_X(a6), d7                 ; the right
+    add.w   OBJ_BOXX2(a6), d7
+    move.w  OBJ_Y(a6), d6
+    move.l  a6, -(sp)
+    bsr     TileAt
+    move.l  (sp)+, a6
+    move.w  (sp)+, d7
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @RightOK
+    moveq   #1, d7
+    rts
+
+@RightOK:
+    add.w   d7, OBJ_X(a6)               ; Can move right
+    clr.w   d7                          ; No collision
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Left:
+    move.w  d7, -(sp)                   ; Check if there's room to move to
+    add.w   OBJ_X(a6), d7                 ; the left
+    add.w   OBJ_BOXX1(a6), d7
+    move.w  OBJ_Y(a6), d6
+    move.l  a6, -(sp)
+    bsr     TileAt
+    move.l  (sp)+, a6
+    move.w  (sp)+, d7
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @LeftOK
+    moveq   #1, d7
+    rts
+
+@LeftOK:
+    add.w   d7, OBJ_X(a6)               ; Can move left
+    clr.w   d7                          ; No collision
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Idle:
+    clr.w   d7                          ; No collision
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; GravityObject
+; Vertical counterpart to AdvanceObject.
+;----------------------------------------------------------------------------
+; input a6.l .... Pointer to object
+;----------------------------------------------------------------------------
+; output d7.w ... 0 if no collision, 1 if collision
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+GravityObject:
+    move.w  OBJ_YSPEED(a6), d7          ; Determine momentum
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    beq.s   @Idle
+    bmi.s   @Rise
+
+;----------------------------------------------------------------------------
+
+@Fall:
+    move.w  d7, -(sp)                   ; Check if we can keep falling
+    add.w   OBJ_Y(a6), d7
+    add.w   OBJ_BOXY2(a6), d7
+    move.w  OBJ_X(a6), d6
+    exg.l   d6, d7
+    move.l  a6, -(sp)
+    bsr     TileAt
+    move.l  (sp)+, a6
+    move.w  (sp)+, d7
+    cmp.b   #COLL_EMPTY, d6
+    beq.s   @FallOK
+    cmp.b   #COLL_WATER, d6
+    beq.s   @FallOK
+    
+    move.w  OBJ_Y(a6), d6               ; Put object on the floor
+    move.w  OBJ_BOXY2(a6), d5
+    add.w   d7, d6
+    add.w   d5, d6
+    or.w    #$001F, d6
+    sub.w   #$0020, d6
+    sub.w   d5, d6
+    move.w  d6, OBJ_Y(a6)
+    
+    moveq   #1, d7                      ; Collided
+    rts                                 ; End of subroutine
+    
+@FallOK:
+    add.w   d7, OBJ_Y(a6)               ; Still falling
+    clr.w   d7                          ; No collision
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Rise:
+    add.w   d7, OBJ_Y(a6)               ; Just dumbly go upwards (no check)
+    clr.w   d7                          ; No collision
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Idle:
+    clr.w   d7                          ; No collision
     rts                                 ; End of subroutine

@@ -84,6 +84,7 @@ SFX_\name: rs.b 1
     @Entry  Attack
     @Entry  Magic
     @Entry  Transform
+    @Entry  Metal
     @Entry  Hit
     @Entry  Hurt
     @Entry  Demolish
@@ -120,8 +121,9 @@ SfxData_Swim:       include "data/sfx/swim.68k"
 SfxData_Attack:     include "data/sfx/attack.68k"
 SfxData_Magic:      include "data/sfx/magic.68k"
 SfxData_Transform:  include "data/sfx/transform.68k"
-SfxData_Hurt:       include "data/sfx/hurt.68k"
 SfxData_Hit:        include "data/sfx/hit.68k"
+SfxData_Metal:      include "data/sfx/metal.68k"
+SfxData_Hurt:       include "data/sfx/hurt.68k"
 SfxData_Demolish:   include "data/sfx/demolish.68k"
 SfxData_Health:     include "data/sfx/health.68k"
 SfxData_Supermagic: include "data/sfx/supermagic.68k"

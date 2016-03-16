@@ -78,7 +78,7 @@
     dc.w    OBJTYPE_HCHAIN|$00<<8, $0130, $0190
     dc.w    OBJTYPE_HCHAIN|$00<<8, $0190, $0200
     dc.w    OBJTYPE_HCHAIN|$00<<8, $0190, $0130
-    dc.w    OBJTYPE_RPOTION|$00<<8, $0470, $0070
-    dc.w    OBJTYPE_YPOTION|$00<<8, $0080, $00B0
+    dc.w    OBJTYPE_RPOTION|$00<<8, $0080, $00B0
+    dc.w    OBJTYPE_YPOTION|$00<<8, $0470, $0070
     dc.w    OBJTYPE_PIRANHA|0<<8, $02F0, $01F0
     dc.w    $0000

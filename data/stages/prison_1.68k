@@ -35,4 +35,6 @@
 
     dc.w    OBJTYPE_DOOR|$00<<8, $0090, $00B0
     dc.w    OBJTYPE_DOOR|STAGE_PRISON2<<8, $0310, $00B0
+    dc.w    OBJTYPE_KNIGHT|1<<8, $0190, $00B0
+    dc.w    OBJTYPE_KNIGHT|1<<8, $0290, $00B0
     dc.w    $0000

@@ -1,0 +1,188 @@
+;****************************************************************************
+; Some parameters for tweaking the undead knights
+;****************************************************************************
+
+KNIGHT_WALK:        equ $C0             ; Walking speed
+KNIGHT_RECOILX:     equ $180            ; Recoil horizontal speed
+KNIGHT_RECOILY:     equ $280            ; Recoil vertical speed
+KNIGHT_WEIGHT:      equ $40             ; How fast the knight falls
+
+KNIGHT_X1:          equ -$08            ; Left boundary of collision box
+KNIGHT_Y1:          equ -$17            ; Top boundary of collision box
+KNIGHT_X2:          equ $07             ; Right boundary of collision box
+KNIGHT_Y2:          equ $0F             ; Bottom boundary of collision box
+
+;****************************************************************************
+; InitKnight
+; Initializes an undead knight's collision box.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitKnight:
+    move.w  #KNIGHT_X1, OBJ_BOXX1(a6)
+    move.w  #KNIGHT_Y1, OBJ_BOXY1(a6)
+    move.w  #KNIGHT_X2, OBJ_BOXX2(a6)
+    move.w  #KNIGHT_Y2, OBJ_BOXY2(a6)
+    rts
+
+;****************************************************************************
+; RunKnight
+; Executes the behavior for an undead knight.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunKnight:
+    move.w  OBJ_X(a0), d0               ; Current status
+    move.w  OBJ_Y(a0), d1
+    move.b  OBJ_FLAGS(a0), d2
+    
+    btst.l  #OF_DISABLED, d2            ; Recoiling?
+    beq     @GoingOn
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Horizontal momentum
+    bsr     AdvanceObject
+    tst.w   d7
+    beq.s   @NoBounce
+    neg.w   OBJ_XSPEED(a0)
+@NoBounce:
+    
+    add.w   #KNIGHT_WEIGHT, OBJ_YSPEED(a0) ; Make knight fall
+    move.l  a0, a6
+    bsr     GravityObject
+    tst.w   d7
+    beq.s   @KeepRecoiling
+    
+    bclr.l  #OF_DISABLED, d2            ; Stop recoiling!
+    
+@KeepRecoiling:
+    move.b  d2, OBJ_FLAGS(a0)
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@GoingOn:
+    move.w  #KNIGHT_WALK, d7            ; Which way are we walking?
+    btst.l  #OF_DIR, d2
+    beq.s   *+4
+    neg.w   d7
+    move.w  d7, OBJ_XSPEED(a0)
+    
+    move.l  a0, a6                      ; Go forwards
+    bsr     AdvanceObject
+    tst.w   d7
+    beq.s   @NoFlip
+    bchg.l  #OF_DIR, d2
+@NoFlip:
+    move.w  OBJ_X(a0), d0
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Hit by broom? (lol!)
+    bsr     CollidesAttack
+    tst.w   d7
+    beq.s   @NoBroom
+    
+    moveq   #SFX_METAL, d7              ; Boing!
+    jsr     (PlaySFX).w
+    
+    move.l  a0, a6                      ; Look towards the player
+    bsr     FacePlayer
+    move.b  d7, d2
+    
+    bset.l  #OF_DISABLED, d2            ; Start recoil
+    move.w  #-KNIGHT_RECOILY, OBJ_YSPEED(a0)
+    move.w  #-KNIGHT_RECOILX, d7
+    btst.l  #OF_DIR, d2
+    beq.s   *+4
+    neg.w   d7
+    move.w  d7, OBJ_XSPEED(a0)
+@NoBroom:
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Caught by magic?
+    bsr     CollidesMagic
+    tst.w   d7
+    beq.s   @NoTransform
+    
+    move.l  #SCORE_MAGIC, d7            ; Bonus
+    jsr     (AddScore).w
+    moveq   #SFX_TRANSFORM, d7
+    jsr     (PlaySFX).w
+    
+    move.w  d0, d7                      ; Transform!
+    move.w  d1, d6
+    subq.w  #8, d6
+    move.b  d2, d5
+    lsl.w   #8, d5
+    move.b  #OBJTYPE_MAGICPUFF, d5
+    bsr     AddObject
+    move.b  #OBJTYPE_GHOST, OBJ_DATA(a6)
+    
+    bra     DestroySelf                 ; Poof!
+@NoTransform:
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Bumped into the player?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NotBumping
+    move.w  d0, d7
+    move.w  d1, d6
+    bsr     HurtPlayer
+@NotBumping:
+
+;----------------------------------------------------------------------------
+
+    move.w  d0, OBJ_X(a0)               ; Update status
+    move.w  d1, OBJ_Y(a0)
+    move.b  d2, OBJ_FLAGS(a0)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawKnight
+; Draws an undead knight.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawKnight:
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  #$2000+VramKnight, d2       ; Determine direction
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)
+    beq.s   @NoFlip
+    bset.l  #11, d2
+@NoFlip:
+    
+    move.w  (Anim), d7                  ; Determine sprite to use
+    lsr.w   #1, d7
+    and.w   #$03<<2, d7
+    lea     @Anim(pc), a6
+    move.l  (a6,d7.w), a6
+    
+    jsr     (AddMetasprite).w           ; Draw knight
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Anim:
+    dc.l    SprKnight_1
+    dc.l    SprKnight_2
+    dc.l    SprKnight_3
+    dc.l    SprKnight_4

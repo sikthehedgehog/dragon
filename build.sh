@@ -34,6 +34,7 @@ stage src-data/stages/elevator_3.tmx data/stages/elevator_3.68k
 stage src-data/stages/elevator_4.tmx data/stages/elevator_4.68k
 stage src-data/stages/shrine_1.tmx data/stages/shrine_1.68k
 stage src-data/stages/shrine_2.tmx data/stages/shrine_2.68k
+stage src-data/stages/library_0.tmx data/stages/library_0.68k
 stage src-data/stages/library_1.tmx data/stages/library_1.68k
 stage src-data/stages/library_2.tmx data/stages/library_2.68k
 stage src-data/stages/prison_1.tmx data/stages/prison_1.68k

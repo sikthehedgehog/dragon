@@ -63,7 +63,7 @@ RunYellowPotion:
     move.l  #SCORE_ITEM, d7             ; Bonus
     bsr     (AddScore)
     
-    move.w  #30*60, (Supermagic)        ; Supermagiiiiic!
+    move.w  #20*60, (Supermagic)        ; Supermagiiiiic!
     bra     DestroySelf                 ; We're gone!
 
 ;****************************************************************************

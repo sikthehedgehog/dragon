@@ -83,7 +83,7 @@
     dc.l    UpdateNoParallax
     dc.w    $0200
 
-    dc.w    OBJTYPE_DOOR|STAGE_LAVA1<<8, $00A0, $0070
+    dc.w    OBJTYPE_DOOR|STAGE_LIBRARY1<<8, $00A0, $0070
     dc.w    OBJTYPE_DOOR|$00<<8, $0070, $01B0
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $0070, $02B0
     dc.w    OBJTYPE_SPIKEBALL|$00<<8, $00D0, $02B0

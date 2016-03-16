@@ -41,6 +41,7 @@
    add("src-data/enemies/spikeball_hswing.png");
    add("src-data/ingame/end.png");
    add("src-data/enemies/piranha_2.png");
+   add("src-data/enemies/knight_1.png");
    
    imagepng($img, "src-data/tileset/objset.png");
 ?>

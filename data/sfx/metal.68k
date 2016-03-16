@@ -1,0 +1,23 @@
+;****************************************************************************
+; SFX for when hitting metal
+;****************************************************************************
+
+    ESF_Lock        ESF_FM5
+    ESF_SetInstr    ESF_FM5, $0B
+    
+    ESF_NoteOn      ESF_FM5, 2, 0
+    ESF_Delay       6
+    ESF_NoteOn      ESF_FM5, 1, 0
+    ESF_Delay       4
+    ESF_SetVol      ESF_FM5, $04
+    ESF_Delay       2
+    ESF_SetVol      ESF_FM5, $08
+    ESF_Delay       2
+    ESF_SetVol      ESF_FM5, $0C
+    ESF_Delay       2
+    ESF_SetVol      ESF_FM5, $10
+    ESF_Delay       2
+    ESF_NoteOff     ESF_FM5
+    ESF_Delay       6
+    
+    ESF_Stop

@@ -21,5 +21,7 @@
   <object gid="130" x="112" y="206"/>
   <object gid="131" x="111" y="205"/>
   <object name="STAGE_PRISON2" gid="130" x="750" y="205"/>
+  <object name="1" gid="149" x="367" y="205"/>
+  <object name="1" gid="149" x="624" y="205"/>
  </objectgroup>
 </map>

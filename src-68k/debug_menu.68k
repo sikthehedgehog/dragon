@@ -70,7 +70,6 @@ DrawStartStage:
     move.l  d7, (a6)+
     move.l  d7, (a6)+
     move.l  d7, (a6)+
-    ;move.l  d7, (a6)+
     moveq   #0, d7
     move.b  d7, (a6)
     move.b  (Stage), d7
@@ -81,13 +80,11 @@ DrawStartStage:
     add.w   d7, d7
     lea     (StageList), a6
     move.l  (a6,d7.w), a6
-    ;lea     (StageNameBuf+4), a5
     lea     (StageNameBuf), a5
     move.l  (a6)+, (a5)+
     move.l  (a6)+, (a5)+
     move.l  (a6)+, (a5)+
     move.l  (a6)+, (a5)+
-    ;clr.b   (StageNameBuf+20)
     clr.b   (StageNameBuf+16)
     
 @NoStageName:

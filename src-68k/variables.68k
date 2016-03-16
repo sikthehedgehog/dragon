@@ -160,7 +160,7 @@ StageNameBuf:       rs.b 22         ; Stage name string buffer
                     
                     rs.b 1          ; Blank tile
 VramPlayer:         rs.b 50         ; Merlina's sprite
-VramTileset:        rs.b 150        ; Tileset graphics
+VramTileset:        rs.b 158        ; Tileset graphics
 VramCandle:         rs.b 2*2        ; Candle fire
 VramChain:          rs.b 2*2        ; Platform chains
 VramHUDHealth:      rs.b 4*3        ; HUD health
@@ -189,6 +189,7 @@ VramSpider:         rs.b 15+17      ; Spiders
 VramSpiderRope:     rs.b 4          ; Spider rope
 VramPiranha:        rs.b 46         ; Piranhas
 VramFish:           rs.b 6          ; Tiny fishes
+VramKnight:         rs.b 60         ; Undead knights
 
 StageVRAM:          rs.b 0          ; Stage-specific graphics
 VusageIngame:       rs.b 0
