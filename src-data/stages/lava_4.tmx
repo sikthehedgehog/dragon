@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" width="27" height="10" tilewidth="32" tileheight="32">
  <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32">
-  <image source="../tileset/tileset.png" width="256" height="256"/>
+  <image source="../tileset/tileset.png" width="256" height="512"/>
  </tileset>
- <tileset firstgid="65" name="objset" tilewidth="64" tileheight="64">
+ <tileset firstgid="129" name="objset" tilewidth="64" tileheight="64">
   <image source="../tileset/objset.png" trans="000000" width="512" height="512"/>
  </tileset>
  <layer name="Capa de Patrones 1" width="27" height="10">
@@ -21,8 +21,8 @@
 </data>
  </layer>
  <objectgroup name="Capa de Objetos 1" width="27" height="10">
-  <object gid="67" x="359" y="174"/>
-  <object gid="74" x="161" y="244"/>
-  <object gid="66" x="622" y="240"/>
+  <object gid="131" x="359" y="174"/>
+  <object gid="138" x="161" y="244"/>
+  <object name="STAGE_TOWER1" gid="130" x="622" y="240"/>
  </objectgroup>
 </map>

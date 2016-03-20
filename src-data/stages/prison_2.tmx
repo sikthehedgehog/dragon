@@ -27,7 +27,7 @@
 </data>
  </layer>
  <objectgroup name="Capa de Objetos 1" width="25" height="16">
-  <object gid="130" x="606" y="201"/>
+  <object name="STAGE_PRISON3" gid="130" x="606" y="201"/>
   <object gid="130" x="127" y="460"/>
   <object gid="131" x="126" y="461"/>
   <object name="1" gid="149" x="526" y="206"/>

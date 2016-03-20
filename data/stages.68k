@@ -46,15 +46,23 @@ StageData_Shrine2:          include "data/stages/shrine_2.68k"
 StageData_Library0:         include "data/stages/library_0.68k"
 StageData_Library1:         include "data/stages/library_1.68k"
 StageData_Library2:         include "data/stages/library_2.68k"
+StageData_Library3:         include "data/stages/library_3.68k"
 
 StageData_Prison1:          include "data/stages/prison_1.68k"
 StageData_Prison2:          include "data/stages/prison_2.68k"
+StageData_Prison3:          include "data/stages/prison_3.68k"
+StageData_Prison4:          include "data/stages/prison_4.68k"
+StageData_Prison5:          include "data/stages/prison_5.68k"
 
 StageData_Lava1:            include "data/stages/lava_1.68k"
 StageData_Lava2:            include "data/stages/lava_2.68k"
 StageData_Lava2B:           include "data/stages/lava_2b.68k"
 StageData_Lava3:            include "data/stages/lava_3.68k"
 StageData_Lava4:            include "data/stages/lava_4.68k"
+
+StageData_Tower1:           include "data/stages/tower_1.68k"
+StageData_Tower2:           include "data/stages/tower_2.68k"
+StageData_Tower3:           include "data/stages/tower_3.68k"
 
 StageData_Mirror1:          include "data/stages/mirror_1.68k"
 StageData_Mirror2:          include "data/stages/mirror_2.68k"
@@ -113,15 +121,23 @@ STAGE_\name: rs.b 1
     @Entry      Library0
     @Entry      Library1
     @Entry      Library2
+    @Entry      Library3
     
     @Entry      Prison1
     @Entry      Prison2
+    @Entry      Prison3
+    @Entry      Prison4
+    @Entry      Prison5
     
     @Entry      Lava1
     @Entry      Lava2
     @Entry      Lava2B
     @Entry      Lava3
     @Entry      Lava4
+    
+    @Entry      Tower1
+    @Entry      Tower2
+    @Entry      Tower3
     
     @Entry      Mirror1
     @Entry      Mirror2

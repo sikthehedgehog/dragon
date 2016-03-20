@@ -68,7 +68,7 @@
     dc.w    OBJTYPE_GHOST|$00<<8, $0290, $0100
     dc.w    OBJTYPE_GHOST|$00<<8, $02D0, $0180
     dc.w    OBJTYPE_GHOST|$00<<8, $0150, $0100
-    dc.w    OBJTYPE_DOOR|$00<<8, $0660, $0110
+    dc.w    OBJTYPE_DOOR|STAGE_LIBRARY3<<8, $0660, $0110
     dc.w    OBJTYPE_CROSS|$00<<8, $0690, $01D0
     dc.w    OBJTYPE_YPOTION|$00<<8, $0300, $0090
     dc.w    OBJTYPE_RPOTION|$00<<8, $03D0, $0090

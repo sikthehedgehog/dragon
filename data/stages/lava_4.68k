@@ -40,6 +40,6 @@
     dc.w    $7FFF
 
     dc.w    OBJTYPE_RPOTION|$00<<8, $00C0, $00D0
-    dc.w    OBJTYPE_DOOR|$00<<8, $0290, $00D0
+    dc.w    OBJTYPE_DOOR|STAGE_TOWER1<<8, $0290, $00D0
     dc.w    OBJTYPE_LAVABREAK|0<<8, $0180, $0090
     dc.w    $0000

@@ -35,7 +35,7 @@
   <object gid="129" x="629" y="292"/>
   <object gid="129" x="689" y="418"/>
   <object gid="129" x="303" y="284"/>
-  <object gid="130" x="1602" y="298"/>
+  <object name="STAGE_LIBRARY3" gid="130" x="1602" y="298"/>
   <object gid="143" x="1648" y="498"/>
   <object gid="139" x="742" y="180"/>
   <object gid="138" x="946" y="181"/>
