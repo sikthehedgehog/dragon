@@ -42,6 +42,8 @@
    add("src-data/ingame/end.png");
    add("src-data/enemies/piranha_2.png");
    add("src-data/enemies/knight_1.png");
+   add("src-data/ingame/key.png");
+   add("src-data/ingame/door_locked.png");
    
    imagepng($img, "src-data/tileset/objset.png");
 ?>

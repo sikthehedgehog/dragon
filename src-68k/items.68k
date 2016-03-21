@@ -118,3 +118,85 @@ DrawPotion:
     jsr     (AddSprite).w
     
     rts                                 ; End of subroutine
+
+;****************************************************************************
+; InitKey
+; Initializes a key's collision box
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitKey:
+    tst.b   (HasKey)                    ; Don't spawn if we already have
+    beq.s   @NoKeyYet                     ; the key...
+    clr.b   OBJ_TYPE(a6)
+@NoKeyYet:
+    
+    move.w  #-12, OBJ_BOXX1(a6)         ; Collision box
+    move.w  #-8, OBJ_BOXY1(a6)
+    move.w  #11, OBJ_BOXX2(a6)
+    move.w  #15, OBJ_BOXY2(a6)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunKey
+; Executes the behavior for a key.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunKey:
+    move.l  a0, a6                      ; Taken by the player?
+    bsr     (CollidesPlayer)
+    tst.w   d7
+    bne.s   @Taken
+    rts
+
+@Taken:
+    move.l  #SCORE_ITEM, d7             ; Bonus
+    bsr     (AddScore)
+    
+    st.b    (HasKey)                    ; Got the key!
+    moveq   #SFX_1UP, d7
+    jsr     (PlaySFX).w
+    
+    bra     DestroySelf                 ; We're gone!
+
+;****************************************************************************
+; DrawKey
+; Draws a key.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawKey:
+    move.w  OBJ_X(a0), d0               ; Determine sprite coordinate
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    subq.w  #8, d0
+    subq.w  #8, d1
+    
+    move.w  (Anim), d7                  ; Make key float
+    lsr.w   #2, d7
+    and.w   #$03<<1, d7
+    lea     @Wobble(pc), a6
+    add.w   (a6,d7.w), d1
+    
+    move.w  #VramKey, d2                ; Draw the sprite
+    moveq   #%0110, d3
+    jsr     (AddSprite).w
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@Wobble:
+    dc.w    0, -1, 0, 1

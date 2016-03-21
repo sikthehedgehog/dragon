@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="28" height="7" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32">
+  <image source="../tileset/tileset.png" width="256" height="512"/>
+ </tileset>
+ <tileset firstgid="129" name="objset" tilewidth="64" tileheight="64">
+  <image source="../tileset/objset.png" trans="000000" width="512" height="512"/>
+ </tileset>
+ <layer name="Capa de Patrones 1" width="28" height="7">
+  <data encoding="csv">
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,
+1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,
+1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,
+1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,1,1,1,39,1,
+1,39,1,1,1,1,39,1,41,42,1,39,1,41,42,1,39,1,41,42,1,39,1,1,1,1,39,1,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+</data>
+ </layer>
+ <objectgroup name="Capa de Objetos 1" width="28" height="7">
+  <object name="STAGE_MIRROR1" gid="130" x="737" y="207"/>
+  <object gid="130" x="96" y="206"/>
+  <object gid="131" x="97" y="205"/>
+  <object gid="138" x="577" y="180"/>
+ </objectgroup>
+</map>

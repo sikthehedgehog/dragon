@@ -56,7 +56,7 @@ LastUsage:          rs.b 1          ; Last CPU usage (by HV counter value)
 
 Supermagic:         rs.w 1          ; How much time left with supermagic
 PlayerHealth:       rs.b 1          ; Health points left (0..3)
-                    rs.b 1
+HasKey:             rs.b 1          ; Set if Merlina has the key
 
 LocalRAM:           rs.b 0          ; Where screen-specific data starts
 
@@ -175,8 +175,10 @@ VramTransform:      rs.b 9+16+16    ; Magic transformation puff
 VramRedPotion:      rs.b 3*3        ; Red potion
 VramYellowPotion:   rs.b 3*3        ; Yellow potion
 VramCross:          rs.b 3*3        ; Cross
+VramKey:            rs.b 2*3        ; Key
 VramDoorClose:      rs.b 28         ; Closed door
 VramDoorOpen:       rs.b 28         ; Opened door
+VramLockpad:        rs.b 3*3        ; Lockpad
 VramPlatform:       rs.b 4*2        ; Platform
 VramDerbis:         rs.b 2*2        ; Derbis rocks
 VramAngel:          rs.b 12+6+6     ; Rescued souls

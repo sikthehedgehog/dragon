@@ -29,7 +29,7 @@
                       0x02, 0x02, 0x02, 0x01, 0x03, 0x03, 0x03, 0x03,
                       0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00,
                       0x02, 0x00, 0x00, 0x02, 0x00, 0x00, 0x02, 0x00,
-                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
    
    $objlist = "";
    $objnames = Array("OBJTYPE_GHOST",
@@ -52,7 +52,9 @@
                      "OBJTYPE_HSWINGBALL",
                      "OBJTYPE_END",
                      "OBJTYPE_PIRANHA",
-                     "OBJTYPE_KNIGHT");
+                     "OBJTYPE_KNIGHT",
+                     "OBJTYPE_KEY",
+                     "OBJTYPE_LOCKEDDOOR");
    
    $in = explode("\n", file_get_contents($argv[1]));
    
@@ -149,6 +151,7 @@
                
             case "OBJTYPE_DOOR":
             case "OBJTYPE_END":
+            case "OBJTYPE_LOCKEDDOOR":
                $target = substr(strstr($line, "name=\""), 6);
                if ($target !== FALSE) {
                   $target = explode("\"", $target);

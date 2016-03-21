@@ -40,9 +40,6 @@ StageData_Elevator2:        include "data/stages/elevator_2.68k"
 StageData_Elevator3:        include "data/stages/elevator_3.68k"
 StageData_Elevator4:        include "data/stages/elevator_4.68k"
 
-StageData_Shrine1:          include "data/stages/shrine_1.68k"
-StageData_Shrine2:          include "data/stages/shrine_2.68k"
-
 StageData_Library0:         include "data/stages/library_0.68k"
 StageData_Library1:         include "data/stages/library_1.68k"
 StageData_Library2:         include "data/stages/library_2.68k"
@@ -60,9 +57,23 @@ StageData_Lava2B:           include "data/stages/lava_2b.68k"
 StageData_Lava3:            include "data/stages/lava_3.68k"
 StageData_Lava4:            include "data/stages/lava_4.68k"
 
+StageData_Shrine0:          include "data/stages/shrine_0.68k"
+StageData_Shrine1:          include "data/stages/shrine_1.68k"
+StageData_Shrine2:          include "data/stages/shrine_2.68k"
+
 StageData_Tower1:           include "data/stages/tower_1.68k"
 StageData_Tower2:           include "data/stages/tower_2.68k"
 StageData_Tower3:           include "data/stages/tower_3.68k"
+
+StageData_Maze1:            include "data/stages/maze_1.68k"
+StageData_Maze2:            include "data/stages/maze_2.68k"
+StageData_Maze2A:           include "data/stages/maze_2a.68k"
+StageData_Maze2B:           include "data/stages/maze_2b.68k"
+StageData_Maze2C:           include "data/stages/maze_2c.68k"
+StageData_Maze3:            include "data/stages/maze_3.68k"
+StageData_Maze3A:           include "data/stages/maze_3a.68k"
+StageData_Maze3B:           include "data/stages/maze_3b.68k"
+StageData_Maze4:            include "data/stages/maze_4.68k"
 
 StageData_Mirror1:          include "data/stages/mirror_1.68k"
 StageData_Mirror2:          include "data/stages/mirror_2.68k"
@@ -115,9 +126,6 @@ STAGE_\name: rs.b 1
     @Entry      Elevator3
     @Entry      Elevator4
     
-    @Entry      Shrine1
-    @Entry      Shrine2
-    
     @Entry      Library0
     @Entry      Library1
     @Entry      Library2
@@ -135,9 +143,23 @@ STAGE_\name: rs.b 1
     @Entry      Lava3
     @Entry      Lava4
     
+    @Entry      Shrine0
+    @Entry      Shrine1
+    @Entry      Shrine2
+    
     @Entry      Tower1
     @Entry      Tower2
     @Entry      Tower3
+    
+    @Entry      Maze1
+    @Entry      Maze2
+    @Entry      Maze2A
+    @Entry      Maze2B
+    @Entry      Maze2C
+    @Entry      Maze3
+    @Entry      Maze3A
+    @Entry      Maze3B
+    @Entry      Maze4
     
     @Entry      Mirror1
     @Entry      Mirror2

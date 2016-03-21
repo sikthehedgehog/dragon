@@ -29,6 +29,8 @@ input "src-data/ingame/yellow_potion.png"
 tiles 0 0 3 3
 input "src-data/ingame/cross.png"
 tiles 0 0 3 3
+input "src-data/ingame/key.png"
+tiles 0 0 2 3
 
 input "src-data/ingame/door_closed.png"
 tiles 0 0 4 4
@@ -36,6 +38,8 @@ tiles 0 4 4 3
 input "src-data/ingame/door_opened.png"
 tiles 0 0 4 4
 tiles 0 4 4 3
+input "src-data/ingame/lockpad.png"
+tiles 0 0 3 3
 
 input "src-data/ingame/platform.png"
 tiles 0 0 4 2

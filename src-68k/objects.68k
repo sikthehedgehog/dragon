@@ -52,11 +52,13 @@ OBJTYPE_SLOPE:      rs.b 1      ; Slope
 OBJTYPE_RPOTION:    rs.b 1      ; Red potion
 OBJTYPE_YPOTION:    rs.b 1      ; Yellow potion
 OBJTYPE_CROSS:      rs.b 1      ; Cross
+OBJTYPE_KEY:        rs.b 1      ; Key
 OBJTYPE_MAGICHITBOX:rs.b 1      ; Magic hitbox
 OBJTYPE_MAGICSTAR:  rs.b 1      ; Magic star
 OBJTYPE_MAGICPUFF:  rs.b 1      ; Transformation puff
 OBJTYPE_DERBIS      rs.b 1      ; Derbis rock
 OBJTYPE_DOOR:       rs.b 1      ; Door
+OBJTYPE_LOCKEDDOOR: rs.b 1      ; Locked door
 OBJTYPE_END:        rs.b 1      ; End stage
 OBJTYPE_UPLATFORM:  rs.b 1      ; Upwards platform
 OBJTYPE_DPLATFORM:  rs.b 1      ; Downwards platform
@@ -156,11 +158,13 @@ AddObject:
     dc.l    InitPotion                  ; OBJTYPE_RPOTION
     dc.l    InitPotion                  ; OBJTYPE_YPOTION
     dc.l    InitPotion                  ; OBJTYPE_CROSS
+    dc.l    InitKey                     ; OBJTYPE_KEY
     dc.l    InitMagicHitbox             ; OBJTYPE_MAGICHITBOX
     dc.l    @Null                       ; OBJTYPE_MAGICSTAR
     dc.l    @Null                       ; OBJTYPE_MAGICPUFF
     dc.l    @Null                       ; OBJTYPE_DERBIS
     dc.l    InitDoor                    ; OBJTYPE_DOOR
+    dc.l    InitDoor                    ; OBJTYPE_LOCKEDDOOR
     dc.l    InitEnd                     ; OBJTYPE_END
     dc.l    @Null                       ; OBJTYPE_UPLATFORM
     dc.l    @Null                       ; OBJTYPE_DPLATFORM
@@ -222,11 +226,13 @@ RunAllObjects:
     dc.l    RunRedPotion                ; OBJTYPE_RPOTION
     dc.l    RunYellowPotion             ; OBJTYPE_YPOTION
     dc.l    RunCross                    ; OBJTYPE_CROSS
+    dc.l    RunKey                      ; OBJTYPE_KEY
     dc.l    RunMagicHitbox              ; OBJTYPE_MAGICHITBOX
     dc.l    RunMagicStar                ; OBJTYPE_MAGICSTAR
     dc.l    RunMagicPuff                ; OBJTYPE_MAGICPUFF
     dc.l    RunMagicStar                ; OBJTYPE_DERBIS
     dc.l    RunDoor                     ; OBJTYPE_DOOR
+    dc.l    RunDoor                     ; OBJTYPE_LOCKEDDOOR
     dc.l    RunEnd                      ; OBJTYPE_END
     dc.l    RunPlatformUpwards          ; OBJTYPE_UPLATFORM
     dc.l    RunPlatformDownwards        ; OBJTYPE_DPLATFORM
@@ -284,11 +290,13 @@ DrawAllObjects:
     dc.l    DrawPotion                  ; OBJTYPE_RPOTION
     dc.l    DrawPotion                  ; OBJTYPE_YPOTION
     dc.l    DrawPotion                  ; OBJTYPE_CROSS
+    dc.l    DrawKey                     ; OBJTYPE_NULL
     dc.l    @Null                       ; OBJTYPE_MAGICHITBOX
     dc.l    DrawMagicStar               ; OBJTYPE_MAGICSTAR
     dc.l    DrawMagicPuff               ; OBJTYPE_MAGICPUFF
     dc.l    DrawDerbis                  ; OBJTYPE_DERBIS
     dc.l    DrawDoor                    ; OBJTYPE_DOOR
+    dc.l    DrawDoor                    ; OBJTYPE_LOCKEDDOOR
     dc.l    @Null                       ; OBJTYPE_END
     dc.l    DrawPlatform                ; OBJTYPE_UPLATFORM
     dc.l    DrawPlatform                ; OBJTYPE_DPLATFORM

@@ -37,6 +37,13 @@ RunDoor:
     btst.b  #PF_LANDED, (PlayerFlags)   ; Also must be on the floor :P
     beq.s   @NotEntering
     
+    cmp.b   #OBJTYPE_LOCKEDDOOR, OBJ_TYPE(a0) ; Is the door locked?
+    bne.s   @NotLocked
+    tst.b   (HasKey)
+    beq.s   @NotEntering
+    clr.b   (HasKey)
+@NotLocked:
+    
     move.b  OBJ_FLAGS(a0), d7           ; Go to the stage this door leads
     bra     SwitchStage
     
@@ -58,7 +65,23 @@ DrawDoor:
     sub.w   (CameraX), d0
     sub.w   (CameraY), d1
     
-    tst.b   OBJ_FLAGS(a0)               ; Determine graphic to use
+    move.b  OBJ_FLAGS(a0), d4           ; Get target stage
+    
+    cmp.b   #OBJTYPE_LOCKEDDOOR, OBJ_TYPE(a0) ; Locked?
+    bne.s   @NoLockpad
+    
+    sub.w   #12, d0                     ; Draw the lockpad
+    sub.w   #16, d1
+    move.w  #$2000+VramLockpad, d2
+    moveq   #%101010, d3
+    jsr     (AddSprite).w
+    add.w   #12, d0
+    add.w   #16, d1
+    
+    clr.b   d4                          ; Always look closed
+@NoLockpad:
+    
+    tst.b   d4                          ; Determine graphic to use
     sne.b   d2                            ; Doors going nowhere are closed
     ext.w   d2                            ; Doors going somewhere are opened
     and.w   #28, d2

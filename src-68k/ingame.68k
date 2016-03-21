@@ -20,6 +20,7 @@ StartGame:
     clr.b   (Stage)                     ; Initial stage
     move.b  #3, (PlayerHealth)          ; Start with full health
     clr.w   (Supermagic)                ; No supermagic yet
+    clr.b   (HasKey)                    ; No key yet
     
     moveq   #0, d6                      ; Determine when first 1up is awarded
     move.b  (Difficulty), d6
@@ -91,7 +92,7 @@ InGame:
     lea     (GfxIngame), a6             ; Load common graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramHUDHealth*$20, 243*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramHUDHealth*$20, 258*$20, ($C00004)
     
     lea     (GfxEnemies), a6            ; Load enemy graphics
     lea     (LocalRAM), a5

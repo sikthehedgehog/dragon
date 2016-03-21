@@ -110,6 +110,18 @@ DrawHUD:
 
 ;----------------------------------------------------------------------------
 
+    tst.b   (HasKey)                    ; Got the key?
+    beq.s   @NoKey
+    
+    move.w  #$60, d0                    ; Show that we have the key
+    subq.w  #4, d1
+    move.w  #$8000+VramKey, d2
+    moveq   #%0110, d3
+    jsr     (AddSprite).w
+@NoKey:
+
+;----------------------------------------------------------------------------
+
     moveq   #$10, d0                    ; Where score will be drawn
     moveq   #$08, d1
     moveq   #%0001, d3
