@@ -162,7 +162,7 @@ RunKey:
     bsr     (AddScore)
     
     st.b    (HasKey)                    ; Got the key!
-    moveq   #SFX_1UP, d7
+    moveq   #SFX_KEY, d7
     jsr     (PlaySFX).w
     
     bra     DestroySelf                 ; We're gone!

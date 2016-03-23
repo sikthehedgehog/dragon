@@ -35,4 +35,5 @@ These are defined in `data/sound.68k`:
 * **`SFX_HEALTH`:** Merlina gets a red potion (health refill)
 * **`SFX_SUPERMAGIC`:** Merlina gets a yellow potion (supermagic)
 * **`SFX_1UP`:** Merlina gets an extra life
+* **`SFX_KEY`:** Merlina gets a key
 * **`SFX_PAUSE`:** toggling pause on/off

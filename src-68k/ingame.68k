@@ -87,7 +87,7 @@ InGame:
     lea     (GfxTileset), a6            ; Load tileset graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramTileset*$20, 158*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramTileset*$20, 160*$20, ($C00004)
     
     lea     (GfxIngame), a6             ; Load common graphics
     lea     (LocalRAM), a5

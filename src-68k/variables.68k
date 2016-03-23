@@ -160,7 +160,7 @@ StageNameBuf:       rs.b 22         ; Stage name string buffer
                     
                     rs.b 1          ; Blank tile
 VramPlayer:         rs.b 50         ; Merlina's sprite
-VramTileset:        rs.b 158        ; Tileset graphics
+VramTileset:        rs.b 160        ; Tileset graphics
 VramCandle:         rs.b 2*2        ; Candle fire
 VramChain:          rs.b 2*2        ; Platform chains
 VramHUDHealth:      rs.b 4*3        ; HUD health

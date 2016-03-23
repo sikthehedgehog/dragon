@@ -1,3 +1,29 @@
+MIRROR_ROOM:        equ 11*$20          ; Where the boss fight happens
+
+;****************************************************************************
+; RunReflection
+; Executes the behavior for the Merlina reflection before the fight.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunReflection:
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)      ; In the boss room?
+    bne.s   @Alive
+    rts
+@Alive:
+    
+    cmp.w   #MIRROR_ROOM, (CameraX)     ; Got to the battle area?
+    blt.s   @NotThereYet
+    move.w  #MIRROR_ROOM, (CameraX)
+    move.w  #MIRROR_ROOM, (CameraLeft)
+    move.w  #MIRROR_ROOM, (CameraRight)
+@NotThereYet:
+    
+    rts                                 ; End of subroutine
+
 ;****************************************************************************
 ; DrawReflection
 ; Draws Merlina's reflection in the mirror rooms.

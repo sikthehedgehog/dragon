@@ -32,7 +32,7 @@
  </layer>
  <objectgroup name="Capa de Objetos 1" width="23" height="20">
   <object gid="130" x="81" y="493"/>
-  <object gid="130" x="592" y="238"/>
+  <object name="STAGE_TOWER4" gid="130" x="592" y="238"/>
   <object gid="131" x="78" y="493"/>
   <object name="0" gid="145" x="205" y="573"/>
   <object name="0" gid="145" x="462" y="445"/>

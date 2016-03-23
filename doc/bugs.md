@@ -16,6 +16,8 @@
 
 * The hitbox for the magic dust is ridiculous, you can even hit enemies *from behind you*. Needs to be seriously fixed.
 
+    * Even further, it seems knights are practically immune to magic if they're facing away from you? (OK, more like you need to be extremely close to them, not a problem when they face towards you)
+
 * Jumping off a slope makes Merlina go down a few pixels first. More often than not you can't even *tell* this, but I wonder if it'll ever backfire elsewhere.
 
 * Sometimes Merlina snaps to the ceiling when jumping into it. While again usually not noticeable, it implies some collision code is using the wrong values somewhere.

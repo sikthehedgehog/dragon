@@ -1,0 +1,35 @@
+;****************************************************************************
+; SFX for when Merlina gets a key.
+;****************************************************************************
+
+    ESF_Lock        ESF_FM5
+    ESF_Lock        ESF_PSG3
+    
+    ESF_SetInstr    ESF_FM5, $0B
+    ESF_SetInstr    ESF_PSG3, $02
+    ESF_NoteOff     ESF_FM5, 5
+    ESF_NoteOff     ESF_PSG3, 2
+    
+@vol1 = $00
+@vol2 = $00
+    rept 5
+    ESF_SetVol      ESF_FM5, @vol1
+    ESF_SetVol      ESF_PSG3, @vol2
+    ESF_NoteOn      ESF_FM5, 5, 0
+    ESF_NoteOn      ESF_PSG3, 2, 0
+    ESF_Delay       5
+    ESF_NoteOn      ESF_FM5, 5, 6
+    ESF_NoteOn      ESF_PSG3, 2, 6
+    ESF_Delay       5
+    ESF_NoteOn      ESF_FM5, 6, 0
+    ESF_NoteOn      ESF_PSG3, 3, 0
+    ESF_Delay       5
+@vol1 = @vol1+6
+@vol2 = @vol2+3
+    endr
+    
+    ESF_NoteOff     ESF_FM5, 5
+    ESF_NoteOff     ESF_PSG3, 2
+    ESF_Delay       2
+    
+    ESF_Stop

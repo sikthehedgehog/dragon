@@ -21,6 +21,5 @@
   <object name="STAGE_MIRROR1" gid="130" x="737" y="207"/>
   <object gid="130" x="96" y="206"/>
   <object gid="131" x="97" y="205"/>
-  <object gid="138" x="577" y="180"/>
  </objectgroup>
 </map>

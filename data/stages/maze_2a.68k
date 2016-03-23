@@ -36,5 +36,4 @@
     dc.w    OBJTYPE_DOOR|$00<<8, $0040, $0090
     dc.w    OBJTYPE_DOOR|STAGE_MAZE1<<8, $0240, $0090
     dc.w    OBJTYPE_GHOST|$00<<8, $0150, $0050
-    dc.w    OBJTYPE_RPOTION|$00<<8, $01D0, $0070
     dc.w    $0000

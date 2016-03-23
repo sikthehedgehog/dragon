@@ -35,5 +35,4 @@
 
     dc.w    OBJTYPE_DOOR|STAGE_MIRROR1<<8, $0300, $00B0
     dc.w    OBJTYPE_DOOR|$00<<8, $0080, $00B0
-    dc.w    OBJTYPE_RPOTION|$00<<8, $0260, $0090
     dc.w    $0000

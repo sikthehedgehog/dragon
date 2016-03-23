@@ -70,6 +70,7 @@ OBJTYPE_STRAYBALL:  rs.b 1      ; Stray spikeball
 OBJTYPE_SWINGBALL:  rs.b 1      ; Pendulum swinging spikeball
 OBJTYPE_HSWINGBALL: rs.b 1      ; Horizontally swinging spikeball
 OBJTYPE_GHOST:      rs.b 1      ; Ghost
+OBJTYPE_ACTGHOST:   rs.b 1      ; Ghost (already awaken)
 OBJTYPE_SPIDER:     rs.b 1      ; Spider
 OBJTYPE_PIRANHA:    rs.b 1      ; Piranha
 OBJTYPE_KNIGHT:     rs.b 1      ; Undead knight
@@ -176,6 +177,7 @@ AddObject:
     dc.l    InitSwingingSpikeball       ; OBJTYPE_SWINGBALL
     dc.l    InitSwingingSpikeball       ; OBJTYPE_HSWINGBALL
     dc.l    InitGhost                   ; OBJTYPE_GHOST
+    dc.l    InitActiveGhost             ; OBJTYPE_ACTGHOST
     dc.l    InitSpider                  ; OBJTYPE_SPIDER
     dc.l    InitPiranha                 ; OBJTYPE_PIRANHA
     dc.l    InitKnight                  ; OBJTYPE_KNIGHT
@@ -244,6 +246,7 @@ RunAllObjects:
     dc.l    RunSwingingSpikeball        ; OBJTYPE_SWINGBALL
     dc.l    RunHorSwingSpikeball        ; OBJTYPE_HSWINGBALL
     dc.l    RunGhost                    ; OBJTYPE_GHOST
+    dc.l    RunGhost                    ; OBJTYPE_ACTGHOST
     dc.l    RunSpider                   ; OBJTYPE_SPIDER
     dc.l    RunPiranha                  ; OBJTYPE_PIRANHA
     dc.l    RunKnight                   ; OBJTYPE_KNIGHT
@@ -255,7 +258,7 @@ RunAllObjects:
     dc.l    RunFish                     ; OBJTYPE_FISH
     dc.l    RunRisingLava               ; OBJTYPE_RISINGLAVA
     dc.l    RunLavaFlood                ; OBJTYPE_LAVAFLOOD
-    dc.l    @Null                       ; OBJTYPE_REFLECTION
+    dc.l    RunReflection               ; OBJTYPE_REFLECTION
     dc.l    RunCogwheel                 ; OBJTYPE_COGWHEEL
     dc.l    RunLavaBurst                ; OBJTYPE_LAVABURST
     dc.l    @Null                       ; OBJTYPE_LAVABREAK
@@ -308,6 +311,7 @@ DrawAllObjects:
     dc.l    DrawSwingingSpikeball       ; OBJTYPE_SWINGBALL
     dc.l    DrawHorSwingSpikeball       ; OBJTYPE_HSWINGBALL
     dc.l    DrawGhost                   ; OBJTYPE_GHOST
+    dc.l    DrawGhost                   ; OBJTYPE_ACTGHOST
     dc.l    DrawSpider                  ; OBJTYPE_SPIDER
     dc.l    DrawPiranha                 ; OBJTYPE_PIRANHA
     dc.l    DrawKnight                  ; OBJTYPE_KNIGHT

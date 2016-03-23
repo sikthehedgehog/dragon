@@ -60,7 +60,7 @@
     dc.w    $7FFF
 
     dc.w    OBJTYPE_DOOR|$00<<8, $0070, $01D0
-    dc.w    OBJTYPE_DOOR|$00<<8, $0270, $00D0
+    dc.w    OBJTYPE_DOOR|STAGE_TOWER4<<8, $0270, $00D0
     dc.w    OBJTYPE_COGWHEEL|0<<8, $00F0, $0220
     dc.w    OBJTYPE_COGWHEEL|0<<8, $01F0, $01A0
     dc.w    OBJTYPE_COGWHEEL|0<<8, $00F0, $00C0

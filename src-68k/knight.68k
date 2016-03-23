@@ -125,7 +125,7 @@ RunKnight:
     lsl.w   #8, d5
     move.b  #OBJTYPE_MAGICPUFF, d5
     bsr     AddObject
-    move.b  #OBJTYPE_GHOST, OBJ_DATA(a6)
+    move.b  #OBJTYPE_ACTGHOST, OBJ_DATA(a6)
     
     bra     DestroySelf                 ; Poof!
 @NoTransform:

@@ -385,3 +385,23 @@ TilesetMappings:
     dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C      ; Candle (dim)
     dc.w    @T+$200C, @T+$2016, @T+$2017, @T+$200D
     dc.w    @T+$200D, @T+$2018, @T+$2818, @T+$200C
+    
+    dc.w    @T+$209F, @T+$2001, @T+$2002, @T+$2003      ; Tile $48
+    dc.w    @T+$209E, @T+$209F, @T+$2006, @T+$2007      ; NWSE stairs
+    dc.w    @T+$2002, @T+$209E, @T+$209F, @T+$2001      ; (outdoors, top)
+    dc.w    @T+$2006, @T+$2007, @T+$209E, @T+$209F
+    
+    dc.w    @T+$2000, @T+$2001, @T+$2002, @T+$209E      ; Tile $49
+    dc.w    @T+$2004, @T+$2005, @T+$2006, @T+$2007      ; NWSE stairs
+    dc.w    @T+$2002, @T+$2003, @T+$2000, @T+$2001      ; (outdoors, bottom)
+    dc.w    @T+$2006, @T+$2007, @T+$2004, @T+$2005
+    
+    dc.w    @T+$2000, @T+$2001, @T+$2002, @T+$209E      ; Tile $4A
+    dc.w    @T+$2004, @T+$2005, @T+$209E, @T+$209F      ; NESW stairs
+    dc.w    @T+$2002, @T+$209E, @T+$209F, @T+$2001      ; (outdoors, top)
+    dc.w    @T+$209E, @T+$209F, @T+$2004, @T+$2005
+    
+    dc.w    @T+$209F, @T+$2001, @T+$2002, @T+$2003      ; Tile $4B
+    dc.w    @T+$2004, @T+$2005, @T+$2006, @T+$2007      ; NESW stairs
+    dc.w    @T+$2002, @T+$2003, @T+$2000, @T+$2001      ; (outdoors, bottom)
+    dc.w    @T+$2006, @T+$2007, @T+$2004, @T+$2005

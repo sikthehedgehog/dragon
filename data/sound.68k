@@ -91,6 +91,7 @@ SFX_\name: rs.b 1
     @Entry  Health
     @Entry  Supermagic
     @Entry  1up
+    @Entry  Key
     @Entry  Pause
 
 NUM_SFX:    rs.b 0
@@ -128,6 +129,7 @@ SfxData_Demolish:   include "data/sfx/demolish.68k"
 SfxData_Health:     include "data/sfx/health.68k"
 SfxData_Supermagic: include "data/sfx/supermagic.68k"
 SfxData_1up:        include "data/sfx/1up.68k"
+SfxData_Key:        include "data/sfx/key.68k"
 SfxData_Pause:      include "data/sfx/pause.68k"
 
     even

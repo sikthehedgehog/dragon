@@ -22,6 +22,5 @@
   <object name="STAGE_MAZE1" gid="130" x="541" y="176"/>
   <object gid="131" x="30" y="174"/>
   <object gid="129" x="305" y="111"/>
-  <object gid="138" x="433" y="149"/>
  </objectgroup>
 </map>

@@ -64,6 +64,7 @@ StageData_Shrine2:          include "data/stages/shrine_2.68k"
 StageData_Tower1:           include "data/stages/tower_1.68k"
 StageData_Tower2:           include "data/stages/tower_2.68k"
 StageData_Tower3:           include "data/stages/tower_3.68k"
+StageData_Tower4:           include "data/stages/tower_4.68k"
 
 StageData_Maze1:            include "data/stages/maze_1.68k"
 StageData_Maze2:            include "data/stages/maze_2.68k"
@@ -150,6 +151,7 @@ STAGE_\name: rs.b 1
     @Entry      Tower1
     @Entry      Tower2
     @Entry      Tower3
+    @Entry      Tower4
     
     @Entry      Maze1
     @Entry      Maze2
