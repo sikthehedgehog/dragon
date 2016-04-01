@@ -127,9 +127,19 @@ FreeRAM:            rs.b 0          ; Free space for more decompression
 LavaPos:            rs.w 1          ; Position of rising or flooding lava
 LavaScreenPos:      rs.w 1          ; Same as above but in screen coordinates
 
-LavaPattern:        rs.w $40*2      ;
-LavaNoPattern:      rs.w $40*2      ;
-LavaTopPattern:     rs.w $40*2*8    ;
+LavaPattern:        rs.w $40*2      ; Pattern for inner rows
+LavaNoPattern:      rs.w $40*2      ; Pattern for blank rows
+LavaTopPattern:     rs.w $40*2*8    ; Pattern for outer row
+
+;----------------------------------------------------------------------------
+
+                    rsset FreeRAM
+
+WallPos:            rs.w 1          ; Position of the moving wall
+WallScreenPos:      rs.w 1          ; Same as above (on screen)
+
+WallPattern:        rs.w $20*4      ; Pattern for inner columns
+WallNoPattern:      rs.w $20        ; Pattern for blank columns
 
 ;****************************************************************************
 ; Variables used in menus and the title screen

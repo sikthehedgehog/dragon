@@ -53,6 +53,10 @@ stage src-data/stages/tower_1.tmx data/stages/tower_1.68k
 stage src-data/stages/tower_2.tmx data/stages/tower_2.68k
 stage src-data/stages/tower_3.tmx data/stages/tower_3.68k
 stage src-data/stages/tower_4.tmx data/stages/tower_4.68k
+stage src-data/stages/wall_1.tmx data/stages/wall_1.68k
+stage src-data/stages/wall_2.tmx data/stages/wall_2.68k
+stage src-data/stages/wall_3.tmx data/stages/wall_3.68k
+stage src-data/stages/wall_4.tmx data/stages/wall_4.68k
 stage src-data/stages/maze_1.tmx data/stages/maze_1.68k
 stage src-data/stages/maze_2.tmx data/stages/maze_2.68k
 stage src-data/stages/maze_2a.tmx data/stages/maze_2a.68k

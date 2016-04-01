@@ -76,6 +76,7 @@ SCORE_ITEM:         equ $250        ; Getting an item
     include "src-68k/mirror.68k"        ; Merlina doppleganger
     include "src-68k/cogwheel.68k"      ; Cogwheels
     include "src-68k/lava.68k"          ; Lava hazards
+    include "src-68k/wall.68k"          ; Moving wall
     
     include "src-68k/variables.68k"     ; Variable declarations
 

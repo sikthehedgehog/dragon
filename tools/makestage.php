@@ -20,6 +20,7 @@
    $mirror = (strstr($argv[1], "mirror") !== false);
    $lava = (strstr($argv[1], "lava") !== false);
    $bookshelf = false;
+   $wall = (strstr($argv[1], "wall") !== false);
    
    $colltypes = Array(0x00, 0x01, 0x01, 0x01, 0x01, 0x02, 0x00, 0x00,
                       0x00, 0x00, 0xFF, 0x00, 0xFE, 0x00, 0x00, 0x00,
@@ -271,6 +272,8 @@
    if ($argv[1] == (strstr($argv[1], "lava_4") !== false))
       $objlist = $objlist."    dc.w    OBJTYPE_LAVABREAK|0<<8, ".
       sprintf("\$%04X", $startx).", ".sprintf("\$%04X", $starty)."\n";
+   if ($wall)
+      $objlist = $objlist."    dc.w    OBJTYPE_WALL|0<<8, 0, 0\n";
    
    $name = substr(basename($argv[1], ".tmx"), 0, 16);
    $name = strtoupper($name);
@@ -336,6 +339,10 @@
    }
    if ($bookshelf) {
       $pal[2] = "PalBookshelf";
+   }
+   if ($wall) {
+      $pal[2] = "PalTilesetAlt";
+      $parallax = "WallParallax";
    }
    
    $out = $out."    dc.l    ".$pal[0]."\n";

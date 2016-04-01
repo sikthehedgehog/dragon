@@ -82,6 +82,7 @@ OBJTYPE_ANGEL:      rs.b 1      ; Rescued soul
 OBJTYPE_FISH:       rs.b 1      ; Tiny fish
 OBJTYPE_RISINGLAVA: rs.b 1      ; Rising lava
 OBJTYPE_LAVAFLOOD:  rs.b 1      ; Lava flood
+OBJTYPE_WALL:       rs.b 1      ; Moving wall
 OBJTYPE_REFLECTION: rs.b 1      ; Merlina reflection
 OBJTYPE_COGWHEEL:   rs.b 1      ; Cogwheel
 OBJTYPE_LAVABURST:  rs.b 1      ; Lava bursting from the floor
@@ -189,6 +190,7 @@ AddObject:
     dc.l    @Null                       ; OBJTYPE_FISH
     dc.l    InitRisingLava              ; OBJTYPE_RISINGLAVA
     dc.l    InitLavaFlood               ; OBJTYPE_LAVAFLOOD
+    dc.l    @Null                       ; OBJTYPE_WALL
     dc.l    @Null                       ; OBJTYPE_REFLECTION
     dc.l    InitCogwheel                ; OBJTYPE_COGWHEEL
     dc.l    InitLavaBurst               ; OBJTYPE_LAVABURST
@@ -258,6 +260,7 @@ RunAllObjects:
     dc.l    RunFish                     ; OBJTYPE_FISH
     dc.l    RunRisingLava               ; OBJTYPE_RISINGLAVA
     dc.l    RunLavaFlood                ; OBJTYPE_LAVAFLOOD
+    dc.l    RunWall                     ; OBJTYPE_WALL
     dc.l    RunReflection               ; OBJTYPE_REFLECTION
     dc.l    RunCogwheel                 ; OBJTYPE_COGWHEEL
     dc.l    RunLavaBurst                ; OBJTYPE_LAVABURST
@@ -323,6 +326,7 @@ DrawAllObjects:
     dc.l    DrawFish                    ; OBJTYPE_FISH
     dc.l    @Null                       ; OBJTYPE_RISINGLAVA
     dc.l    DrawLavaFlood               ; OBJTYPE_LAVAFLOOD
+    dc.l    @Null                       ; OBJTYPE_WALL
     dc.l    DrawReflection              ; OBJTYPE_REFLECTION
     dc.l    DrawCogwheel                ; OBJTYPE_COGWHEEL
     dc.l    DrawLavaBurst               ; OBJTYPE_LAVABURST

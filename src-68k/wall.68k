@@ -1,0 +1,47 @@
+;****************************************************************************
+; WallSpeed
+; Speed at which the moving wall advances for each difficulty
+;****************************************************************************
+
+WallSpeed:
+    dc.w    $100, $140, $180
+
+;****************************************************************************
+; RunWall
+; Executes the behavior of the moving wall.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunWall:
+    moveq   #0, d7                      ; Determine how fast we move
+    move.b  (Difficulty), d7
+    add.w   d7, d7
+    lea     WallSpeed(pc), a6
+    move.w  (a6,d7.w), d7
+    move.w  d7, d1
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    
+    move.w  OBJ_X(a0), d0               ; Move wall!
+    add.w   d7, d0
+    move.w  d0, OBJ_X(a0)
+    move.w  d0, (WallPos)
+    
+    add.w   #-PLAYER_X1, d0             ; Push the player forwards?
+    cmp.w   (PlayerX), d0
+    ble.s   @NoPush
+    move.w  d0, (PlayerX)
+    move.w  d1, (PlayerXSpeed)
+    
+    move.w  (PlayerX), d7               ; Crushed the player?
+    move.w  (PlayerY), d6
+    bsr     TileAt
+    cmp.b   #COLL_SOLID, d6
+    bne.s   @NoPush
+    bsr     KillPlayer
+    
+@NoPush:
+    rts                                 ; End of subroutine
