@@ -89,7 +89,7 @@ DrawHUD:
     lea     @MagicBlink(pc), a0
 @NoSupermagic:
     
-    move.w  #228, d0                    ; Draw left side of magic bar
+    move.w  #230, d0                    ; Draw left side of magic bar
     move.w  #200, d1
     move.w  #$8010+VramHUDBar, d2
     moveq   #%0001, d3
@@ -259,7 +259,48 @@ DrawHUD:
     move.w  d4, d2
     add.w   #$8000+VramHUDNumber, d2
     jsr     (AddSprite).w
+
+;----------------------------------------------------------------------------
+
+    move.w  #320-$18, d0                ; Where playtime timer is drawn
+    move.w  #224-$28, d1
     
+    moveq   #0, d4                      ; Draw second units
+    move.b  (PlaySeconds), d4
+    move.w  d4, d2
+    and.w   #$0F, d2
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    jsr     (AddSprite).w
+    
+    subq.w  #8, d0                      ; Draw second tens
+    move.w  d4, d2
+    lsr.w   #4, d2
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    jsr     (AddSprite).w
+    
+    subq.w  #8, d0                      ; Draw colon
+    move.w  #$8000+VramHUDColon, d2
+    jsr     (AddSprite).w
+    
+    subq.w  #8, d0                      ; Draw minute units
+    move.b  (PlayMinutes), d4
+    move.w  d4, d2
+    and.w   #$0F, d2
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    jsr     (AddSprite).w
+    
+    subq.w  #8, d0                      ; Draw minute tens
+    move.w  d4, d2
+    lsr.w   #4, d2
+    beq.s   @NoMinuteTens
+    add.w   d2, d2
+    add.w   #$8000+VramHUDNumber, d2
+    jsr     (AddSprite).w
+    
+@NoMinuteTens:
     endc
 
 ;----------------------------------------------------------------------------

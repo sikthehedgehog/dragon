@@ -46,7 +46,9 @@ Cheats:             rs.b 1          ; Enabled cheats
 
    if DEBUG_HUD
 LastUsage:          rs.b 1          ; Last CPU usage (by HV counter value)
-                    rs.b 1
+PlayFrames:         rs.b 1          ; How many frames were spent playing?
+PlaySeconds:        rs.b 1          ; How many seconds were spent playing?
+PlayMinutes:        rs.b 1          ; How many minutes were spent playing?
    endc
 
 ;----------------------------------------------------------------------------
@@ -178,6 +180,7 @@ VramHUDCross:       rs.b 1          ; HUD cross (the "×")
 VramHUDNumber:      rs.b 10*2       ; HUD digits
 VramHUDQuestion:    rs.b 2          ; HUD question mark ("?")
 VramHUDPercent:     rs.b 2          ; HUD percent sign ("%")
+VramHUDColon:       rs.b 2          ; HUD colon (":")
 VramHUDBar:         rs.b 14*2       ; HUD energy bar
 VramHUDPause:       rs.b 5*2        ; "PAUSE"
 VramMagic:          rs.b 2*2*2      ; Magic sparkles

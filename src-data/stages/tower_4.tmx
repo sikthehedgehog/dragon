@@ -32,7 +32,7 @@
   <object gid="131" x="174" y="400"/>
   <object gid="130" x="354" y="336"/>
   <object gid="130" x="448" y="335"/>
-  <object gid="130" x="942" y="207"/>
+  <object name="STAGE_TOWER5" gid="130" x="942" y="207"/>
   <object gid="129" x="482" y="271"/>
   <object gid="129" x="387" y="272"/>
   <object gid="143" x="960" y="401"/>

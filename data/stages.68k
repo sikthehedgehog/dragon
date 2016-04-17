@@ -51,12 +51,6 @@ StageData_Prison3:          include "data/stages/prison_3.68k"
 StageData_Prison4:          include "data/stages/prison_4.68k"
 StageData_Prison5:          include "data/stages/prison_5.68k"
 
-StageData_Lava1:            include "data/stages/lava_1.68k"
-StageData_Lava2:            include "data/stages/lava_2.68k"
-StageData_Lava2B:           include "data/stages/lava_2b.68k"
-StageData_Lava3:            include "data/stages/lava_3.68k"
-StageData_Lava4:            include "data/stages/lava_4.68k"
-
 StageData_Shrine0:          include "data/stages/shrine_0.68k"
 StageData_Shrine1:          include "data/stages/shrine_1.68k"
 StageData_Shrine2:          include "data/stages/shrine_2.68k"
@@ -65,11 +59,24 @@ StageData_Tower1:           include "data/stages/tower_1.68k"
 StageData_Tower2:           include "data/stages/tower_2.68k"
 StageData_Tower3:           include "data/stages/tower_3.68k"
 StageData_Tower4:           include "data/stages/tower_4.68k"
+StageData_Tower5:           include "data/stages/tower_5.68k"
+
+StageData_Lava1:            include "data/stages/lava_1.68k"
+StageData_Lava2:            include "data/stages/lava_2.68k"
+StageData_Lava2B:           include "data/stages/lava_2b.68k"
+StageData_Lava3:            include "data/stages/lava_3.68k"
+StageData_Lava4:            include "data/stages/lava_4.68k"
 
 StageData_Wall1:            include "data/stages/wall_1.68k"
 StageData_Wall2:            include "data/stages/wall_2.68k"
 StageData_Wall3:            include "data/stages/wall_3.68k"
 StageData_Wall4:            include "data/stages/wall_4.68k"
+
+StageData_Rest0:            include "data/stages/rest_0.68k"
+StageData_Rest1:            include "data/stages/rest_1.68k"
+StageData_Rest2:            include "data/stages/rest_2.68k"
+StageData_Rest3:            include "data/stages/rest_3.68k"
+StageData_Rest4:            include "data/stages/rest_4.68k"
 
 StageData_Maze1:            include "data/stages/maze_1.68k"
 StageData_Maze2:            include "data/stages/maze_2.68k"
@@ -143,12 +150,6 @@ STAGE_\name: rs.b 1
     @Entry      Prison4
     @Entry      Prison5
     
-    @Entry      Lava1
-    @Entry      Lava2
-    @Entry      Lava2B
-    @Entry      Lava3
-    @Entry      Lava4
-    
     @Entry      Shrine0
     @Entry      Shrine1
     @Entry      Shrine2
@@ -157,11 +158,24 @@ STAGE_\name: rs.b 1
     @Entry      Tower2
     @Entry      Tower3
     @Entry      Tower4
+    @Entry      Tower5
+    
+    @Entry      Lava1
+    @Entry      Lava2
+    @Entry      Lava2B
+    @Entry      Lava3
+    @Entry      Lava4
     
     @Entry      Wall1
     @Entry      Wall2
     @Entry      Wall3
     @Entry      Wall4
+    
+    @Entry      Rest0
+    @Entry      Rest1
+    @Entry      Rest2
+    @Entry      Rest3
+    @Entry      Rest4
     
     @Entry      Maze1
     @Entry      Maze2

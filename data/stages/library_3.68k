@@ -53,5 +53,5 @@
     dc.w    OBJTYPE_SLOPE|$100, $00C0, $0160
     dc.w    OBJTYPE_DOOR|$00<<8, $0090, $0070
     dc.w    OBJTYPE_DOOR|$00<<8, $0090, $0170
-    dc.w    OBJTYPE_DOOR|STAGE_LAVA1<<8, $0170, $00F0
+    dc.w    OBJTYPE_DOOR|STAGE_SHRINE0<<8, $0170, $00F0
     dc.w    $0000

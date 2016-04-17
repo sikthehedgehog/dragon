@@ -44,4 +44,38 @@ RunWall:
     bsr     KillPlayer
     
 @NoPush:
+    move.w  (QuakeTimer), d7            ; The room is shaking!!
+    and.w   #$03, d7
+    or.w    #$04, d7
+    move.w  d7, (QuakeTimer)
+    
+    move.w  OBJ_TIMER(a0), d7           ; Spawn derbis every so often
+    addq.w  #1, d7
+    and.w   #$03, d7
+    move.w  d7, OBJ_TIMER(a0)
+    bne.s   @NoDerbis
+    
+    jsr     (Rand).w
+    move.w  d7, d6
+    jsr     (Rand).w
+    and.w   #$7F, d6
+    and.w   #$FF, d7
+    add.w   d6, d7
+    add.w   (CameraX), d7
+    move.w  (CameraY), d6
+    moveq   #OBJTYPE_DERBIS, d5
+    bsr     AddObject
+    jsr     (Rand).w
+    and.w   #$FF, d7
+    add.w   #$100, d7
+    move.w  d7, OBJ_YSPEED(a6)
+    
+@NoDerbis:
+    move.w  OBJ_TIMER(a0), d7           ; Make noise
+    and.w   #$07, d7
+    bne.s   @NoNoise
+    moveq   #SFX_QUAKE, d7
+    jsr     (PlaySFX).w
+    
+@NoNoise:
     rts                                 ; End of subroutine

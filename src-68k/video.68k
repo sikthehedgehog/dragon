@@ -64,6 +64,8 @@ ResetVideo:
     lea     (HBlankNull), a6
     jsr     (LoadHBlank).w
     
+    move.w  #$8230, ($C00004)           ; Reset scroll A
+    move.w  #$8407, ($C00004)           ; Reset scroll B
     move.w  #$8B00, ($C00004)           ; Reset scrolling mode
     move.w  #$9001, ($C00004)           ; Reset tilemap size
     

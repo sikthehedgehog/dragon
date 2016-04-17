@@ -32,6 +32,29 @@ UpdateNoParallax:
     rts                                 ; End of subroutine
 
 ;****************************************************************************
+; UpdateNoParallaxSwap
+; Like UpdateNoParallax, but swaps planes A and B.
+;----------------------------------------------------------------------------
+; breaks: all
+;****************************************************************************
+
+UpdateNoParallaxSwap:
+    move.w  (CameraX), d7               ; Update the camera position
+    move.w  (CameraY), d6
+    neg.w   d7
+    move.w  d7, (HScrollABuf)
+    move.w  d6, (VScrollABuf)
+    
+    move.l  (DMABufEnd), a6             ; Set up DMA to load the scrolling
+    DMA2VRAM HScrollABuf, $F802, 2, (a6)+
+    DMA2VRAM HScrollBBuf, $F800, 2, (a6)+
+    DMA2VSRAM VScrollABuf, $0002, 2, (a6)+
+    DMA2VSRAM VScrollBBuf, $0000, 2, (a6)+
+    move.l  a6, (DMABufEnd)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
 ; UpdatePerCellParallax
 ; Like UpdateNoParallax, but when hscroll is set to per-cell.
 ;----------------------------------------------------------------------------
@@ -436,6 +459,9 @@ UpdateLavaFloodParallax:
 ;****************************************************************************
 
 InitWallParallax:
+    move.w  #$823C, ($C00004)           ; Swap planes A and B
+    move.w  #$8406, ($C00004)
+    
     clr.w   (WallPos)                   ; Init scrolling
     clr.w   (WallScreenPos)
     
@@ -579,4 +605,4 @@ UpdateWallParallax:
 @NoDraw:
     move.w  d0, (HScrollBBuf)           ; Update scroll
     move.w  (CameraY), (VScrollBBuf)
-    bra     UpdateNoParallax
+    bra     UpdateNoParallaxSwap

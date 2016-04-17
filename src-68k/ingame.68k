@@ -53,6 +53,12 @@ StartGame:
     move.b  #$99, (Lives)
 @NoInfiniteLives:
     
+    if      DEBUG_HUD
+    clr.b   (PlayFrames)                ; Reset playtime timer
+    clr.b   (PlaySeconds)
+    clr.b   (PlayMinutes)
+    endc
+    
     ;moveq   #BGM_INGAME, d7             ; Start playing the main theme :)
     ;jsr     (PlayBGM).w
     
@@ -92,7 +98,7 @@ InGame:
     lea     (GfxIngame), a6             ; Load common graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramHUDHealth*$20, 258*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramHUDHealth*$20, 260*$20, ($C00004)
     
     lea     (GfxEnemies), a6            ; Load enemy graphics
     lea     (LocalRAM), a5
@@ -182,6 +188,35 @@ InGame:
     beq.s   @NoQuake
     subq.w  #1, (QuakeTimer)
 @NoQuake:
+
+;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    if      DEBUG_HUD
+    addq.b  #1, (PlayFrames)            ; Update playtime timer
+    cmp.b   #60, (PlayFrames)           ; Oh gosh this is long
+    bne.s   @PlaytimeUpdated
+    
+    clr.b   (PlayFrames)
+    move.b  (PlaySeconds), d7
+    moveq   #$01, d6
+    and.b   #$00, ccr
+    abcd.b  d6, d7
+    move.b  d7, (PlaySeconds)
+    cmp.b   #$60, d7
+    bne.s   @PlaytimeUpdated
+    
+    clr.b   (PlaySeconds)
+    move.b  (PlayMinutes), d7
+    and.b   #$00, ccr
+    abcd.b  d6, d7
+    move.b  d7, (PlayMinutes)
+    bne.s   @PlaytimeUpdated
+    
+    move.b  #$AA, (PlaySeconds)
+    move.b  #$AA, (PlayMinutes)
+    
+@PlaytimeUpdated:
+    endc
     
     rts                                 ; Return back to loop...
 

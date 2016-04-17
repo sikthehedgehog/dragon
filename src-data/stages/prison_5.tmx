@@ -27,7 +27,7 @@
  <objectgroup name="Capa de Objetos 1" width="16" height="14">
   <object gid="130" x="112" y="138"/>
   <object gid="130" x="114" y="395"/>
-  <object name="STAGE_LAVA1" gid="130" x="336" y="266"/>
+  <object name="STAGE_SHRINE0" gid="130" x="336" y="266"/>
   <object gid="131" x="111" y="396"/>
  </objectgroup>
 </map>

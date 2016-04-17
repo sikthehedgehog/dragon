@@ -82,6 +82,7 @@ SFX_\name: rs.b 1
     @Entry  Jump
     @Entry  Swim
     @Entry  Attack
+    @Entry  Quake
     @Entry  Magic
     @Entry  Transform
     @Entry  Metal
@@ -120,6 +121,7 @@ BgmData_Dragon:     incbin  "data/music/dragon.esf"
 SfxData_Jump:       include "data/sfx/jump.68k"
 SfxData_Swim:       include "data/sfx/swim.68k"
 SfxData_Attack:     include "data/sfx/attack.68k"
+SfxData_Quake:      include "data/sfx/quake.68k"
 SfxData_Magic:      include "data/sfx/magic.68k"
 SfxData_Transform:  include "data/sfx/transform.68k"
 SfxData_Hit:        include "data/sfx/hit.68k"
