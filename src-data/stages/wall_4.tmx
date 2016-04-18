@@ -27,7 +27,7 @@
   <object name="128" gid="142" x="285" y="191"/>
   <object name="192" gid="142" x="448" y="192"/>
   <object name="0" gid="142" x="610" y="192"/>
-  <object name="STAGE_REST0" gid="130" x="767" y="268"/>
+  <object name="STAGE_WALL5" gid="130" x="767" y="268"/>
   <object gid="130" x="62" y="271"/>
   <object gid="131" x="63" y="270"/>
  </objectgroup>

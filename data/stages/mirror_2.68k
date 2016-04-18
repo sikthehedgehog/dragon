@@ -25,7 +25,7 @@
     dc.l    PalMerlina
     dc.l    PalTileset
     dc.l    PalMerlinaMirror
-    dc.l    0
+    dc.l    PalDoppleganger
 
     dc.l    0
     dc.w    0

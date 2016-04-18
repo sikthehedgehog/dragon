@@ -326,6 +326,7 @@
    }
    if ($mirror) {
       $pal[2] = "PalMerlinaMirror";
+      $pal[3] = "PalDoppleganger";
    }
    if ($lava) {
       $pal[2] = "PalLava";

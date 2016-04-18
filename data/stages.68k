@@ -71,12 +71,16 @@ StageData_Wall1:            include "data/stages/wall_1.68k"
 StageData_Wall2:            include "data/stages/wall_2.68k"
 StageData_Wall3:            include "data/stages/wall_3.68k"
 StageData_Wall4:            include "data/stages/wall_4.68k"
+StageData_Wall5:            include "data/stages/wall_5.68k"
+StageData_Wall6:            include "data/stages/wall_6.68k"
 
 StageData_Rest0:            include "data/stages/rest_0.68k"
 StageData_Rest1:            include "data/stages/rest_1.68k"
 StageData_Rest2:            include "data/stages/rest_2.68k"
 StageData_Rest3:            include "data/stages/rest_3.68k"
 StageData_Rest4:            include "data/stages/rest_4.68k"
+StageData_Rest5:            include "data/stages/rest_5.68k"
+StageData_Rest6:            include "data/stages/rest_6.68k"
 
 StageData_Maze1:            include "data/stages/maze_1.68k"
 StageData_Maze2:            include "data/stages/maze_2.68k"
@@ -170,12 +174,16 @@ STAGE_\name: rs.b 1
     @Entry      Wall2
     @Entry      Wall3
     @Entry      Wall4
+    @Entry      Wall5
+    @Entry      Wall6
     
     @Entry      Rest0
     @Entry      Rest1
     @Entry      Rest2
     @Entry      Rest3
     @Entry      Rest4
+    @Entry      Rest5
+    @Entry      Rest6
     
     @Entry      Maze1
     @Entry      Maze2

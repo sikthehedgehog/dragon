@@ -51,7 +51,7 @@
     dc.w    OBJTYPE_SWINGBALL|192<<8, $01E0, $00A8
     dc.w    OBJTYPE_CHAINBASE|$00<<8, $0280, $00A8
     dc.w    OBJTYPE_SWINGBALL|0<<8, $0280, $00A8
-    dc.w    OBJTYPE_DOOR|STAGE_REST0<<8, $0320, $00F0
+    dc.w    OBJTYPE_DOOR|STAGE_WALL5<<8, $0320, $00F0
     dc.w    OBJTYPE_DOOR|$00<<8, $0060, $00F0
     dc.w    OBJTYPE_WALL|0<<8, 0, 0
     dc.w    $0000
