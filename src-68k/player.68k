@@ -531,7 +531,7 @@ RunPlayer:
     move.b  d7, (PlayerPose)
     add.w   d7, d7
     add.w   d7, d7
-    lea     @Poses(pc), a6
+    lea     (PlayerPoseList), a6
     move.l  (a6,d7.w), (PlayerAnimNext)
     move.w  #1, (PlayerAnimLen)
 @SamePose:
@@ -550,7 +550,7 @@ RunPlayer:
 
 ;----------------------------------------------------------------------------
 
-@Poses:
+PlayerPoseList:
     dc.l    AnimMerlina_Idle            ; PA_IDLE
     dc.l    AnimMerlina_Run             ; PA_RUN
     dc.l    AnimMerlina_RunSlow         ; PA_RUNSLOW

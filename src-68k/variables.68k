@@ -143,6 +143,19 @@ WallScreenPos:      rs.w 1          ; Same as above (on screen)
 WallPattern:        rs.w $20*4      ; Pattern for inner columns
 WallNoPattern:      rs.w $20        ; Pattern for blank columns
 
+;----------------------------------------------------------------------------
+
+                    rsset FreeRAM
+
+DoppleMapping:      rs.l 1          ; Doppleganger's current sprite mapping
+DoppleGfxAddr:      rs.l 1          ; Doppleganger's current tiles (address)
+DoppleGfxSize:      rs.w 1          ; Doppleganger's current tiles (size)
+DoppleAnimLen:      rs.w 1          ; Time left until animation updates
+DoppleAnimNext:     rs.l 1          ; Next frame in the animation
+
+DoppleOldPose:      rs.b 1          ; Doppleganger's last pose (see PA_*)
+DopplePose:         rs.b 1          ; Doppleganger's next pose (see PA_*)
+
 ;****************************************************************************
 ; Variables used in menus and the title screen
 ; (title screen is just a fancy menu in some sense :P)

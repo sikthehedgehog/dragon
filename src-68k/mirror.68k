@@ -1,5 +1,9 @@
 MIRROR_ROOM:        equ 11*$20          ; Where the boss fight happens
 
+DOPPLE_HEALTH:      equ 8               ; How many hits she can take
+DOPPLE_JUMP:        equ JUMP_FORCE      ; How high she jumps
+DOPPLE_FALL:        equ ACCEL_FALL      ; How fast she falls
+
 ;****************************************************************************
 ; RunReflection
 ; Executes the behavior for the Merlina reflection before the fight.
@@ -20,6 +24,14 @@ RunReflection:
     move.w  #MIRROR_ROOM, (CameraX)
     move.w  #MIRROR_ROOM, (CameraLeft)
     move.w  #MIRROR_ROOM, (CameraRight)
+    
+    move.w  (PlayerX), d7               ; Spawn doppleganger
+    move.w  (PlayerY), d6
+    sub.w   #12, d7
+    moveq   #OBJTYPE_DOPPLE, d5
+    bsr     AddObject
+    
+    bra     DestroySelf                 ; We're done
 @NotThereYet:
     
     rts                                 ; End of subroutine
@@ -75,5 +87,139 @@ DrawReflection:
     addq.w  #8, a6
     dbf     d4, @FixPriority
 @NoFixNeeded:
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; InitDoppleganger
+; Sets up the Merlina doppleganger.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitDoppleganger:
+    move.b  #%1, OBJ_FLAGS(a6)
+    move.w  #-$200, OBJ_XSPEED(a6)
+    move.w  #-DOPPLE_JUMP, OBJ_YSPEED(a6)
+    move.b  #DOPPLE_HEALTH, OBJ_HEALTH(a6)
+    
+    move.w  #PLAYER_X1, OBJ_BOXX1(a6)   ; Set up hitbox
+    move.w  #PLAYER_Y1, OBJ_BOXY1(a6)
+    move.w  #PLAYER_X2, OBJ_BOXX2(a6)
+    move.w  #PLAYER_Y2, OBJ_BOXY2(a6)
+    
+    move.b  #-1, (DoppleOldPose)        ; Force an animation change
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunDoppleganger
+; Executes the behavior for the Merlina doppleganger.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunDoppleganger:
+    move.w  OBJ_X(a0), d0               ; Get current status
+    move.w  OBJ_Y(a0), d1
+    move.b  OBJ_FLAGS(a0), d2
+    
+    move.b  #PA_IDLE, (DopplePose)      ; Idle by default
+    
+    tst.w   OBJ_YSPEED(a0)              ; In the air?
+    blt.s   @Falling
+    cmp.w   #$B0, d1
+    beq     @ActionDone
+
+;----------------------------------------------------------------------------
+
+@Falling:
+    move.w  OBJ_XSPEED(a0), d7
+    move.w  OBJ_YSPEED(a0), d6
+    add.w   (Subpixel), d7
+    add.w   (Subpixel), d6
+    asr.w   #8, d7
+    asr.w   #8, d6
+    add.w   d7, d0
+    add.w   d6, d1
+    
+    add.w   #DOPPLE_FALL, OBJ_YSPEED(a0)
+    move.b  #PA_JUMP, (DopplePose)
+
+;----------------------------------------------------------------------------
+
+@ActionDone:
+
+    cmp.w   #$B0, d1                    ; Landed already?
+    blt.s   @DidntLand
+    move.w  #$B0, d1
+    clr.w   OBJ_YSPEED(a0)
+@DidntLand:
+    
+    move.w  d0, OBJ_X(a0)               ; Store new status
+    move.w  d1, OBJ_Y(a0)
+    move.b  d2, OBJ_FLAGS(a0)
+
+;----------------------------------------------------------------------------
+
+    moveq   #0, d7                      ; Did the animation change? (we need
+    move.b  (DopplePose), d7              ; to start the new one if so)
+    cmp.b   (DoppleOldPose), d7
+    beq.s   @SamePose
+    move.b  d7, (DoppleOldPose)
+    add.w   d7, d7
+    add.w   d7, d7
+    lea     (PlayerPoseList), a6
+    move.l  (a6,d7.w), (DoppleAnimNext)
+    move.w  #1, (DoppleAnimLen)
+@SamePose:
+    
+    subq.w  #1, (DoppleAnimLen)         ; Update the animation if needed
+    bne.s   @NoAnimUpdate
+    move.l  (DoppleAnimNext), a6
+    move.l  (a6)+, (DoppleMapping)
+    move.l  (a6)+, (DoppleGfxAddr)
+    move.w  (a6)+, (DoppleGfxSize)
+    move.w  (a6)+, (DoppleAnimLen)
+    move.l  (a6)+, (DoppleAnimNext)
+@NoAnimUpdate:
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawDoppleganger
+; Draws the Merlina doppleganger.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawDoppleganger:
+    move.l  (DoppleGfxAddr), d7         ; Load new graphics if needed
+    move.w  (DoppleGfxSize), d6
+    beq.s   @SpriteLoaded
+    move.l  (DMABufEnd), a6
+    DMA2VRAM_SL d7, VramDoppleganger*$20, d6, a6
+    move.l  a6, (DMABufEnd)
+    clr.w   (DoppleGfxSize)
+@SpriteLoaded:
+    
+    move.w  #$6000+VramDoppleganger, d2   ; Check which way the doppleganger
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)          ; is facing
+    beq.s   @NotFlipped
+    or.w    #$0800, d2
+@NotFlipped:
+    
+    move.w  OBJ_X(a0), d0               ; Draw doppleganger's sprite
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    move.l  (DoppleMapping), a6
+    jsr     (AddMetasprite).w
     
     rts                                 ; End of subroutine
