@@ -104,6 +104,7 @@ slz src-data/enemies/enemies.4bpp data/enemies/enemies.slz
 slz src-data/enemies/cogwheel.4bpp data/enemies/cogwheel.slz
 slz src-data/enemies/lava.4bpp data/enemies/lava.slz
 slz src-data/tileset/tileset.4bpp data/tileset/tileset.slz
+slz src-data/tileset/portrait.4bpp data/tileset/portrait.slz
 slz src-data/ingame/ingame.4bpp data/ingame/ingame.slz
 slz src-data/parallax/fog.blob data/parallax/fog.slz
 slz src-data/title/logo_en.blob data/title/logo_en.slz

@@ -40,7 +40,7 @@ CopyStr:
 
 ;****************************************************************************
 ; CopyStrNoNull
-; Copies a string elsewhere without the nul terminator
+; Copies a string elsewhere without the nul terminator.
 ;----------------------------------------------------------------------------
 ; input a6.l .... Source pointer
 ; input a5.l .... Destination pointer

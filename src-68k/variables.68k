@@ -95,6 +95,9 @@ ParallaxInit:       rs.l 1          ; Subroutine used to set up the parallax
 ParallaxFunc:       rs.l 1          ; Subroutine used to update the parallax
 WaterHeight:        rs.w 1          ; Height of the water ($7FFF = no water)
 
+BossMeter:          rs.b 1          ; How large is the boss health meter
+BossHealth:         rs.b 1          ; How much health the boss has
+
 PlayerX:            rs.w 1          ; Merlina's horizontal position
 PlayerY:            rs.w 1          ; Merlina's vertical position
 PlayerXSpeed:       rs.w 1          ; Merlina's horizontal momentum
@@ -155,6 +158,8 @@ DoppleAnimNext:     rs.l 1          ; Next frame in the animation
 
 DoppleOldPose:      rs.b 1          ; Doppleganger's last pose (see PA_*)
 DopplePose:         rs.b 1          ; Doppleganger's next pose (see PA_*)
+DoppleMercy:        rs.w 1          ; Mercy invulnerability time left
+DoppleMagicTimer:   rs.w 1          ; Time left before using magic again
 
 ;****************************************************************************
 ; Variables used in menus and the title screen
@@ -185,7 +190,7 @@ StageNameBuf:       rs.b 22         ; Stage name string buffer
                     
                     rs.b 1          ; Blank tile
 VramPlayer:         rs.b 50         ; Merlina's sprite
-VramTileset:        rs.b 160        ; Tileset graphics
+VramTileset:        rs.b 169        ; Tileset graphics
 VramCandle:         rs.b 2*2        ; Candle fire
 VramChain:          rs.b 2*2        ; Platform chains
 VramHUDHealth:      rs.b 4*3        ; HUD health
@@ -232,6 +237,11 @@ VramCog:            rs.b 3*3*9      ; Cogwheel cogs
 
                     rsset StageVRAM
 VramFog:            rs.b 7          ; Fog outdoors
+
+;----------------------------------------------------------------------------
+
+                    rsset StageVRAM
+VramPortrait:       rs.b 6*8*3      ; Portraits
 
 ;----------------------------------------------------------------------------
 

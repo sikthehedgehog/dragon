@@ -85,6 +85,7 @@ OBJTYPE_LAVAFLOOD:  rs.b 1      ; Lava flood
 OBJTYPE_WALL:       rs.b 1      ; Moving wall
 OBJTYPE_REFLECTION: rs.b 1      ; Merlina reflection
 OBJTYPE_DOPPLE:     rs.b 1      ; Doppleganger
+OBJTYPE_PUSHLIMIT:  rs.b 1      ; Restores camera limit
 OBJTYPE_COGWHEEL:   rs.b 1      ; Cogwheel
 OBJTYPE_LAVABURST:  rs.b 1      ; Lava bursting from the floor
 OBJTYPE_LAVABREAK:  rs.b 1      ; Lava bursting from the wall at the end
@@ -194,6 +195,7 @@ AddObject:
     dc.l    @Null                       ; OBJTYPE_WALL
     dc.l    @Null                       ; OBJTYPE_REFLECTION
     dc.l    InitDoppleganger            ; OBJTYPE_DOPPLE
+    dc.l    InitPushLimit               ; OBJTYPE_PUSHLIMIT
     dc.l    InitCogwheel                ; OBJTYPE_COGWHEEL
     dc.l    InitLavaBurst               ; OBJTYPE_LAVABURST
     dc.l    InitLavaBreak               ; OBJTYPE_LAVABREAK
@@ -265,6 +267,7 @@ RunAllObjects:
     dc.l    RunWall                     ; OBJTYPE_WALL
     dc.l    RunReflection               ; OBJTYPE_REFLECTION
     dc.l    RunDoppleganger             ; OBJTYPE_DOPPLE
+    dc.l    RunPushLimit                ; OBJTYPE_PUSHLIMIT
     dc.l    RunCogwheel                 ; OBJTYPE_COGWHEEL
     dc.l    RunLavaBurst                ; OBJTYPE_LAVABURST
     dc.l    @Null                       ; OBJTYPE_LAVABREAK
@@ -332,6 +335,7 @@ DrawAllObjects:
     dc.l    @Null                       ; OBJTYPE_WALL
     dc.l    DrawReflection              ; OBJTYPE_REFLECTION
     dc.l    DrawDoppleganger            ; OBJTYPE_DOPPLE
+    dc.l    @Null                       ; OBJTYPE_PUSHLIMIT
     dc.l    DrawCogwheel                ; OBJTYPE_COGWHEEL
     dc.l    DrawLavaBurst               ; OBJTYPE_LAVABURST
     dc.l    @Null                       ; OBJTYPE_LAVABREAK

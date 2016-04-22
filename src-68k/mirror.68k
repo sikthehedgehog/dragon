@@ -1,8 +1,13 @@
 MIRROR_ROOM:        equ 11*$20          ; Where the boss fight happens
 
 DOPPLE_HEALTH:      equ 8               ; How many hits she can take
+DOPPLE_SPEED:       equ MAX_SPEED       ; How fast she can run
 DOPPLE_JUMP:        equ JUMP_FORCE      ; How high she jumps
 DOPPLE_FALL:        equ ACCEL_FALL      ; How fast she falls
+DOPPLE_REACTION:    equ 16              ; How fast she reacts
+DOPPLE_REFLEX:      equ 4               ; How long she takes before attacking
+DOPPLE_ATTACK:      equ 32              ; How long she spends attacking
+DOPPLE_FLASH:       equ 60              ; How long invulnerability lasts
 
 ;****************************************************************************
 ; RunReflection
@@ -100,9 +105,12 @@ DrawReflection:
 ;****************************************************************************
 
 InitDoppleganger:
-    move.b  #%1, OBJ_FLAGS(a6)
-    move.w  #-$200, OBJ_XSPEED(a6)
+    move.b  #%1, OBJ_FLAGS(a6)          ; Start by jumping!
+    move.w  #-DOPPLE_SPEED/2, OBJ_XSPEED(a6)
     move.w  #-DOPPLE_JUMP, OBJ_YSPEED(a6)
+    
+    move.b  #DOPPLE_HEALTH*2, (BossMeter)   ; Initial health
+    move.b  #DOPPLE_HEALTH*2, (BossHealth)
     move.b  #DOPPLE_HEALTH, OBJ_HEALTH(a6)
     
     move.w  #PLAYER_X1, OBJ_BOXX1(a6)   ; Set up hitbox
@@ -110,8 +118,10 @@ InitDoppleganger:
     move.w  #PLAYER_X2, OBJ_BOXX2(a6)
     move.w  #PLAYER_Y2, OBJ_BOXY2(a6)
     
-    move.b  #-1, (DoppleOldPose)        ; Force an animation change
+    clr.w   (DoppleMercy)               ; No mercy invulnerability yet
+    clr.w   (DoppleMagicTimer)          ; Use magic right away!
     
+    move.b  #-1, (DoppleOldPose)        ; Force an animation change
     rts                                 ; End of subroutine
 
 ;****************************************************************************
@@ -131,13 +141,13 @@ RunDoppleganger:
     move.b  #PA_IDLE, (DopplePose)      ; Idle by default
     
     tst.w   OBJ_YSPEED(a0)              ; In the air?
-    blt.s   @Falling
+    blt.s   @InAir
     cmp.w   #$B0, d1
-    beq     @ActionDone
+    beq.s   @OnFloor
 
 ;----------------------------------------------------------------------------
 
-@Falling:
+@InAir:
     move.w  OBJ_XSPEED(a0), d7
     move.w  OBJ_YSPEED(a0), d6
     add.w   (Subpixel), d7
@@ -149,15 +159,189 @@ RunDoppleganger:
     
     add.w   #DOPPLE_FALL, OBJ_YSPEED(a0)
     move.b  #PA_JUMP, (DopplePose)
+    bra     @ActionDone
+
+;----------------------------------------------------------------------------
+
+@OnFloor:
+    tst.b   OBJ_HEALTH(a0)              ; Already dead?
+    beq     @Dead
+    
+    btst.l  #OF_ACTIVE, d2              ; Continue an action?
+    bne.s   @InPlace
+    tst.w   OBJ_TIMER(a0)
+    bne.s   @Running
+    
+    move.l  a0, a6                      ; Look towards the player
+    bsr     FacePlayer
+    move.b  OBJ_FLAGS(a0), d2
+    
+    tst.w   (DoppleMagicTimer)          ; Time to use magic?
+    beq     @UseMagic
+    
+    move.w  d0, d7                      ; Is she close enough?
+    sub.w   (PlayerX), d7
+    bpl.s   *+4
+    neg.w   d7
+    cmp.w   #$30, d7
+    bge.s   @StartRunning
+    
+    btst.b  #PF_LANDED, (PlayerFlags)   ; Is the player in the air?
+    beq     @Jump
+    bset.l  #OF_ACTIVE, d2              ; Ready to attack!
+    bra.s   @InPlace
+
+;----------------------------------------------------------------------------
+
+@StartRunning:
+    move.w  #DOPPLE_REACTION, OBJ_TIMER(a0)
+
+@Running:
+    subq.w  #1, OBJ_TIMER(a0)           ; Delay before we react again
+    
+    move.w  #DOPPLE_SPEED, d7           ; Run forwards
+    btst.l  #OF_DIR, d2
+    beq.s   *+4
+    neg.w   d7
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, d0
+    move.b  #PA_RUN, (DopplePose)
+    bra     @ActionDone
+
+;----------------------------------------------------------------------------
+
+@InPlace:
+    move.w  OBJ_TIMER(a0), d7           ; Are we idling?
+    addq.w  #1, d7
+    move.w  d7, OBJ_TIMER(a0)
+    cmp.w   #DOPPLE_REFLEX, d7
+    bge.s   @Attacking
+    move.b  #PA_IDLE, (DopplePose)
+    bra     @ActionDone
+@Attacking:
+    
+    bne.s   @NoBroomWhoosh              ; Whoosh!
+    moveq   #SFX_ATTACK, d7
+    jsr     (PlaySFX).w
+@NoBroomWhoosh:
+    
+    cmp.w   #DOPPLE_ATTACK, d7          ; Done with the attack?
+    bne.s   @DoneAttacking
+    bclr.l  #OF_ACTIVE, d2
+    clr.w   OBJ_TIMER(a0)
+@DoneAttacking:
+    
+    move.b  #PA_ATTACK, (DopplePose)    ; Show us using the broom
+    bra     @ActionDone
+
+;----------------------------------------------------------------------------
+
+@Dead:
+    move.b  #PA_DEAD, (DopplePose)      ; Lying on the floor
+    
+    move.w  OBJ_TIMER(a0), d7           ; Vanishing?
+    addq.w  #1, d7
+    move.w  d7, OBJ_TIMER(a0)
+    cmp.w   #$80, d7
+    blo.s   @ActionDone
+    
+    clr.b   (BossMeter)                 ; Undo the boss arena
+    moveq   #OBJTYPE_PUSHLIMIT, d5
+    bsr     AddObject
+    
+    bra     DestroySelf                 ; We're done
+
+;----------------------------------------------------------------------------
+
+@Jump:
+    move.w  #DOPPLE_SPEED, d7           ; Take off!
+    btst.l  #OF_DIR, d2
+    beq.s   *+4
+    neg.w   d7
+    move.w  d7, OBJ_XSPEED(a0)
+    move.w  #-DOPPLE_JUMP, OBJ_YSPEED(a0)
+    
+    moveq   #SFX_JUMP, d7               ; Noise
+    jsr     (PlaySFX).w
+    bra     @ActionDone
+
+;----------------------------------------------------------------------------
+
+@UseMagic:
+    moveq   #0, d7                      ; Set time before next use of magic
+    move.b  OBJ_HEALTH(a0), d7
+    lsl.w   #4, d7
+    add.w   #$60, d7
+    move.w  d7, (DoppleMagicTimer)
+    
+    move.w  d0, d7                      ; Spawn a ghost right away
+    move.w  d1, d6
+    moveq   #OBJTYPE_ACTGHOST, d5
+    bsr     AddObject
+    clr.w   OBJ_XSPEED(a6)
+    move.w  #-$300, OBJ_YSPEED(a6)
 
 ;----------------------------------------------------------------------------
 
 @ActionDone:
-
+    tst.w   (DoppleMagicTimer)          ; Keep waiting before using magic
+    beq.s   @MagicComingSoon
+    subq.w  #1, DoppleMagicTimer
+@MagicComingSoon:
+    
+    btst.l  #OF_DISABLED, d2            ; Recoiling from getting hurt?
+    beq.s   @DidntGetHurt
+    move.b  #PA_HURT, (DopplePose)
+    bra.s   @CantGetHurt
+@DidntGetHurt:
+    tst.w   (DoppleMercy)               ; Reduce mercy time if it's in force
+    beq.s   @NoMercyTimer
+    subq.w  #1, (DoppleMercy)
+@NoMercyTimer:
+    
+    tst.b   OBJ_HEALTH(a0)              ; Are we even still alive?
+    beq.s   @CantGetHurt
+    tst.w   (DoppleMercy)               ; Can we get hurt yet?
+    bne.s   @CantGetHurt
+    
+    btst.l  #OF_DISABLED, d2            ; Did we get hurt?
+    bne.s   @CantGetHurt
+    move.l  a0, a6
+    bsr     CollidesAttack
+    tst.w   d7
+    beq.s   @CantGetHurt
+    
+    moveq   #SFX_HIT, d7                ; Ouch!
+    jsr     (PlaySFX).w
+    
+    move.l  a0, a6                      ; Recoil
+    bsr     FacePlayer
+    move.b  OBJ_FLAGS(a0), d2
+    move.w  #RECOIL_SPEED, d7
+    btst.l  #OF_DIR, d2
+    bne.s   *+4
+    neg.w   d7
+    move.w  d7, OBJ_XSPEED(a0)
+    move.w  #-RECOIL_FORCE, OBJ_YSPEED(a0)
+    
+    subq.b  #1, OBJ_HEALTH(a0)          ; Lose some health
+    bset.l  #OF_DISABLED, d2            ; We're stunned!
+    bclr.l  #OF_ACTIVE, d2
+    clr.w   OBJ_TIMER(a0)
+@CantGetHurt:
+    
     cmp.w   #$B0, d1                    ; Landed already?
+    blt.s   @DidntLand
+    tst.w   OBJ_YSPEED(a0)
     blt.s   @DidntLand
     move.w  #$B0, d1
     clr.w   OBJ_YSPEED(a0)
+    
+    btst.l  #OF_DISABLED, d2
+    beq.s   @DidntLand
+    bclr.l  #OF_DISABLED, d2
+    move.w  #DOPPLE_FLASH, (DoppleMercy)
 @DidntLand:
     
     move.w  d0, OBJ_X(a0)               ; Store new status
@@ -188,6 +372,10 @@ RunDoppleganger:
     move.l  (a6)+, (DoppleAnimNext)
 @NoAnimUpdate:
     
+    move.b  OBJ_HEALTH(a0), d7          ; Update boss meter
+    add.b   d7, d7
+    move.b  d7, (BossHealth)
+    
     rts                                 ; End of subroutine
 
 ;****************************************************************************
@@ -209,6 +397,18 @@ DrawDoppleganger:
     clr.w   (DoppleGfxSize)
 @SpriteLoaded:
     
+    tst.w   (DoppleMercy)               ; Flashing?
+    bne.s   @DoBlink
+    tst.b   OBJ_HEALTH(a0)              ; Vanishing?
+    bne.s   @NoBlink
+    cmp.w   #$40, OBJ_TIMER(a0)
+    blo.s   @NoBlink
+@DoBlink:
+    tst.b   (BlinkFlag)
+    beq.s   @NoBlink
+    rts
+@NoBlink:
+    
     move.w  #$6000+VramDoppleganger, d2   ; Check which way the doppleganger
     btst.b  #OF_DIR, OBJ_FLAGS(a0)          ; is facing
     beq.s   @NotFlipped
@@ -221,5 +421,47 @@ DrawDoppleganger:
     sub.w   (CameraY), d1
     move.l  (DoppleMapping), a6
     jsr     (AddMetasprite).w
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; InitPushLimit
+; Sets up the object that restores the camera limit.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitPushLimit:
+    move.w  (CameraRight), OBJ_X(a6)    ; Current limit
+    
+    moveq   #0, d7                      ; Intended limit
+    move.b  (MapWidth), d7
+    lsl.w   #5, d7
+    sub.w   #320, d7
+    move.w  d7, OBJ_Y(a6)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunPushLimit
+; Code for the object that restores the camera limit.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunPushLimit:
+    move.w  OBJ_X(a0), d0               ; Current limit
+    move.w  OBJ_Y(a0), d1               ; Intended limit
+    
+    addq.w  #4, d0                      ; Push the limit forwards
+    move.w  d0, OBJ_X(a0)
+    move.w  d0, (CameraRight)
+    
+    cmp.w   d1, d0                      ; Got to the new limit?
+    beq     DestroySelf
     
     rts                                 ; End of subroutine

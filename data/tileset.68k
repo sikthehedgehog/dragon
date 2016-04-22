@@ -8,6 +8,15 @@ GfxTileset:
     even
 
 ;****************************************************************************
+; GfxPortrait
+; Portraits. Stored separately since they eat a ton of tiles.
+;****************************************************************************
+
+GfxPortrait:
+    incbin  "data/tileset/portrait.slz"
+    even
+
+;****************************************************************************
 ; Graphics for the various animations
 ;****************************************************************************
 
@@ -25,6 +34,7 @@ TilesetMappings:
 @T: equ VramTileset
 @C: equ VramCandle
 @H: equ VramChain
+@P: equ VramPortrait
 
     dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D      ; Tile $00
     dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C      ; Empty (indoors)
@@ -405,3 +415,93 @@ TilesetMappings:
     dc.w    @T+$2004, @T+$2005, @T+$2006, @T+$2007      ; NESW stairs
     dc.w    @T+$2002, @T+$2003, @T+$2000, @T+$2001      ; (outdoors, bottom)
     dc.w    @T+$2006, @T+$2007, @T+$2004, @T+$2005
+    
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D      ; Tile $4C
+    dc.w    @T+$20A0, @T+$20A1, @T+$20A1, @T+$20A1      ; Portrait #1
+    dc.w    @T+$20A3, @P+$4000, @P+$4001, @P+$4002      ; (top left)
+    dc.w    @T+$20A3, @P+$4006, @P+$4007, @P+$4008
+    
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D      ; Tile $4D
+    dc.w    @T+$20A1, @T+$20A1, @T+$20A1, @T+$20A2      ; Portrait #1
+    dc.w    @P+$4003, @P+$4004, @P+$4005, @T+$20A4      ; (top right)
+    dc.w    @P+$4009, @P+$400A, @P+$400B, @T+$20A4
+    
+    dc.w    @T+$20A3, @P+$400C, @P+$400D, @P+$400E      ; Tile $4E
+    dc.w    @T+$20A3, @P+$4012, @P+$4013, @P+$4014      ; Portrait #1
+    dc.w    @T+$20A3, @P+$4018, @P+$4019, @P+$401A      ; (middle left)
+    dc.w    @T+$20A3, @P+$401E, @P+$401F, @P+$4020
+    
+    dc.w    @P+$400F, @P+$4010, @P+$4011, @T+$20A4      ; Tile $4F
+    dc.w    @P+$4015, @P+$4016, @P+$4017, @T+$20A4      ; Portrait #1
+    dc.w    @P+$401B, @P+$401C, @P+$401D, @T+$20A4      ; (middle right)
+    dc.w    @P+$4021, @P+$4022, @P+$4023, @T+$20A4
+    
+    dc.w    @T+$20A3, @P+$4024, @P+$4025, @P+$4026      ; Tile $50
+    dc.w    @T+$20A3, @P+$402A, @P+$402B, @P+$402C      ; Portrait #1
+    dc.w    @T+$20A5, @T+$20A6, @T+$20A6, @T+$20A6      ; (bottom left)
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C
+    
+    dc.w    @P+$4027, @P+$4028, @P+$4029, @T+$20A4      ; Tile $51
+    dc.w    @P+$402D, @P+$402E, @P+$402F, @T+$20A4      ; Portrait #1
+    dc.w    @T+$20A6, @T+$20A6, @T+$20A6, @T+$20A7      ; (bottom right)
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C
+    
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D      ; Tile $52
+    dc.w    @T+$20A0, @T+$20A1, @T+$20A1, @T+$20A1      ; Portrait #2
+    dc.w    @T+$20A3, @P+$4030, @P+$4031, @P+$4032      ; (top left)
+    dc.w    @T+$20A3, @P+$4036, @P+$4037, @P+$4038
+    
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D      ; Tile $53
+    dc.w    @T+$20A1, @T+$20A1, @T+$20A1, @T+$20A2      ; Portrait #2
+    dc.w    @P+$4033, @P+$4034, @P+$4035, @T+$20A4      ; (top right)
+    dc.w    @P+$4039, @P+$403A, @P+$403B, @T+$20A4
+    
+    dc.w    @T+$20A3, @P+$403C, @P+$403D, @P+$403E      ; Tile $54
+    dc.w    @T+$20A3, @P+$4042, @P+$4043, @P+$4044      ; Portrait #2
+    dc.w    @T+$20A3, @P+$4048, @P+$4049, @P+$404A      ; (middle left)
+    dc.w    @T+$20A3, @P+$404E, @P+$404F, @P+$4050
+    
+    dc.w    @P+$403F, @P+$4040, @P+$4041, @T+$20A4      ; Tile $55
+    dc.w    @P+$4045, @P+$4046, @P+$4047, @T+$20A4      ; Portrait #2
+    dc.w    @P+$404B, @P+$404C, @P+$404D, @T+$20A4      ; (middle right)
+    dc.w    @P+$4051, @P+$4052, @P+$4053, @T+$20A4
+    
+    dc.w    @T+$20A3, @P+$4054, @P+$4055, @P+$4056      ; Tile $56
+    dc.w    @T+$20A3, @P+$405A, @P+$405B, @P+$405C      ; Portrait #2
+    dc.w    @T+$20A5, @T+$20A6, @T+$20A6, @T+$20A6      ; (bottom left)
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C
+    
+    dc.w    @P+$4057, @P+$4058, @P+$4059, @T+$20A4      ; Tile $57
+    dc.w    @P+$405D, @P+$405E, @P+$405F, @T+$20A4      ; Portrait #2
+    dc.w    @T+$20A6, @T+$20A6, @T+$20A6, @T+$20A7      ; (bottom right)
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C
+    
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D      ; Tile $58
+    dc.w    @T+$20A0, @T+$20A1, @T+$20A1, @T+$20A1      ; Portrait #3
+    dc.w    @T+$20A3, @P+$4060, @P+$4061, @P+$4062      ; (top left)
+    dc.w    @T+$20A3, @P+$4066, @P+$4067, @P+$4068
+    
+    dc.w    @T+$200C, @T+$200D, @T+$200C, @T+$200D      ; Tile $59
+    dc.w    @T+$20A1, @T+$20A1, @T+$20A1, @T+$20A2      ; Portrait #3
+    dc.w    @P+$4063, @P+$4064, @P+$4065, @T+$20A4      ; (top right)
+    dc.w    @P+$4069, @P+$406A, @P+$406B, @T+$20A4
+    
+    dc.w    @T+$20A3, @P+$406C, @P+$406D, @P+$406E      ; Tile $5A
+    dc.w    @T+$20A3, @P+$4072, @P+$4073, @P+$4074      ; Portrait #3
+    dc.w    @T+$20A3, @P+$4078, @P+$4079, @P+$407A      ; (middle left)
+    dc.w    @T+$20A3, @P+$407E, @P+$407F, @P+$4080
+    
+    dc.w    @P+$406F, @P+$4070, @P+$4071, @T+$20A4      ; Tile $5B
+    dc.w    @P+$4075, @P+$4076, @P+$4077, @T+$20A4      ; Portrait #3
+    dc.w    @P+$407B, @P+$407C, @P+$407D, @T+$20A4      ; (middle right)
+    dc.w    @P+$4081, @P+$4082, @P+$4083, @T+$20A4
+    
+    dc.w    @T+$20A3, @P+$4084, @P+$4085, @P+$4086      ; Tile $5C
+    dc.w    @T+$20A3, @P+$408A, @P+$408B, @P+$408C      ; Portrait #3
+    dc.w    @T+$20A5, @T+$20A6, @T+$20A6, @T+$20A6      ; (bottom left)
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C
+    
+    dc.w    @P+$4087, @P+$4088, @P+$4089, @T+$20A4      ; Tile $5D
+    dc.w    @P+$408D, @P+$408E, @P+$408F, @T+$20A4      ; Portrait #3
+    dc.w    @T+$20A6, @T+$20A6, @T+$20A6, @T+$20A7      ; (bottom right)
+    dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C

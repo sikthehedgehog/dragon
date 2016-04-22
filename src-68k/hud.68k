@@ -305,6 +305,46 @@ DrawHUD:
 
 ;----------------------------------------------------------------------------
 
+    moveq   #0, d0                      ; Show boss health bar?
+    move.b  (BossMeter), d0
+    beq.s   @NoBossMeter
+    moveq   #0, d5
+    move.b  (BossHealth), d5
+    add.w   d5, d5
+    
+    move.w  d0, d4                      ; How long is the bar?
+    lsr.w   #2, d4
+    subq.w  #1, d4
+    
+    add.w   d0, d0                      ; Determine position of the bar
+    add.w   d0, d0
+    neg.w   d0
+    add.w   #152, d0
+    move.w  #40, d1
+    
+    move.w  #$8010+VramHUDBar, d2       ; Draw left side of the bar
+    moveq   #%0001, d3
+    jsr     (AddSprite).w
+    
+    addq.w  #8, d0                      ; Draw the inside of the bar
+    moveq   #%1101, d3
+    lea     @BossTable(pc), a5
+@BossLoop:
+    move.w  (a5,d5.w), d2
+    jsr     (AddSprite).w
+    add.w   #$20, d0
+    subq.w  #8, d5
+    bgt.s   *+4
+    clr.w   d5
+    dbf     d4, @BossLoop
+    
+    move.w  #$8012+VramHUDBar, d2       ; Draw right side of the bar
+    moveq   #%0001, d3
+    jsr     (AddSprite).w
+@NoBossMeter:
+
+;----------------------------------------------------------------------------
+
     move.b  (NumSprites), (GameSprites) ; Let raster effects know where the
                                           ; ingame sprites start so they can
                                           ; safely affect only those
@@ -332,3 +372,11 @@ DrawHUD:
 @MagicBlink:
     dc.w    $8014+VramHUDBar, $8014+VramHUDBar
 
+@BossTable:
+    dc.w    $8008+VramHUDBar
+    dc.w    $8006+VramHUDBar
+    dc.w    $8004+VramHUDBar
+    dc.w    $8002+VramHUDBar
+    rept    12+1
+    dc.w    $8000+VramHUDBar
+    endr
