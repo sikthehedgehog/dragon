@@ -97,6 +97,7 @@ gfx src-data/menu/gfxbuild
 gfx src-data/error/gfxbuild
 
 cat src-data/parallax/fog.map src-data/parallax/fog.4bpp > src-data/parallax/fog.blob
+cat src-data/parallax/rooftop.map src-data/parallax/rooftop.4bpp > src-data/parallax/rooftop.blob
 cat src-data/title/logo_en.map src-data/title/logo_en.4bpp > src-data/title/logo_en.blob
 cat src-data/title/logo_es.map src-data/title/logo_es.4bpp > src-data/title/logo_es.blob
 
@@ -107,6 +108,7 @@ slz src-data/tileset/tileset.4bpp data/tileset/tileset.slz
 slz src-data/tileset/portrait.4bpp data/tileset/portrait.slz
 slz src-data/ingame/ingame.4bpp data/ingame/ingame.slz
 slz src-data/parallax/fog.blob data/parallax/fog.slz
+slz src-data/parallax/rooftop.blob data/parallax/rooftop.slz
 slz src-data/title/logo_en.blob data/title/logo_en.slz
 slz src-data/title/logo_es.blob data/title/logo_es.slz
 slz src-data/menu/font.4bpp data/menu/font.slz

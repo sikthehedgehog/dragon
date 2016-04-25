@@ -167,7 +167,9 @@ RunDoppleganger:
     tst.b   OBJ_HEALTH(a0)              ; Already dead?
     beq     @Dead
     
-    btst.l  #OF_ACTIVE, d2              ; Continue an action?
+    btst.l  #OF_SPECIAL, d2             ; Continue an action?
+    bne     @InMagic
+    btst.l  #OF_ACTIVE, d2
     bne.s   @InPlace
     tst.w   OBJ_TIMER(a0)
     bne.s   @Running
@@ -269,6 +271,9 @@ RunDoppleganger:
 ;----------------------------------------------------------------------------
 
 @UseMagic:
+    bset.l  #OF_SPECIAL, d2             ; Start action
+    move.w  #DOPPLE_ATTACK, OBJ_TIMER(a0)
+    
     moveq   #0, d7                      ; Set time before next use of magic
     move.b  OBJ_HEALTH(a0), d7
     lsl.w   #4, d7
@@ -277,10 +282,21 @@ RunDoppleganger:
     
     move.w  d0, d7                      ; Spawn a ghost right away
     move.w  d1, d6
+    sub.w   #$10, d6
     moveq   #OBJTYPE_ACTGHOST, d5
     bsr     AddObject
     clr.w   OBJ_XSPEED(a6)
-    move.w  #-$300, OBJ_YSPEED(a6)
+    move.w  #-$600, OBJ_YSPEED(a6)
+    moveq   #SFX_DARKMAGIC, d7
+    jsr     (PlaySFX).w
+
+@InMagic:
+    subq.w  #1, OBJ_TIMER(a0)           ; Keep waiting?
+    bne.s   @MagicGoing
+    bclr.l  #OF_SPECIAL, d2
+@MagicGoing:
+    
+    move.b  #PA_MAGIC, (DopplePose)     ; Set up pose
 
 ;----------------------------------------------------------------------------
 
@@ -328,6 +344,7 @@ RunDoppleganger:
     subq.b  #1, OBJ_HEALTH(a0)          ; Lose some health
     bset.l  #OF_DISABLED, d2            ; We're stunned!
     bclr.l  #OF_ACTIVE, d2
+    bclr.l  #OF_SPECIAL, d2
     clr.w   OBJ_TIMER(a0)
 @CantGetHurt:
     

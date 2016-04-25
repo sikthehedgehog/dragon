@@ -22,6 +22,7 @@
    $bookshelf = false;
    $wall = (strstr($argv[1], "wall") !== false);
    $portraits = false;
+   $rooftop = false;
    
    $colltypes = Array(0x00, 0x01, 0x01, 0x01, 0x01, 0x02, 0x00, 0x00,
                       0x00, 0x00, 0xFF, 0x00, 0xFE, 0x00, 0x00, 0x00,
@@ -134,6 +135,8 @@
                $bookshelf = true;
             if ($id >= 0x4C && $id <= 0x5D)
                $portraits = true;
+            if ($id >= 0x0E && $id <= 0x0F)
+               $rooftop = true;
             
             $x++;
          }
@@ -354,6 +357,10 @@
    if ($wall) {
       $pal[2] = "PalTilesetAlt";
       $parallax = "WallParallax";
+   }
+   if ($rooftop) {
+      $pal[3] = "PalRooftopBG";
+      $parallax = "RooftopParallax";
    }
    
    $out = $out."    dc.l    ".$pal[0]."\n";

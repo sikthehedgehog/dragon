@@ -1,3 +1,8 @@
 output "src-data/parallax/fog.4bpp"
 input "src-data/parallax/fog.png"
 tiles 0 0 7 1
+
+output "src-data/parallax/rooftop.4bpp"
+output2 "src-data/parallax/rooftop.map"
+input "src-data/parallax/rooftop.png"
+map 0 0 64 24

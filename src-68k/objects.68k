@@ -40,6 +40,7 @@ OBJ_SIZE:       rs.b 0      ; Size of an object entry
 OF_DIR:         rs.b 1      ; Which direction it's looking at
 OF_ACTIVE:      rs.b 1      ; This object is in active mode
 OF_DISABLED:    rs.b 1      ; This object is not working
+OF_SPECIAL:     rs.b 1      ; This object is doing a special action
 
 ;****************************************************************************
 ; OBJTYPE_*

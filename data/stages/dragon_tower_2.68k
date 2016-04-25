@@ -25,12 +25,12 @@
     dc.l    PalMerlina
     dc.l    PalTileset
     dc.l    0
-    dc.l    0
+    dc.l    PalRooftopBG
 
     dc.l    0
     dc.w    0
-    dc.l    InitNoParallax
-    dc.l    UpdateNoParallax
+    dc.l    InitRooftopParallax
+    dc.l    UpdateRooftopParallax
     dc.w    $7FFF
 
     dc.w    OBJTYPE_END|STAGE_DRAGONTOWER1<<8, $0300, $0090

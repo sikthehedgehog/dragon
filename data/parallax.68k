@@ -6,3 +6,13 @@
 GfxFog:
     incbin  "data/parallax/fog.slz"
     even
+
+;****************************************************************************
+; GfxRooftopBG
+; Graphics for the background in the rooftop arena. This includes both the
+; tilemap and the tiles.
+;****************************************************************************
+
+GfxRooftopBG:
+    incbin  "data/parallax/rooftop.slz"
+    even

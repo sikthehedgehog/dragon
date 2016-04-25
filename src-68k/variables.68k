@@ -246,14 +246,19 @@ VramPortrait:       rs.b 6*8*3      ; Portraits
 ;----------------------------------------------------------------------------
 
                     rsset StageVRAM
+VramLavaBurst:      rs.b 4*4        ; Bursting lava
+VramRisingLava:     rs.b 4*2+4*4    ; Rising lava
+VramLavaFlood:      rs.b 4*4        ; Lava flood sprite
+
+;----------------------------------------------------------------------------
+
+                    rsset StageVRAM
 VramDoppleganger:   rs.b 50         ; Dopplganger Merlina
 
 ;----------------------------------------------------------------------------
 
                     rsset StageVRAM
-VramLavaBurst:      rs.b 4*4        ; Bursting lava
-VramRisingLava:     rs.b 4*2+4*4    ; Rising lava
-VramLavaFlood:      rs.b 4*4        ; Lava flood sprite
+VramRooftopBG:      rs.b 0          ; Rooftop background
 
 ;****************************************************************************
 ; Tile IDs for graphics in menus (and title screen)
