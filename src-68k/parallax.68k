@@ -672,7 +672,25 @@ UpdateRooftopParallax:
     move.w  d1, (a0)+
     move.w  d0, (a0)+
     move.w  d0, (a0)+
+    
+    move.w  (CameraX), d0               ; Determine position of the mountains
+    neg.w   d0                            ; and forest
+    move.w  d0, d1
+    asr.w   #1, d1
+    add.w   d0, d1
+    asr.w   #4, d0
+    asr.w   #4, d1
+    
+    move.w  d0, (a0)+                   ; Scroll the mountains
     move.w  d0, (a0)+
+    move.w  d0, (a0)+
+    move.w  d0, (a0)+
+    move.w  d0, (a0)+
+    
+    move.w  d1, (a0)+                   ; Scroll the forest
+    move.w  d1, (a0)+
+    move.w  d1, (a0)+
+    move.w  d1, (a0)+
     
     clr.w   (VScrollBBuf)               ; Update scroll
     bra     UpdatePerCellParallax
