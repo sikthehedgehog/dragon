@@ -624,7 +624,7 @@ InitRooftopParallax:
     lea     (FreeRAM), a6               ; Load pattern
     move.w  #$6000+VramRooftopBG, d7
     jsr     (LoadPlaneB).w
-    DMA2VRAM FreeRAM+$C00, VramRooftopBG*$20, $C000-(VramRooftopBG*$20), ($C00004)
+    DMA2VRAM FreeRAM+$E00, VramRooftopBG*$20, $C000-(VramRooftopBG*$20), ($C00004)
     
     rts                                 ; End of subroutine
 

@@ -99,6 +99,11 @@ tiles 0 2 1 1
 tiles 7 2 1 1
 tiles 0 10 2 1
 tiles 7 10 1 1
+input "src-data/tileset/tile_5E.png"
+tiles 0 2 2 2
+tiles 0 0 2 1
+tiles 3 0 1 1
+tiles 0 1 1 1
 
 output "data/tileset/candle.4bpp"
 input "src-data/tileset/candle.png"

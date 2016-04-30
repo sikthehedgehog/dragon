@@ -82,6 +82,16 @@ StageData_Rest4:            include "data/stages/rest_4.68k"
 StageData_Rest5:            include "data/stages/rest_5.68k"
 StageData_Rest6:            include "data/stages/rest_6.68k"
 
+StageData_RooftopStart:     include "data/stages/rooftop_start.68k"
+StageData_Rooftop1:         include "data/stages/rooftop_1.68k"
+StageData_Rooftop1B:        include "data/stages/rooftop_1b.68k"
+StageData_Rooftop2:         include "data/stages/rooftop_2.68k"
+StageData_Rooftop2B:        include "data/stages/rooftop_2b.68k"
+StageData_Rooftop3:         include "data/stages/rooftop_3.68k"
+StageData_Rooftop3B:        include "data/stages/rooftop_3b.68k"
+StageData_Rooftop4:         include "data/stages/rooftop_4.68k"
+StageData_RooftopEnd:       include "data/stages/rooftop_end.68k"
+
 StageData_Maze1:            include "data/stages/maze_1.68k"
 StageData_Maze2:            include "data/stages/maze_2.68k"
 StageData_Maze2A:           include "data/stages/maze_2a.68k"
@@ -184,6 +194,16 @@ STAGE_\name: rs.b 1
     @Entry      Rest4
     @Entry      Rest5
     @Entry      Rest6
+    
+    @Entry      RooftopStart
+    @Entry      Rooftop1
+    @Entry      Rooftop1B
+    @Entry      Rooftop2
+    @Entry      Rooftop2B
+    @Entry      Rooftop3
+    @Entry      Rooftop3B
+    @Entry      Rooftop4
+    @Entry      RooftopEnd
     
     @Entry      Maze1
     @Entry      Maze2

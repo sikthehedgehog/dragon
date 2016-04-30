@@ -67,6 +67,15 @@ stage src-data/stages/rest_3.tmx data/stages/rest_3.68k
 stage src-data/stages/rest_4.tmx data/stages/rest_4.68k
 stage src-data/stages/rest_5.tmx data/stages/rest_5.68k
 stage src-data/stages/rest_6.tmx data/stages/rest_6.68k
+stage src-data/stages/rooftop_start.tmx data/stages/rooftop_start.68k
+stage src-data/stages/rooftop_1.tmx data/stages/rooftop_1.68k
+stage src-data/stages/rooftop_1b.tmx data/stages/rooftop_1b.68k
+stage src-data/stages/rooftop_2.tmx data/stages/rooftop_2.68k
+stage src-data/stages/rooftop_2b.tmx data/stages/rooftop_2b.68k
+stage src-data/stages/rooftop_3.tmx data/stages/rooftop_3.68k
+stage src-data/stages/rooftop_3b.tmx data/stages/rooftop_3b.68k
+stage src-data/stages/rooftop_4.tmx data/stages/rooftop_4.68k
+stage src-data/stages/rooftop_end.tmx data/stages/rooftop_end.68k
 stage src-data/stages/maze_1.tmx data/stages/maze_1.68k
 stage src-data/stages/maze_2.tmx data/stages/maze_2.68k
 stage src-data/stages/maze_2a.tmx data/stages/maze_2a.68k

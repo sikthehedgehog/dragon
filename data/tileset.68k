@@ -505,3 +505,13 @@ TilesetMappings:
     dc.w    @P+$408D, @P+$408E, @P+$408F, @T+$20A4      ; Portrait #3
     dc.w    @T+$20A6, @T+$20A6, @T+$20A6, @T+$20A7      ; (bottom right)
     dc.w    @T+$200D, @T+$200C, @T+$200D, @T+$200C
+    
+    dc.w    @T+$20AC, @T+$20AD, @T+$28AD, @T+$20AE      ; Tile $5E
+    dc.w    @T+$20AF, @T+$20AB, @T+$20AA, @T+$28AF      ; Window (top)
+    dc.w    @T+$20A8, @T+$20A9, @T+$20A8, @T+$20A9
+    dc.w    @T+$20AA, @T+$20AB, @T+$20AA, @T+$20AB
+        
+    dc.w    @T+$20A8, @T+$20A9, @T+$20A8, @T+$20A9      ; Tile $5F
+    dc.w    @T+$20AA, @T+$20AB, @T+$20AA, @T+$20AB      ; Window (bottom)
+    dc.w    @T+$20A8, @T+$20A9, @T+$20A8, @T+$20A9
+    dc.w    @T+$20AA, @T+$20AB, @T+$20AA, @T+$20AB

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="35" height="7" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32">
+  <image source="../tileset/tileset.png" width="256" height="512"/>
+ </tileset>
+ <tileset firstgid="129" name="objset" tilewidth="64" tileheight="64">
+  <image source="../tileset/objset.png" trans="000000" width="512" height="512"/>
+ </tileset>
+ <layer name="Capa de Patrones 1" width="35" height="7">
+  <data encoding="csv">
+2,2,53,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,54,2,2,
+2,2,53,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,54,2,2,
+2,2,53,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,54,2,2,
+2,49,50,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,51,52,2,
+2,49,50,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,51,52,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+</data>
+ </layer>
+ <objectgroup name="Capa de Objetos 1" width="35" height="7">
+  <object gid="131" x="15" y="173"/>
+  <object name="1" gid="149" x="589" y="174"/>
+  <object name="1" gid="149" x="813" y="173"/>
+  <object name="1" gid="149" x="1040" y="175"/>
+  <object name="STAGE_ROOFTOP1B" gid="147" x="1054" y="142"/>
+  <object name="STAGE_ROOFTOP1B" gid="147" x="1053" y="176"/>
+ </objectgroup>
+</map>
