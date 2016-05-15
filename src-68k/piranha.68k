@@ -2,6 +2,10 @@
 ; Some parameters for tweaking the piranhas
 ;****************************************************************************
 
+;----------------------------------------------------------------------------
+; Swimming piranhas
+;----------------------------------------------------------------------------
+
 PIRANHA_SWIM:       equ $80             ; Swimming speed
 PIRANHA_BITESPEED:  equ $200            ; How fast piranhas go when biting
 PIRANHA_BITEDISTX:  equ $40             ; How far piranhas can see (hor.)
@@ -11,6 +15,25 @@ PIRANHA_X1:         equ -$10            ; Left boundary of collision box
 PIRANHA_Y1:         equ -$0C            ; Top boundary of collision box
 PIRANHA_X2:         equ $0F             ; Right boundary of collision box
 PIRANHA_Y2:         equ $0B             ; Bottom boundary of collision box
+
+;----------------------------------------------------------------------------
+; Jumping piranhas
+;----------------------------------------------------------------------------
+
+JPIRANHA_JUMP:      equ $700            ; How high to jump
+JPIRANHA_WEIGHT:    equ $20             ; How fast does it fall
+
+; How long the jump lasts
+JPIRANHA_TIME: equ JPIRANHA_JUMP/JPIRANHA_WEIGHT*2+1
+
+JPIRANHA_X1:        equ -$0C            ; Left boundary of collision box
+JPIRANHA_Y1:        equ -$10            ; Top boundary of collision box
+JPIRANHA_X2:        equ $0B             ; Right boundary of collision box
+JPIRANHA_Y2:        equ $0F             ; Bottom boundary of collision box
+
+;----------------------------------------------------------------------------
+; Fish piranhas
+;----------------------------------------------------------------------------
 
 FISH_SPEED:         equ $55             ; Speed of the tiny fishes
 FISH_X1:            equ -$0A            ; Left boundary of fish box
@@ -294,6 +317,86 @@ DrawPiranha:
 @BiteAnim:
     dc.l    SprPiranha_Attack2
     dc.l    SprPiranha_Attack3
+
+;****************************************************************************
+; InitJumpPiranha
+; Initializes a jumping piranha.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitJumpPiranha:
+    move.w  #JPIRANHA_X1, OBJ_BOXX1(a6)  ; Set up hitbox
+    move.w  #JPIRANHA_Y1, OBJ_BOXY1(a6)
+    move.w  #JPIRANHA_X2, OBJ_BOXX2(a6)
+    move.w  #JPIRANHA_Y2, OBJ_BOXY2(a6)
+    
+    move.w  #-JPIRANHA_JUMP, OBJ_YSPEED(a6) ; Set initial jump
+    move.w  #JPIRANHA_TIME, OBJ_TIMER(a6)
+    
+    rts
+
+;****************************************************************************
+; RunJumpPiranha
+; Executes the behavior for a jumping piranha.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunJumpPiranha:
+    move.w  OBJ_YSPEED(a0), d7          ; Move up and down
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, OBJ_Y(a0)
+    add.w   #JPIRANHA_WEIGHT, OBJ_YSPEED(a0)
+    
+    subq.w  #1, OBJ_TIMER(a0)           ; Jump again?
+    bne.s   @NotAgain
+    move.w  #-JPIRANHA_JUMP, OBJ_YSPEED(a0)
+    move.w  #JPIRANHA_TIME, OBJ_TIMER(a0)
+    move.l  a0, a6
+    bsr     FacePlayer
+@NotAgain:
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawJumpPiranha
+; Draws a jumping piranha.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawJumpPiranha:
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  OBJ_YSPEED(a0), d7          ; Determine sprite to use
+    lea     (SprPiranha_Jump1), a6
+    cmp.w   #-JPIRANHA_WEIGHT*3, d7
+    ble.s   @SpriteSet
+    lea     (SprPiranha_Jump2), a6
+    cmp.w   #JPIRANHA_WEIGHT*3, d7
+    blt.s   @SpriteSet
+    lea     (SprPiranha_Jump3), a6
+@SpriteSet:
+    
+    move.w  #VramPiranha, d2            ; Figure out direction
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)
+    beq.s   @NoFlip
+    bset.l  #11, d2
+@NoFlip:
+    
+    jsr     (AddMetasprite).w           ; Draw piranha
+    rts                                 ; End of subroutine
 
 ;****************************************************************************
 ; RunFish

@@ -515,3 +515,13 @@ TilesetMappings:
     dc.w    @T+$20AA, @T+$20AB, @T+$20AA, @T+$20AB      ; Window (bottom)
     dc.w    @T+$20A8, @T+$20A9, @T+$20A8, @T+$20A9
     dc.w    @T+$20AA, @T+$20AB, @T+$20AA, @T+$20AB
+    
+    dc.w    @T+$200C, @T+$20B0, @T+$200C, @T+$200D      ; Tile $60
+    dc.w    @T+$200D, @T+$20B1, @T+$200D, @T+$200C      ; Still chains
+    dc.w    @T+$200C, @T+$20B0, @T+$200C, @T+$200D      ; (left)
+    dc.w    @T+$200D, @T+$20B1, @T+$200D, @T+$200C
+    
+    dc.w    @T+$200C, @T+$200D, @T+$20B0, @T+$200D      ; Tile $61
+    dc.w    @T+$200D, @T+$200C, @T+$20B1, @T+$200C      ; Still chains
+    dc.w    @T+$200C, @T+$200D, @T+$20B0, @T+$200D      ; (right)
+    dc.w    @T+$200D, @T+$200C, @T+$20B1, @T+$200C

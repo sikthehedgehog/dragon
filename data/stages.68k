@@ -82,6 +82,11 @@ StageData_Rest4:            include "data/stages/rest_4.68k"
 StageData_Rest5:            include "data/stages/rest_5.68k"
 StageData_Rest6:            include "data/stages/rest_6.68k"
 
+StageData_Platforms1:       include "data/stages/platforms_1.68k"
+StageData_Platforms2:       include "data/stages/platforms_2.68k"
+StageData_Platforms3:       include "data/stages/platforms_3.68k"
+StageData_Platforms4:       include "data/stages/platforms_4.68k"
+
 StageData_RooftopStart:     include "data/stages/rooftop_start.68k"
 StageData_Rooftop1:         include "data/stages/rooftop_1.68k"
 StageData_Rooftop1B:        include "data/stages/rooftop_1b.68k"
@@ -194,6 +199,11 @@ STAGE_\name: rs.b 1
     @Entry      Rest4
     @Entry      Rest5
     @Entry      Rest6
+    
+    @Entry      Platforms1
+    @Entry      Platforms2
+    @Entry      Platforms3
+    @Entry      Platforms4
     
     @Entry      RooftopStart
     @Entry      Rooftop1

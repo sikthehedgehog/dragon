@@ -39,6 +39,9 @@ input "src-data/enemies/piranha_attack_2.png"
 tiles 2 0 4 4
 input "src-data/enemies/piranha_attack_1.png"
 tiles 0 0 2 4
+input "src-data/enemies/jump_piranha.png"
+tiles 0 0 4 4
+tiles 1 4 2 2
 input "src-data/enemies/fish.png"
 tiles 0 0 3 2
 

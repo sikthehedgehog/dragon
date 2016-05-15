@@ -93,7 +93,7 @@ InGame:
     lea     (GfxTileset), a6            ; Load tileset graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramTileset*$20, 176*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramTileset*$20, 178*$20, ($C00004)
     
     lea     (GfxIngame), a6             ; Load common graphics
     lea     (LocalRAM), a5
@@ -103,7 +103,7 @@ InGame:
     lea     (GfxEnemies), a6            ; Load enemy graphics
     lea     (LocalRAM), a5
     jsr     (DecompressSlz).w
-    DMA2VRAM LocalRAM, VramSpikeball*$20, 228*$20, ($C00004)
+    DMA2VRAM LocalRAM, VramSpikeball*$20, 248*$20, ($C00004)
     
     move.b  #%0, (GameState)            ; Initialize game state
     bsr     InitStage                   ; Set up current stage

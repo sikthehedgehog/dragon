@@ -104,6 +104,69 @@ RunPlatformDownwards:
     bra     RunPlatformCommon
 
 ;****************************************************************************
+; RunPlatformFragile
+; Executes the behavior for a fragile platform.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunPlatformFragile:
+    btst.b  #OF_DISABLED, OBJ_FLAGS(a0) ; Falling already?
+    beq.s   @NotFalling
+    
+    move.w  OBJ_YSPEED(a0), d7          ; Go dooooooown!!
+    add.w   #$20, d7
+    move.w  d7, OBJ_YSPEED(a0)
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    move.w  OBJ_Y(a0), d6
+    add.w   d7, d6
+    move.w  d6, OBJ_Y(a0)
+    
+    move.w  (MapBottom), d7             ; Too far?
+    add.w   #$10, d7
+    cmp.w   d7, d6
+    bgt     DestroySelf
+    rts
+    
+@NotFalling:
+    move.w  OBJ_TIMER(a0), d7           ; About to fall apart?
+    beq.s   @NotBreaking
+    addq.w  #1, d7
+    move.w  d7, OBJ_TIMER(a0)
+    cmp.w   #60, d7
+    bne.s   @Done
+    
+    bclr.b  #PF_PLATFORM, (PlayerFlags) ; Start falling
+    bclr.b  #OF_ACTIVE, OBJ_FLAGS(a0)
+    bset.b  #OF_DISABLED, OBJ_FLAGS(a0)
+    rts
+    
+@NotBreaking:
+    btst.b  #OF_ACTIVE, OBJ_FLAGS(a0)   ; Still stable yet?
+    beq.s   @Done
+    move.w  #1, OBJ_TIMER(a0)
+    
+@Done:
+    bra     RunPlatformCommon           ; Do platformey stuff
+
+;****************************************************************************
+; RunPlatformStill
+; Executes the behavior for a platform that doesn't move.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;----------------------------------------------------------------------------
+; notes: there's really nothing to do with it, so it's just an alias for
+; RunPlatformCommon. This label is here just to make the purpose more obvious
+;****************************************************************************
+
+RunPlatformStill:
+
+;****************************************************************************
 ; RunPlatformCommon
 ; Common behavior for all platform types.
 ;----------------------------------------------------------------------------
@@ -239,9 +302,11 @@ DrawPlatform:
 ;----------------------------------------------------------------------------
 
 @Tilting:
-    dcb.l   3, SprPlatform_Left
+    dcb.l   2, SprPlatform_Left
+    dcb.l   1, SprPlatform_MidLeft
     dcb.l   2, SprPlatform_Middle
-    dcb.l   3, SprPlatform_Right
+    dcb.l   1, SprPlatform_MidRight
+    dcb.l   2, SprPlatform_Right
 
 ;****************************************************************************
 ; InitRotatingPlatform
@@ -383,6 +448,8 @@ DrawRotatingPlatform:
 ;----------------------------------------------------------------------------
 
 @Tilting:
-    dcb.l   3, SprPlatform_Left
+    dcb.l   2, SprPlatform_Left
+    dcb.l   1, SprPlatform_MidLeft
     dcb.l   2, SprPlatform_Middle
-    dcb.l   3, SprPlatform_Right
+    dcb.l   1, SprPlatform_MidRight
+    dcb.l   2, SprPlatform_Right

@@ -35,7 +35,8 @@
                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                       0xFF, 0x00, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00,
                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                      0x00, 0x00);
    
    $objlist = "";
    $objnames = Array("OBJTYPE_GHOST",
@@ -60,7 +61,10 @@
                      "OBJTYPE_PIRANHA",
                      "OBJTYPE_KNIGHT",
                      "OBJTYPE_KEY",
-                     "OBJTYPE_LOCKEDDOOR");
+                     "OBJTYPE_LOCKEDDOOR",
+                     "OBJTYPE_PLATFORM",
+                     "OBJTYPE_JUMPPIRANHA",
+                     "OBJTYPE_FPLATFORM");
    
    $in = explode("\n", file_get_contents($argv[1]));
    
@@ -150,8 +154,11 @@
          $y = (int)(substr(strstr($line, "y=\""), 3));
          
          $name = $objnames[$type - $oid];
+         if ($name == "OBJTYPE_PLATFORM" || $name == "OBJTYPE_FPLATFORM")
+            $y += 8;
          $x = ($x + 0x20 + 8) & 0xFFF0;
          $y = ($y - 0x20 + 8) & 0xFFF0;
+         $flags = "\$00";
          
          $skip = FALSE;
          switch ($name) {
@@ -184,6 +191,11 @@
                $flags = "" + $dir;
                break;
             
+            case "OBJTYPE_PLATFORM":
+            case "OBJTYPE_FPLATFORM":
+               $y -= 8;
+               break;
+               
             case "OBJTYPE_DPLATFORM":
             case "OBJTYPE_UPLATFORM":
                $flags = $name;
@@ -236,7 +248,6 @@
                break;
             
             default:
-               $flags = "\$00";
                break;
          }
          

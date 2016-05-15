@@ -74,6 +74,12 @@ SprPlatform_Idle:
     dc.w    $8000
 
 SprPlatform_Left:
+    dc.w    -$1E, -$08, $0000, %0101
+    dc.w    -$0F, -$09, $0000, %1101
+    dc.w    $0F, -$0A, $0000, %0101
+    dc.w    $8000
+
+SprPlatform_MidLeft:
     dc.w    -$1F, -$08, $0000, %1101
     dc.w    -$01, -$09, $0000, %1101
     dc.w    $8000
@@ -83,9 +89,15 @@ SprPlatform_Middle:
     dc.w    $00, -$08, $0000, %1101
     dc.w    $8000
 
-SprPlatform_Right:
+SprPlatform_MidRight:
     dc.w    -$1F, -$09, $0000, %1101
     dc.w    -$01, -$08, $0000, %1101
+    dc.w    $8000
+
+SprPlatform_Right:
+    dc.w    -$1E, -$0A, $0000, %0101
+    dc.w    -$0F, -$09, $0000, %1101
+    dc.w    $0F, -$08, $0000, %0101
     dc.w    $8000
 
 ;****************************************************************************
