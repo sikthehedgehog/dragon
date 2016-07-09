@@ -36,6 +36,7 @@ JPIRANHA_Y2:        equ $0F             ; Bottom boundary of collision box
 ;----------------------------------------------------------------------------
 
 FISH_SPEED:         equ $55             ; Speed of the tiny fishes
+FISH_WEIGHT:        equ $40             ; How fast they fall in air
 FISH_X1:            equ -$0A            ; Left boundary of fish box
 FISH_X2:            equ $09             ; Right boundary of fish box
 
@@ -361,6 +362,41 @@ RunJumpPiranha:
     move.l  a0, a6
     bsr     FacePlayer
 @NotAgain:
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Caught by magic?
+    bsr     CollidesMagic
+    tst.w   d7
+    beq.s   @NoTransform
+    
+    move.l  #SCORE_MAGIC, d7            ; Bonus
+    jsr     (AddScore).w
+    moveq   #SFX_TRANSFORM, d7
+    jsr     (PlaySFX).w
+    
+    move.w  OBJ_X(a0), d7               ; Transform!
+    move.w  OBJ_Y(a0), d6
+    move.b  OBJ_FLAGS(a0), d5
+    lsl.w   #8, d5
+    move.b  #OBJTYPE_MAGICPUFF, d5
+    bsr     AddObject
+    move.b  #OBJTYPE_FISH, OBJ_DATA(a6)
+    
+    bra     DestroySelf                 ; Poof!
+@NoTransform:
+
+;----------------------------------------------------------------------------
+
+    move.l  a0, a6                      ; Player touched us?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NoBiting
+    
+    move.w  OBJ_X(a0), d7               ; Bite!!
+    move.w  OBJ_Y(a0), d6
+    bsr     HurtPlayer
+@NoBiting:
     
     rts                                 ; End of subroutine
 
@@ -411,6 +447,27 @@ RunFish:
     move.w  OBJ_X(a0), d0               ; Current status
     move.w  OBJ_Y(a0), d1
     move.b  OBJ_FLAGS(a0), d2
+    move.w  OBJ_YSPEED(a0), d3
+    
+    move.w  d3, d7                      ; Apply vertical momentum
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, d1
+    
+    move.w  d0, d7                      ; Are we in the air?
+    move.w  d1, d6
+    subq.w  #8, d6
+    bsr     TileAt
+    tst.w   d6
+    bne.s   @InWater
+    add.w   #FISH_WEIGHT, d3
+    move.w  d3, OBJ_YSPEED(a0)
+    bra.s   @DoneMoving
+    
+@InWater:
+    addq.w  #1, d3                      ; Soften the fall if needed
+    asr.w   #1, d3
+    move.w  d3, OBJ_YSPEED(a0)
     
     move.w  #FISH_SPEED, d3             ; Which way we're going?
     btst.l  #OF_DIR, d2

@@ -352,7 +352,7 @@
       $pal[2] = "PalLava";
       $pal[3] = "PalFrozenLava";
       $extragfx = "GfxLava";
-      $extrasize = 4*4 + 4*2 + 4*4 + 4*4;
+      $extrasize = 4*4 + 4*2 + 4*4 + 4*4 + 4*4*2 + 3*4 + 3*4*4;
       if (strstr($argv[1], "lava_2") !== false)
          $parallax = "RisingLavaParallax";
       if (strstr($argv[1], "lava_3") !== false)

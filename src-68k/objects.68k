@@ -93,6 +93,7 @@ OBJTYPE_PUSHLIMIT:  rs.b 1      ; Restores camera limit
 OBJTYPE_COGWHEEL:   rs.b 1      ; Cogwheel
 OBJTYPE_LAVABURST:  rs.b 1      ; Lava bursting from the floor
 OBJTYPE_LAVABREAK:  rs.b 1      ; Lava bursting from the wall at the end
+OBJTYPE_LAVAFALL:   rs.b 1      ; Lava falling from the hole
 
 ;****************************************************************************
 ; ClearObjects
@@ -207,6 +208,7 @@ AddObject:
     dc.l    InitCogwheel                ; OBJTYPE_COGWHEEL
     dc.l    InitLavaBurst               ; OBJTYPE_LAVABURST
     dc.l    InitLavaBreak               ; OBJTYPE_LAVABREAK
+    dc.l    @Null                       ; OBJTYPE_LAVAFALL
 
 ;****************************************************************************
 ; DestroySelf
@@ -281,7 +283,8 @@ RunAllObjects:
     dc.l    RunPushLimit                ; OBJTYPE_PUSHLIMIT
     dc.l    RunCogwheel                 ; OBJTYPE_COGWHEEL
     dc.l    RunLavaBurst                ; OBJTYPE_LAVABURST
-    dc.l    @Null                       ; OBJTYPE_LAVABREAK
+    dc.l    RunLavaHole                 ; OBJTYPE_LAVABREAK
+    dc.l    RunLavaFall                 ; OBJTYPE_LAVAFALL
 
 ;****************************************************************************
 ; DrawAllObjects
@@ -352,7 +355,8 @@ DrawAllObjects:
     dc.l    @Null                       ; OBJTYPE_PUSHLIMIT
     dc.l    DrawCogwheel                ; OBJTYPE_COGWHEEL
     dc.l    DrawLavaBurst               ; OBJTYPE_LAVABURST
-    dc.l    @Null                       ; OBJTYPE_LAVABREAK
+    dc.l    DrawLavaHole                ; OBJTYPE_LAVABREAK
+    dc.l    DrawLavaFall                ; OBJTYPE_LAVAFALL
 
 ;****************************************************************************
 ; LoopAllObjects

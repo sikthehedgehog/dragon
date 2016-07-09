@@ -83,3 +83,16 @@ input "src-data/enemies/lava_flood.png"
 layout sprite
 tiles 0 0 4 2
 tiles 0 2 4 2
+input "src-data/enemies/lava_hole.png"
+layout sprite
+tiles 0 0 4 4
+tiles 4 0 4 4
+input "src-data/enemies/lava_fall.png"
+layout sprite
+tiles 0 0 3 4
+input "src-data/enemies/lava_fall_top.png"
+layout sprite
+tiles 0 0 3 4
+tiles 3 0 3 4
+tiles 6 0 3 4
+tiles 9 0 3 4

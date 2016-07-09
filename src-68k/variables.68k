@@ -250,6 +250,9 @@ VramPortrait:       rs.b 6*8*3      ; Portraits
 VramLavaBurst:      rs.b 4*4        ; Bursting lava
 VramRisingLava:     rs.b 4*2+4*4    ; Rising lava
 VramLavaFlood:      rs.b 4*4        ; Lava flood sprite
+VramLavaHole:       rs.b 4*4*2      ; Hole left after flood
+VramLavaFall:       rs.b 3*4        ; Lava falling from the hole
+VramLavaFallTop:    rs.b 3*4*4      ; Top of said falling lava
 
 ;----------------------------------------------------------------------------
 

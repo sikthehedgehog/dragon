@@ -308,3 +308,105 @@ InitLavaBreak:
     bsr     ThrowDerbisAway
     
     rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunLavaHole
+; Executes the behavior for the hole left by the lava flood.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunLavaHole:
+    subq.w  #1, OBJ_TIMER(a0)           ; Spawn another piece of lava?
+    bgt.s   @NoSpawning
+    move.w  #$0F, OBJ_TIMER(a0)
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    moveq   #OBJTYPE_LAVAFALL, d5
+    bsr     AddObject
+    
+@NoSpawning:
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawLavaHole
+; Draws the hole left by the lava flood.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawLavaHole:
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  (Anim), d7                  ; Get sprite for top of falling lava
+    lsr.w   #1, d7
+    and.w   #$03<<1, d7
+    lea     @TopAnim(pc), a6
+    move.w  (a6,d7.w), d2
+    
+    lea     (SprLavaFallTop), a6        ; Draw top of falling lava
+    jsr     (AddMetasprite).w
+    
+    move.w  #$2000+VramLavaHole, d2     ; Draw hole
+    lea     (SprLavaHole), a6
+    jsr     (AddMetasprite).w
+    
+    rts                                 ; End of subroutine
+
+;----------------------------------------------------------------------------
+
+@TopAnim:
+    dc.w    $4000+VramLavaFallTop
+    dc.w    $4000+VramLavaFallTop+12
+    dc.w    $4000+VramLavaFallTop+24
+    dc.w    $4000+VramLavaFallTop+36
+
+;****************************************************************************
+; RunLavaFall
+; Executes the behavior for the lava falling from the hole.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunLavaFall:
+    move.w  OBJ_Y(a0), d7               ; Keep falling
+    add.w   #2, d7
+    move.w  d7, OBJ_Y(a0)
+    
+    moveq   #0, d6                      ; Gone past the bottom of the map?
+    move.b  (MapHeight), d6
+    lsl.w   #5, d6
+    cmp.w   d6, d7
+    bge     DestroySelf
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawLavaFall
+; Draws the lava falling from the hole.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawLavaFall:
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  #$4000+VramLavaFall, d2     ; Draw lava
+    lea     (SprLavaFall), a6
+    jsr     (AddMetasprite).w
+    
+    rts                                 ; End of subroutine

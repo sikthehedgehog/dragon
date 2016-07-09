@@ -30,7 +30,7 @@
     dc.l    PalFrozenLava
 
     dc.l    GfxLava
-    dc.w    56
+    dc.w    148
     dc.l    InitNoParallax
     dc.l    UpdateNoParallax
     dc.w    $7FFF

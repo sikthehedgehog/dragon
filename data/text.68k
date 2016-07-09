@@ -36,6 +36,6 @@ TextLookup:
 ; Text that doesn't need localization
 ;****************************************************************************
 
-StrCopyright:           dc.b "@2016 AZURA SUN",0
+StrCopyright:           dc.b "@2016 SIK",0
 
     even

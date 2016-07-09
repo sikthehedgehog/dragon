@@ -28,7 +28,7 @@
     dc.l    PalFrozenLava
 
     dc.l    GfxLava
-    dc.w    56
+    dc.w    148
     dc.l    InitLavaFloodParallax
     dc.l    UpdateLavaFloodParallax
     dc.w    $7FFF
