@@ -8,6 +8,9 @@ DOPPLE_REACTION:    equ 16              ; How fast she reacts
 DOPPLE_REFLEX:      equ 4               ; How long she takes before attacking
 DOPPLE_ATTACK:      equ 32              ; How long she spends attacking
 DOPPLE_FLASH:       equ 60              ; How long invulnerability lasts
+DOPPLE_SWINGSTART:  equ $70             ; Initial angle of the broom
+DOPPLE_SWING:       equ $08             ; How fast she swings her broom
+DOPPLE_REACH:       equ 12              ; Reach of broom attacks
 
 ;****************************************************************************
 ; RunReflection
@@ -226,6 +229,12 @@ RunDoppleganger:
     bne.s   @NoBroomWhoosh              ; Whoosh!
     moveq   #SFX_ATTACK, d7
     jsr     (PlaySFX).w
+    move.w  d0, d7
+    move.w  d1, d6
+    move.b  OBJ_FLAGS(a0), d5
+    lsl.w   #8, d5
+    move.b  #OBJTYPE_DOPPLEBROOM, d5
+    bsr     AddObject
 @NoBroomWhoosh:
     
     cmp.w   #DOPPLE_ATTACK, d7          ; Done with the attack?
@@ -440,6 +449,94 @@ DrawDoppleganger:
     jsr     (AddMetasprite).w
     
     rts                                 ; End of subroutine
+
+;****************************************************************************
+; InitDopplegangerBroom
+; Sets up a Merlina doppleganger broom attack.
+;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
+
+InitDopplegangerBroom:
+    move.w  #DOPPLE_SWINGSTART, OBJ_TIMER(a6)
+    rts
+
+;****************************************************************************
+; RunDopplegangerBroom
+; Executes the behavior for the Merlina doppleganger broom attacks.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunDopplegangerBroom:
+    move.w  OBJ_TIMER(a0), d7           ; Update timer
+    sub.w   #DOPPLE_SWING, d7
+    blt     DestroySelf
+    move.w  d7, OBJ_TIMER(a0)
+    
+    add.w   d7, d7                      ; Update attack's location
+    lea     (Cosines), a6
+    lea     (Sines), a5
+    move.w  (a6,d7.w), d0
+    move.w  (a5,d7.w), d1
+    neg.w   d1
+    asr.w   #3, d0
+    asr.w   #3, d1
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)
+    beq.s   @SwingingRight
+    neg.w   d0
+@SwingingRight:
+    
+    move.w  d0, d2                      ; Update collision box
+    move.w  d1, d3
+    sub.w   #DOPPLE_REACH, d0
+    sub.w   #DOPPLE_REACH, d1
+    add.w   #DOPPLE_REACH, d2
+    add.w   #DOPPLE_REACH, d3
+    move.w  d0, OBJ_BOXX1(a0)
+    move.w  d1, OBJ_BOXY1(a0)
+    move.w  d2, OBJ_BOXX2(a0)
+    move.w  d3, OBJ_BOXY2(a0)
+    
+    move.l  a0, a6                      ; Did we hit the player?
+    bsr     CollidesPlayer
+    tst.w   d7
+    beq.s   @NoHit
+    move.w  OBJ_X(a0), d7
+    move.w  OBJ_Y(a0), d6
+    bsr     HurtPlayer
+    
+@NoHit:
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawDopplegangerBroom
+; Used to debug where the doppleganger broom object is located.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawDopplegangerBroom:
+    if      DEBUG_HUD
+    move.w  OBJ_BOXX1(a0), d0           ; Where sprite should show up
+    move.w  OBJ_BOXY1(a0), d1
+    add.w   OBJ_X(a0), d0
+    add.w   OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  #$8000+VramMagic, d2        ; Draw a star
+    moveq   #%0101, d3
+    jsr     (AddSprite).w
+    
+    endc
+    rts
 
 ;****************************************************************************
 ; InitPushLimit

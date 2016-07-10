@@ -8,7 +8,7 @@ HAS_MUSIC:          equ 0       ; Include music?
 DEBUG_INIT:         equ 0       ; Simulate some real hardware conditions
 DEBUG_MENU:         equ 1       ; Enable the debug menu
 DEBUG_CONTROLS:     equ 1       ; Enable debug-only controls
-DEBUG_HUD:          equ 1       ; Show debug info in the HUD
+DEBUG_HUD:          equ 0       ; Show debug info in the HUD
 DEBUG_DRAWUSAGE:    equ 0       ; Show time spent drawing objects (emu only!)
 
 LANG_EN:            equ 1       ; Set this to make an English build
