@@ -29,7 +29,7 @@ Several other objects can have their behavior altered through their name (like t
 
 * Spiders tell how far they can fall through their name. Enter the distance in pixels (e.g. 88 = fall down up to 88 pixels).
 * Piranhas and knights will start facing right when their name is 0 and left when their name is 1.
-* Spinning spikeballs can have their initial angle defined in their name. Enter a number between 0 and 255.
+* Spinning platforms and spikeballs can have their initial angle defined in their name. Enter a number between 0 and 255.
 * Cogwheels will spin counterclockwise if their name is 0 or clockwise if their name is 1.
 
 ## Custom tiles

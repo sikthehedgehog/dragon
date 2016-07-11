@@ -71,6 +71,8 @@ stage src-data/stages/platforms_1.tmx data/stages/platforms_1.68k
 stage src-data/stages/platforms_2.tmx data/stages/platforms_2.68k
 stage src-data/stages/platforms_3.tmx data/stages/platforms_3.68k
 stage src-data/stages/platforms_4.tmx data/stages/platforms_4.68k
+stage src-data/stages/platforms_5.tmx data/stages/platforms_5.68k
+stage src-data/stages/platforms_6.tmx data/stages/platforms_6.68k
 stage src-data/stages/rooftop_start.tmx data/stages/rooftop_start.68k
 stage src-data/stages/rooftop_1.tmx data/stages/rooftop_1.68k
 stage src-data/stages/rooftop_1b.tmx data/stages/rooftop_1b.68k

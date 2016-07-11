@@ -65,5 +65,5 @@
     dc.w    OBJTYPE_FPLATFORM|$00<<8, $01E0, $01A8
     dc.w    OBJTYPE_FPLATFORM|$00<<8, $0160, $01E8
     dc.w    OBJTYPE_DOOR|$00<<8, $0080, $0210
-    dc.w    OBJTYPE_DOOR|$00<<8, $0340, $0090
+    dc.w    OBJTYPE_DOOR|STAGE_PLATFORMS5<<8, $0340, $0090
     dc.w    $0000

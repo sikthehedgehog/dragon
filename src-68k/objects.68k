@@ -67,6 +67,7 @@ OBJTYPE_UPLATFORM:  rs.b 1      ; Upwards platform
 OBJTYPE_DPLATFORM:  rs.b 1      ; Downwards platform
 OBJTYPE_CCWPLATFORM:rs.b 1      ; CCW rotating platform
 OBJTYPE_CWPLATFORM: rs.b 1      ; CW rotating platform
+OBJTYPE_SWINGPLAT:  rs.b 1      ; Swinging platform
 OBJTYPE_PLATSPAWN:  rs.b 1      ; Platform spawner
 OBJTYPE_SPIKEBALL:  rs.b 1      ; Spikeball
 OBJTYPE_STRAYBALL:  rs.b 1      ; Stray spikeball
@@ -183,6 +184,7 @@ AddObject:
     dc.l    @Null                       ; OBJTYPE_DPLATFORM
     dc.l    InitRotatingPlatform        ; OBJTYPE_CCWPLATFORM
     dc.l    InitRotatingPlatform        ; OBJTYPE_CWPLATFORM
+    dc.l    InitSwingingPlatform        ; OBJTYPE_SWINGPLAT
     dc.l    InitPlatformSpawner         ; OBJTYPE_PLATSPAWN
     dc.l    InitSpikeball               ; OBJTYPE_SPIKEBALL
     dc.l    InitStraySpikeball          ; OBJTYPE_STRAYBALL
@@ -260,6 +262,7 @@ RunAllObjects:
     dc.l    RunPlatformDownwards        ; OBJTYPE_DPLATFORM
     dc.l    RunRotatingPlatform         ; OBJTYPE_CCWPLATFORM
     dc.l    RunRotatingPlatform         ; OBJTYPE_CWPLATFORM
+    dc.l    RunSwingingPlatform         ; OBJTYPE_SWINGPLAT
     dc.l    RunPlatformSpawner          ; OBJTYPE_PLATSPAWN
     dc.l    RunSpikeball                ; OBJTYPE_SPIKEBALL
     dc.l    RunStraySpikeball           ; OBJTYPE_STRAYBALL
@@ -333,6 +336,7 @@ DrawAllObjects:
     dc.l    DrawPlatform                ; OBJTYPE_DPLATFORM
     dc.l    DrawRotatingPlatform        ; OBJTYPE_CCWPLATFORM
     dc.l    DrawRotatingPlatform        ; OBJTYPE_CWPLATFORM
+    dc.l    DrawSwingingPlatform        ; OBJTYPE_SWINGPLAT
     dc.l    @Null                       ; OBJTYPE_PLATSPAWN
     dc.l    DrawSpikeball               ; OBJTYPE_SPIKEBALL
     dc.l    DrawSpikeball               ; OBJTYPE_STRAYBALL

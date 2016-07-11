@@ -64,7 +64,8 @@
                      "OBJTYPE_LOCKEDDOOR",
                      "OBJTYPE_PLATFORM",
                      "OBJTYPE_JUMPPIRANHA",
-                     "OBJTYPE_FPLATFORM");
+                     "OBJTYPE_FPLATFORM",
+                     "OBJTYPE_SWINGPLAT");
    
    $in = explode("\n", file_get_contents($argv[1]));
    
@@ -224,6 +225,11 @@
                      sprintf("\$%04X", $x).", ".sprintf("\$%04X", $y)."\n";
                $name = "OBJTYPE_CHAINBASE";
                $flags = "\$00";
+               break;
+            
+            case "OBJTYPE_SWINGPLAT":
+               $angle = (int)(substr(strstr($line, "name=\""), 6));
+               $flags = "" + ($angle);
                break;
             
             case "OBJTYPE_SWINGBALL":

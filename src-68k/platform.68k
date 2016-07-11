@@ -289,7 +289,7 @@ DrawPlatform:
     add.w   #$20, d7
     lsr.w   #1, d7
     and.w   #$07<<2, d7
-    lea     @Tilting(pc), a6
+    lea     (PlatformTilting), a6
     move.l  (a6,d7.w), a6
 @NotSteppedOn:
     
@@ -298,15 +298,6 @@ DrawPlatform:
     
 @Skip:
     rts                                 ; End of subroutine
-
-;----------------------------------------------------------------------------
-
-@Tilting:
-    dcb.l   2, SprPlatform_Left
-    dcb.l   1, SprPlatform_MidLeft
-    dcb.l   2, SprPlatform_Middle
-    dcb.l   1, SprPlatform_MidRight
-    dcb.l   2, SprPlatform_Right
 
 ;****************************************************************************
 ; InitRotatingPlatform
@@ -415,7 +406,7 @@ DrawRotatingPlatform:
     add.w   #$20, d7
     lsr.w   #1, d7
     and.w   #$07<<2, d7
-    lea     @Tilting(pc), a6
+    lea     (PlatformTilting), a6
     move.l  (a6,d7.w), a6
 @NotSteppedOn:
     
@@ -445,11 +436,143 @@ DrawRotatingPlatform:
     
     rts                                 ; End of subroutine
 
+;****************************************************************************
+; InitSwingingPlatform
+; Initializes a swinging platform.
 ;----------------------------------------------------------------------------
+; input a6.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: d5-d7, a4-a6
+;****************************************************************************
 
-@Tilting:
-    dcb.l   2, SprPlatform_Left
-    dcb.l   1, SprPlatform_MidLeft
-    dcb.l   2, SprPlatform_Middle
-    dcb.l   1, SprPlatform_MidRight
-    dcb.l   2, SprPlatform_Right
+InitSwingingPlatform:
+    move.b  OBJ_FLAGS(a6), OBJ_DATA(a6) ; Store swinging where it's more
+    clr.b   OBJ_FLAGS(a6)                 ; relevant
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; RunSwingingPlatform
+; Executes the behavior for swinging platforms.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunSwingingPlatform:
+    move.w  OBJ_TIMER(a0), d7           ; Get current offset of platform
+    add.w   d7, d7
+    lea     (Sines), a1
+    lea     (Cosines), a2
+    move.w  (a2,d7.w), d0
+    move.w  (a1,d7.w), d1
+    neg.w   d1
+    asr.w   #2, d0
+    asr.w   #2, d1
+    
+    moveq   #0, d7                      ; Make platform swing
+    move.b  OBJ_DATA(a0), d7
+    addq.b  #1, d7
+    move.b  d7, OBJ_DATA(a0)
+    
+    add.w   d7, d7                      ; Determine current angle
+    move.w  (a2,d7.w), d7
+    asr.w   #2, d7
+    and.w   #$FF, d7
+    sub.b   #$40, d7
+    move.w  d7, OBJ_TIMER(a0)
+    
+    add.w   d7, d7                      ; Determine how much the platform
+    move.w  (a2,d7.w), d2                 ; has moved
+    move.w  (a1,d7.w), d3
+    neg.w   d3
+    asr.w   #2, d2
+    asr.w   #2, d3
+    sub.w   d0, d2
+    sub.w   d1, d3
+    move.w  d2, OBJ_XSPEED(a0)
+    move.w  d3, OBJ_YSPEED(a0)
+    
+    add.w   d0, d2                      ; Do platformy stuff
+    add.w   d1, d3
+    move.w  OBJ_X(a0), -(sp)
+    move.w  OBJ_Y(a0), -(sp)
+    add.w   d2, OBJ_X(a0)
+    add.w   d3, OBJ_Y(a0)
+    bsr     RunPlatformCommon
+    move.w  (sp)+, OBJ_Y(a0)
+    move.w  (sp)+, OBJ_X(a0)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawSwingingPlatform
+; Draws a swinging platform
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawSwingingPlatform:
+    bsr     DrawBaseLink                ; Draw base first
+    
+    move.w  OBJ_X(a0), d0               ; Determine origin on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    move.w  OBJ_TIMER(a0), d7           ; Get horizontal and vertical deltas
+    and.w   #$FF, d7
+    add.w   d7, d7
+    lea     (Sines), a1
+    move.w  (a1,d7.w), d5
+    lea     $80(a1), a1
+    move.w  (a1,d7.w), d4
+    neg.w   d5
+    
+    movem.w d0-d1/d4-d5, -(sp)          ; Calculate position of the platform
+    asr.w   #2, d4
+    asr.w   #2, d5
+    add.w   d4, d0
+    add.w   d5, d1
+    
+    lea     (SprPlatform_Idle), a6      ; Check which sprite to use
+    btst.b  #OF_ACTIVE, OBJ_FLAGS(a0)     ; This is for the tilting look
+    beq.s   @NotSteppedOn
+    move.w  (PlayerX), d7
+    sub.w   OBJ_X(a0), d7
+    sub.w   d4, d7
+    add.w   #$20, d7
+    lsr.w   #1, d7
+    and.w   #$07<<2, d7
+    lea     (PlatformTilting), a6
+    move.l  (a6,d7.w), a6
+@NotSteppedOn:
+    
+    move.w  #$2000+VramPlatform, d2     ; Draw platform
+    jsr     (AddMetasprite).w
+    
+    movem.w (sp)+, d0-d1/d4-d5          ; Draw the chain
+    subq.w  #8, d0
+    subq.w  #8, d1
+    move.w  #VramLink, d2
+    moveq   #%0101, d3
+    
+    move.w  d4, a1
+    move.w  d5, a2
+    moveq   #3-1, d7
+@ChainLoop:
+    movem.w d0-d1/d4-d5/d7, -(sp)
+    asr.w   #4, d4
+    asr.w   #4, d5
+    add.w   d4, d0
+    add.w   d5, d1
+    jsr     (AddSprite).w
+    movem.w (sp)+, d0-d1/d4-d5/d7
+    add.w   a1, d4
+    add.w   a2, d5
+    dbf     d7, @ChainLoop
+    
+    rts                                 ; End of subroutine

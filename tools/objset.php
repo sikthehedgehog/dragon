@@ -47,6 +47,7 @@
    add("src-data/ingame/platform.png");
    add("src-data/enemies/jump_piranha.png");
    add("src-data/ingame/platform_fragile.png");
+   add("src-data/ingame/swinging_platform.png");
    
    imagepng($img, "src-data/tileset/objset.png");
 ?>

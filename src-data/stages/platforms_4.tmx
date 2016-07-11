@@ -37,7 +37,7 @@
   <object gid="154" x="451" y="457"/>
   <object gid="154" x="321" y="522"/>
   <object gid="130" x="96" y="558"/>
-  <object gid="130" x="799" y="173"/>
+  <object name="STAGE_PLATFORMS5" gid="130" x="799" y="173"/>
   <object gid="131" x="95" y="559"/>
  </objectgroup>
 </map>

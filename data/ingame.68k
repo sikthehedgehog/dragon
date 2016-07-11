@@ -101,6 +101,18 @@ SprPlatform_Right:
     dc.w    $8000
 
 ;****************************************************************************
+; PlatformTilting
+; Sprites to show for each tilting angle of a platform.
+;****************************************************************************
+
+PlatformTilting:
+    dcb.l   2, SprPlatform_Left
+    dcb.l   1, SprPlatform_MidLeft
+    dcb.l   2, SprPlatform_Middle
+    dcb.l   1, SprPlatform_MidRight
+    dcb.l   2, SprPlatform_Right
+
+;****************************************************************************
 ; SprAngel_*
 ; Sprite mappings for rescued souls.
 ;****************************************************************************
