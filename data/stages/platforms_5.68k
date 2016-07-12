@@ -56,4 +56,6 @@
     dc.w    OBJTYPE_SWINGPLAT|0<<8, $00B0, $0150
     dc.w    OBJTYPE_SWINGPLAT|64<<8, $0090, $00F0
     dc.w    OBJTYPE_SWINGPLAT|128<<8, $00B0, $0090
+    dc.w    OBJTYPE_GHOST|$00<<8, $00F0, $00D0
+    dc.w    OBJTYPE_GHOST|$00<<8, $0050, $0070
     dc.w    $0000

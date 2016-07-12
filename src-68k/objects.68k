@@ -78,6 +78,7 @@ OBJTYPE_ACTGHOST:   rs.b 1      ; Ghost (already awaken)
 OBJTYPE_SPIDER:     rs.b 1      ; Spider
 OBJTYPE_PIRANHA:    rs.b 1      ; Piranha
 OBJTYPE_JUMPPIRANHA:rs.b 1      ; Jumping piranha
+OBJTYPE_DEADPIRANHA:rs.b 1      ; Dying piranha
 OBJTYPE_KNIGHT:     rs.b 1      ; Undead knight
 OBJTYPE_CHAINBASE:  rs.b 1      ; Base of a chain
 OBJTYPE_HCHAIN:     rs.b 1      ; Chunk of horizontal chain
@@ -195,6 +196,7 @@ AddObject:
     dc.l    InitSpider                  ; OBJTYPE_SPIDER
     dc.l    InitPiranha                 ; OBJTYPE_PIRANHA
     dc.l    InitJumpPiranha             ; OBJTYPE_JUMPPIRANHA
+    dc.l    @Null                       ; OBJTYPE_DEADPIRANHA
     dc.l    InitKnight                  ; OBJTYPE_KNIGHT
     dc.l    @Null                       ; OBJTYPE_CHAINBASE
     dc.l    @Null                       ; OBJTYPE_HCHAIN
@@ -273,6 +275,7 @@ RunAllObjects:
     dc.l    RunSpider                   ; OBJTYPE_SPIDER
     dc.l    RunPiranha                  ; OBJTYPE_PIRANHA
     dc.l    RunJumpPiranha              ; OBJTYPE_JUMPPIRANHA
+    dc.l    RunDeadPiranha              ; OBJTYPE_DEADPIRANHA
     dc.l    RunKnight                   ; OBJTYPE_KNIGHT
     dc.l    @Null                       ; OBJTYPE_CHAINBASE
     dc.l    @Null                       ; OBJTYPE_HCHAIN
@@ -347,6 +350,7 @@ DrawAllObjects:
     dc.l    DrawSpider                  ; OBJTYPE_SPIDER
     dc.l    DrawPiranha                 ; OBJTYPE_PIRANHA
     dc.l    DrawJumpPiranha             ; OBJTYPE_JUMPPIRANHA
+    dc.l    DrawDeadPiranha             ; OBJTYPE_DEADPIRANHA
     dc.l    DrawKnight                  ; OBJTYPE_KNIGHT
     dc.l    DrawBaseLink                ; OBJTYPE_CHAINBASE
     dc.l    DrawHorChain                ; OBJTYPE_HCHAIN

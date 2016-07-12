@@ -1,9 +1,5 @@
 # To-do
 
-## Hurt by broom
-
-* Jumping piranhas
-
 ## Hurt by magic
 
 * Spiders

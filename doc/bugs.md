@@ -1,5 +1,7 @@
 # Known bugs
 
+Should be pushing these (save the "not bugs" ones) into issues...
+
 ## Legalese
 
 * Obviously the need to settle on a proper license.

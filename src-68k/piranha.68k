@@ -66,28 +66,6 @@ InitPiranha:
 ;****************************************************************************
 
 RunPiranha:
-    tst.b   OBJ_HEALTH(a0)              ; Still alive?
-    bne.s   @Alive
-    
-    move.w  OBJ_YSPEED(a0), d7          ; Keep falling
-    add.w   #ACCEL_FALL, d7
-    move.w  d7, OBJ_YSPEED(a0)
-    cmp.w   #JUMP_FORCE, d7
-    bge     DestroySelf
-    add.w   (Subpixel), d7
-    asr.w   #8, d7
-    add.w   d7, OBJ_Y(a0)
-    
-    move.w  OBJ_XSPEED(a0), d7          ; Falling sideways
-    add.w   (Subpixel), d7
-    asr.w   #8, d7
-    add.w   d7, OBJ_X(a0)
-    
-    rts                                 ; End of subroutine
-@Alive:
-
-;----------------------------------------------------------------------------
-
     move.w  OBJ_X(a0), d0               ; Current status
     move.w  OBJ_Y(a0), d1
     move.b  OBJ_FLAGS(a0), d2
@@ -171,26 +149,7 @@ RunPiranha:
     move.l  a0, a6                      ; Attacked by broom?
     bsr     CollidesAttack
     tst.w   d7
-    beq.s   @NotKilled
-    
-    move.l  #SCORE_BROOM, d7            ; Bonus
-    bsr     AddScore
-    moveq   #SFX_HIT, d7
-    jsr     (PlaySFX).w
-    
-    move.l  a0, a6                      ; Bounce
-    bsr     FacePlayer
-    
-    move.w  #MAX_SPEED, d6
-    btst.l  #OF_DIR, d7
-    bne.s   *+4
-    neg.w   d6
-    move.w  d6, OBJ_XSPEED(a0)
-    move.w  #-JUMP_FORCE/2, OBJ_YSPEED(a0)
-    
-    clr.b   OBJ_HEALTH(a0)              ; Ouch!
-    rts
-@NotKilled:
+    bne     PiranhaDies
 
 ;----------------------------------------------------------------------------
 
@@ -262,14 +221,6 @@ DrawPiranha:
     move.w  OBJ_Y(a0), d1
     sub.w   (CameraX), d0
     sub.w   (CameraY), d1
-    
-    tst.b   OBJ_HEALTH(a0)              ; Dead?
-    bne.s   @Alive
-    lea     (SprPiranha_Attack1), a6
-    tst.b   (BlinkFlag)
-    bne.s   @Skip
-    bra.s   @AnimSet
-@Alive:
     
     tst.w   OBJ_TIMER(a0)               ; Getting ready to attack?
     beq.s   @NotReadying
@@ -388,6 +339,13 @@ RunJumpPiranha:
 
 ;----------------------------------------------------------------------------
 
+    move.l  a0, a6                      ; Attacked by broom?
+    bsr     CollidesAttack
+    tst.w   d7
+    bne     PiranhaDies
+
+;----------------------------------------------------------------------------
+
     move.l  a0, a6                      ; Player touched us?
     bsr     CollidesPlayer
     tst.w   d7
@@ -432,6 +390,87 @@ DrawJumpPiranha:
 @NoFlip:
     
     jsr     (AddMetasprite).w           ; Draw piranha
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; PiranhaDies
+; Makes a piranha object die.
+;****************************************************************************
+
+PiranhaDies:
+    move.l  #SCORE_BROOM, d7            ; Bonus
+    bsr     AddScore
+    moveq   #SFX_HIT, d7
+    jsr     (PlaySFX).w
+    
+    move.l  a0, a6                      ; Bounce
+    bsr     FacePlayer
+    
+    move.w  #MAX_SPEED, d6
+    btst.l  #OF_DIR, d7
+    bne.s   *+4
+    neg.w   d6
+    move.w  d6, OBJ_XSPEED(a0)
+    move.w  #-JUMP_FORCE/2, OBJ_YSPEED(a0)
+    
+    clr.b   OBJ_HEALTH(a0)              ; Ouch!
+    move.b  #OBJTYPE_DEADPIRANHA, OBJ_TYPE(a0)
+    rts
+
+;****************************************************************************
+; RunDeadPiranha
+; Executes the behavior for a dying piranha.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+RunDeadPiranha:
+    move.w  OBJ_YSPEED(a0), d7          ; Keep falling
+    add.w   #ACCEL_FALL, d7
+    move.w  d7, OBJ_YSPEED(a0)
+    cmp.w   #JUMP_FORCE, d7
+    bge     DestroySelf
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, OBJ_Y(a0)
+    
+    move.w  OBJ_XSPEED(a0), d7          ; Falling sideways
+    add.w   (Subpixel), d7
+    asr.w   #8, d7
+    add.w   d7, OBJ_X(a0)
+    
+    rts                                 ; End of subroutine
+
+;****************************************************************************
+; DrawDeadPiranha
+; Draws a dying piranha.
+;----------------------------------------------------------------------------
+; input a0.l ... Pointer to object
+;----------------------------------------------------------------------------
+; breaks: all but a0
+;****************************************************************************
+
+DrawDeadPiranha:
+    move.w  OBJ_X(a0), d0               ; Get position on screen
+    move.w  OBJ_Y(a0), d1
+    sub.w   (CameraX), d0
+    sub.w   (CameraY), d1
+    
+    tst.b   (BlinkFlag)                 ; Sprite is blinking
+    bne.s   @Skip
+    
+    move.w  #VramPiranha, d2            ; Figure out direction
+    btst.b  #OF_DIR, OBJ_FLAGS(a0)
+    beq.s   @NoFlip
+    bset.l  #11, d2
+@NoFlip:
+    
+    lea     (SprPiranha_Attack1), a6
+    jsr     (AddMetasprite).w           ; Draw piranha
+    
+@Skip:
     rts                                 ; End of subroutine
 
 ;****************************************************************************

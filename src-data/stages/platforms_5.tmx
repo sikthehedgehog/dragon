@@ -33,5 +33,7 @@
   <object name="0" gid="155" x="143" y="370"/>
   <object name="64" gid="155" x="111" y="274"/>
   <object name="128" gid="155" x="143" y="176"/>
+  <object gid="129" x="211" y="242"/>
+  <object gid="129" x="48" y="139"/>
  </objectgroup>
 </map>
