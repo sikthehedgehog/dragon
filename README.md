@@ -4,8 +4,6 @@
 
 This is the source code to Dragon's Castle. One of the big things from this code is that you can try using it to make *your own* platformer game, and not have to cope with all the ugly details, like limitless two-way scrolling or slope physics. (well sorta, the engine could use some more flexibility and was designed only with small rooms instead of large stages)
 
-**Currently the exact license for this code hasn't been decided yet, so if you want to use this for your own game feel free to contact me for arranging something. I'll definitely keep this at the very least compatible with the GPL, however!**
-
 ## How to play
 
 You can get a prebuilt ROM by downloading the `witch.bin` file (make sure to choose "raw view" so the browser downloads it!).
